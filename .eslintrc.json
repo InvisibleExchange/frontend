@@ -1,0 +1,15 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "prettier/prettier": [
+      0,
+      {
+        "singleQuote": true,
+        "semi": false,
+        "tabWidth": 2
+      }
+    ],
+    "react-hooks/exhaustive-deps": [0],
+    "semi": 0
+  }
+}

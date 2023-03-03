@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@300;400;500;600;700&family=Overpass:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap");
+:root {
+  --white: #fff;
+  --gray_lighter: #cfcfcf;
+  --gray_light: #afafaf;
+  --gray: #808080;
+  --gray_dark: #4e4e4e;
+  --gray_darker: #202020;
+  --black: #121212;
+  --green: #3fb68b;
+  /* --green: var(--turquoise); */
+  --red: #ff5353;
+  --green_lighter: "#26de81";
+
+  --turquoise_lighter: #65fff2;
+  --turquoise_light: #02e7d7;
+  --turquoise: #08acc2;
+  --turquoise_dark: #0a6aa1;
+  --turquoise_darker: #06366d;
+
+  --border_color: var(--gray_darker);
+
+  --font_mono: "Chivo Mono", monospace;
+
+  /* web3-onboard styling */
+  --onboard-white: var(--primary_color);
+  --onboard-black: var(--bg_color);
+  --onboard-primary-1: var(--turquoise_light);
+  --onboard-primary-100: var(--bg_color);
+  --onboard-primary-200: var(--fg_below_color);
+  --onboard-primary-300: var(--fg_middle_color);
+  --onboard-primary-400: var(--fg_top_color);
+  --onboard-primary-500: var(--fg_middle_color);
+  --onboard-primary-600: var(--fg_top_color);
+  --onboard-primary-700: var(--primary_color);
+  --onboard-gray-100: var(--primary_color);
+  --onboard-gray-200: var(--fg_top_color);
+  --onboard-gray-300: var(--fg_middle_color);
+  --onboard-gray-400: var(--fg_top_color);
+  --onboard-gray-500: var(--fg_middle_color);
+  --onboard-gray-600: var(--fg_below_color);
+  --onboard-gray-700: var(--bg_color);
+
+  --account-select-modal-white: var(--bg_color);
+  --account-select-modal-black: var(--primary_color);
+  --account-select-modal-primary-100: var(--bg_color);
+  --account-select-modal-primary-200: var(--fg_below_color);
+  --account-select-modal-primary-300: var(--fg_middle_color);
+  --account-select-modal-primary-500: var(--fg_top_color);
+  --account-select-modal-primary-600: var(--primary_color);
+  --account-select-modal-gray-100: var(--bg_color);
+  --account-select-modal-gray-200: var(--fg_below_color);
+  --account-select-modal-gray-300: var(--fg_middle_color);
+  --account-select-modal-gray-500: var(--fg_top_color);
+  --account-select-modal-gray-700: var(--primary_color);
+
+  --onboard-font-family-normal: "Poppins";
+
+  /* --onboard-connect-content-width: red; */
+  /* --onboard-connect-content-height: red; */
+  /* --onboard-wallet-columns: red; */
+  --onboard-connect-sidebar-border-color: var(--border_color);
+  --onboard-connect-sidebar-background: var(--bg_color);
+  --onboard-connect-sidebar-color: var(--primary_color);
+  --onboard-connect-sidebar-progress-background: var(--fg_below_color);
+  --onboard-connect-sidebar-progress-color: var(--turquoise_light);
+  --onboard-connect-header-background: var(--bg_color);
+  --onboard-connect-header-color: var(--primary_color);
+  --onboard-main-scroll-container-background: var(--bg_color);
+  --onboard-link-color: pink;
+  --onboard-close-button-background: var(--border_color);
+  --onboard-close-button-color: var(--primary_color);
+  --onboard-checkbox-background: purple;
+  --onboard-checkbox-color: red;
+  --onboard-wallet-button-background: var(--border_color);
+  --onboard-wallet-button-background-hover: var(--border_color);
+  --onboard-wallet-button-color: var(--primary_color);
+  --onboard-wallet-button-color-hover: var(--primary_color);
+  --onboard-wallet-button-border-color: var(--border_color);
+  --onboard-wallet-button-border-radius: 14px;
+  /* --onboard-wallet-button-box-shadow: red; */
+  --onboard-wallet-button-box-shadow-hover: lime;
+  --onboard-wallet-app-icon-border-color: var(--fg_below_color);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background_color: var(--black);
+
+    /* --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+
+    --primary-glow: radial-gradient(rgba(1, 65, 255, 0.4), rgba(1, 65, 255, 0));
+    --secondary-glow: linear-gradient(to bottom right, rgba(1, 65, 255, 0), rgba(1, 65, 255, 0), rgba(1, 65, 255, 0.3)); */
+  }
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  font-family: "Overpass", sans-serif;
+  color: var(--primary_color);
+  /* font-size: 14px; */
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg_color);
+}
+
+body > div:first-child {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.fadeIn {
+  animation: fadein 1s ease-out forwards;
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.rc-tooltip-placement-top .rc-tooltip-arrow {
+  bottom: 4px !important;
+}
+
+.table_contents::-webkit-scrollbar {
+  content: "";
+  width: 0;
+}
+
+article {
+  width: 100%;
+}
+
+#widget-container {
+  border: none !important;
+}
+
+article > div {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+article > div > div {
+  width: 100% !important;
+  /* height: 100% !important; */
+}
+
+.tradingview_7f572 {
+  width: 300px !important;
+  height: 300px !important;
+}
