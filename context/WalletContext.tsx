@@ -17,6 +17,8 @@ import mewWallet from "@web3-onboard/mew-wallet";
 import tallyHoWalletModule from "@web3-onboard/tallyho";
 // import logo from "../public/img/zz.svg"
 
+const User = require("../app_logic/users/Invisibl3User").default;
+
 import {
   NETWORKS,
   isValidNetwork,
@@ -30,6 +32,7 @@ interface Props {
 }
 
 export type WalletContextType = {
+  user: typeof User | null;
   username: string | null;
   signer: ethers.Signer | null;
   userAddress: string | null;
@@ -39,6 +42,7 @@ export type WalletContextType = {
 
   connect: () => void;
   disconnect: () => void;
+  login: () => void;
   switchNetwork: (network: number) => Promise<boolean>;
   updateWalletBalance: (tokenAddressList: string[]) => void;
 
@@ -50,6 +54,7 @@ export type WalletContextType = {
 };
 
 export const WalletContext = createContext<WalletContextType>({
+  user: null,
   username: null,
   signer: null,
   userAddress: null,
@@ -59,6 +64,7 @@ export const WalletContext = createContext<WalletContextType>({
 
   connect: () => {},
   disconnect: () => {},
+  login: async () => {},
   switchNetwork: async (network: number) => {
     return false;
   },
@@ -120,6 +126,7 @@ const onboard = Onboard({
 });
 
 function WalletProvider({ children }: Props) {
+  const [user, setUser] = useState<typeof User | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [network, setNetwork] = useState<NetworkType | null>(
     _getDefaultNetwork()
@@ -166,6 +173,11 @@ function WalletProvider({ children }: Props) {
       : null;
 
     if (label !== null && label !== undefined) connectWallet(label);
+
+    // const user = window.localStorage.getItem("user");
+    // if (user) {
+    //   setUser(user);
+    // }
   }, []);
 
   const connectWallet = async (label?: string) => {
@@ -249,9 +261,30 @@ function WalletProvider({ children }: Props) {
     return utils.parseUnits(String(amount), token.decimals).lte(allowance);
   };
 
+  const login = async () => {
+    console.log("login started");
+
+    const { loginUser } = require("../app_logic/helpers/utils");
+
+    let user_;
+    try {
+      user_ = await loginUser(signer);
+    } catch (error) {
+      console.log("login error", error);
+    }
+
+    if (user_) {
+      setUser(user_);
+    }
+  };
+
+  // TODO: store user in local storage
+  // window.localStorage.setItem("user", user_);
+
   return (
     <WalletContext.Provider
       value={{
+        user: user,
         username: username,
         signer: signer,
         userAddress: userAddress,
@@ -261,6 +294,7 @@ function WalletProvider({ children }: Props) {
 
         connect: connectWallet,
         disconnect: disconnectWallet,
+        login: login,
         switchNetwork: _switchNetwork,
         updateWalletBalance: updateWalletBalance,
 

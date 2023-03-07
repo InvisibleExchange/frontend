@@ -3,10 +3,10 @@ import { Tab } from "@headlessui/react";
 import classNames from "classnames";
 import TradeForm from "../TradeForm";
 
-const LimitTabPanel = () => {
+const LimitTabPanel = ({ perpType, token }) => {
   return (
     <Tab.Panel className={classNames("rounded-xl p-3 outline-none")}>
-      <TradeForm type="limit" />
+      <TradeForm type="limit" perpType={perpType} token={token} />
     </Tab.Panel>
   );
 };

@@ -4,8 +4,15 @@ import MarketStats from "./MarketStats/MarketStats";
 import Orders from "./Orders/Orders";
 import Chart from "./Chart";
 import TradeActions from "./TradeActions/TradeActions";
+import { useReducer } from "react";
 
 export default function Trade() {
+  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  function forceRerender() {
+    forceUpdate();
+  }
+
   return (
     <>
       <Head>
@@ -21,7 +28,7 @@ export default function Trade() {
           <BookTrades />
         </div>
         <div className="col-span-4 2xl:col-span-5">
-          <Orders />
+          <Orders rerenderPage={forceRerender} />
         </div>
       </div>
     </>

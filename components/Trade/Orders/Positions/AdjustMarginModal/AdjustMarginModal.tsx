@@ -7,14 +7,78 @@ import { FaEdit } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 import { ThemeContext } from "../../../../../context/ThemeContext";
 import classNames from "classnames";
+import { WalletContext } from "../../../../../context/WalletContext";
+
+const {
+  IDS_TO_SYMBOLS,
+  DECIMALS_PER_ASSET,
+  PRICE_DECIMALS_PER_ASSET,
+  LEVERAGE_DECIMALS,
+  calulateLiqPriceInMarginChangeModal,
+  getMinViableMargin,
+  COLLATERAL_TOKEN_DECIMALS,
+  COLLATERAL_TOKEN,
+} = require("../../../../../app_logic/helpers/utils");
+
+const {
+  sendChangeMargin,
+} = require("../../../../../app_logic/transactions/constructOrders");
 
 const types = [{ name: "Add" }, { name: "Remove" }];
 
-const AdjustMarginModal = () => {
+const AdjustMarginModal = ({ position, forceRerender }: any) => {
   const { theme } = useContext(ThemeContext);
+  const { user } = useContext(WalletContext);
+
+  const minViableMargin = getMinViableMargin(position);
 
   let [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(types[0]);
+  const [selected, _setSelected] = useState(types[0]);
+
+  const [maxValue, _setMaxValue] = useState(
+    user.getAvailableAmount(COLLATERAL_TOKEN) / 10 ** COLLATERAL_TOKEN_DECIMALS
+  );
+
+  const [marginChange, _setMarginChange] = useState<number | null>(null);
+
+  function setSelected(val: any) {
+    _setSelected(val);
+
+    if (val.name == "Add") {
+      _setMaxValue(
+        user.getAvailableAmount(COLLATERAL_TOKEN) /
+          10 ** COLLATERAL_TOKEN_DECIMALS
+      );
+    } else {
+      _setMaxValue(
+        (position.margin - minViableMargin) / 10 ** COLLATERAL_TOKEN_DECIMALS
+      );
+    }
+  }
+
+  function setMarginChange(num: any) {
+    num = Number.parseFloat(num);
+
+    if (num > maxValue) {
+      _setMarginChange(maxValue);
+    } else {
+      _setMarginChange(num);
+    }
+  }
+
+  async function sendMarginChangeRequest() {
+    await sendChangeMargin(
+      user,
+      position.position_address,
+      position.synthetic_token,
+      marginChange,
+      selected.name
+    );
+
+    forceRerender.rerenderPage();
+
+    closeModal();
+  }
 
   function closeModal() {
     setIsOpen(false);
@@ -79,10 +143,13 @@ const AdjustMarginModal = () => {
                   </Dialog.Title>
                   <div className="mt-5">
                     <div className="flex justify-between text-sm dark:text-gray_lighter">
-                      <p>Amount(USDT)</p>
+                      <p>Amount(USDC)</p>
                       <p>
-                        Max addable{" "}
-                        <span className="dark:text-white">7,717.52 USDT</span>
+                        Max{" "}
+                        {selected.name == "Add" ? " addable: " : " removable: "}
+                        <span className="dark:text-white">
+                          {maxValue.toFixed(2)} USDC
+                        </span>
                       </p>
                     </div>
                     <div className="flex items-center mt-2">
@@ -136,27 +203,65 @@ const AdjustMarginModal = () => {
                         </div>
                       </Listbox>
                       <div className="relative w-full">
-                        <input className="w-full py-3 pl-3 font-mono text-sm rounded-r-sm dark:bg-fg_below_color focus:outline-none" />
-                        <button className="absolute text-sm cursor-pointer right-4 top-3 text-yellow active:opacity-60">
+                        <input
+                          className="w-full py-3 pl-3 font-mono text-sm rounded-r-sm dark:bg-fg_below_color focus:outline-none"
+                          type="number"
+                          step={0.01}
+                          value={marginChange?.toString()}
+                          onChange={(e) => {
+                            setMarginChange(Number.parseFloat(e.target.value));
+                          }}
+                        />
+                        <button
+                          onClick={() => {
+                            setMarginChange(maxValue);
+                          }}
+                          className="absolute text-sm cursor-pointer right-4 top-3 text-yellow active:opacity-60"
+                        >
                           Max
                         </button>
                       </div>
                     </div>
                     <div className="flex justify-between mt-6 text-sm dakr:text-gray_lighter">
                       <p>
-                        Currently Margin for BTCUSDT <br />
-                        Perpetual
+                        Current Margin for{" "}
+                        {IDS_TO_SYMBOLS[position.synthetic_token] + "-PERP"}{" "}
+                        Position
+                        <br />
                       </p>
-                      <p className="font-bold dark:text-white">7,356.72 USDT</p>
+                      <p className="font-bold dark:text-white">
+                        {(
+                          position.margin /
+                          10 ** COLLATERAL_TOKEN_DECIMALS
+                        ).toFixed(2)}{" "}
+                        USDC
+                      </p>
                     </div>
                     <div className="flex justify-between mt-3 text-sm dark:text-gray_lighter">
-                      <p>Max addable</p>
-                      <p className="font-bold dark:text-white">7,717.52 USDT</p>
+                      <p>
+                        Max{" "}
+                        {selected.name == "Add" ? " addable " : " removable "}
+                      </p>
+                      <p className="font-bold dark:text-white">
+                        {maxValue.toFixed(2)} USDC
+                      </p>
                     </div>
                     <div className="flex justify-between mt-3 text-sm dark:text-gray_lighter">
                       <p>Est.Liq.Price after increase</p>
                       <p className="font-bold dark:text-white">
-                        14,417.19 USDT
+                        {(
+                          calulateLiqPriceInMarginChangeModal(
+                            position,
+                            marginChange
+                              ? selected.name == "Add"
+                                ? marginChange
+                                : -marginChange
+                              : 0
+                          ) /
+                          10 **
+                            PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+                        ).toFixed(2)}{" "}
+                        USDC
                       </p>
                     </div>
                   </div>
@@ -165,7 +270,7 @@ const AdjustMarginModal = () => {
                     <button
                       type="button"
                       className="justify-center w-full px-4 py-2.5 text-sm text-white font-medium  rounded-md bg-blue hover:opacity-90"
-                      onClick={closeModal}
+                      onClick={sendMarginChangeRequest}
                     >
                       Confirm
                     </button>

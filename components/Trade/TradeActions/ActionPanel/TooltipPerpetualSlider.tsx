@@ -67,21 +67,15 @@ export const handleRender: SliderProps["handleRender"] = (node, props) => {
   );
 };
 
-const marks = {
-  0: "0",
-  5: "5x",
-  10: "10x",
-  15: "15x",
-  20: "20x",
-};
-
 const TooltipPerpetualSlider = ({
   tipFormatter,
   tipProps,
+  maxLeverage,
   ...props
 }: SliderProps & {
   tipFormatter?: (value: number) => React.ReactNode;
   tipProps: any;
+  maxLeverage: number;
 }) => {
   const { theme } = React.useContext(ThemeContext);
 
@@ -98,15 +92,26 @@ const TooltipPerpetualSlider = ({
     );
   };
 
-  console.log(theme);
+  let marks = { 0.1: "0.1x" };
+  marks[maxLeverage] = maxLeverage.toString() + "x";
+
+  let middle = Math.floor(maxLeverage / 2);
+  let low_middle = Math.floor(middle / 2);
+  let high_middle = Math.floor((middle + maxLeverage) / 2);
+
+  marks[middle] = middle.toString() + "x";
+  marks[low_middle] = low_middle.toString() + "x";
+  marks[high_middle] = high_middle.toString() + "x";
 
   return (
     <Slider
       {...props}
-      min={0}
-      max={20}
+      min={0.1}
+      max={maxLeverage}
       marks={marks}
-      defaultValue={15}
+      step={0.1}
+      range={true}
+      defaultValue={1}
       included={true}
       handleRender={tipHandleRender}
       trackStyle={{

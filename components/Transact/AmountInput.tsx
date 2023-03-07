@@ -1,6 +1,7 @@
 import React from "react";
 
-const AmountInput = ({ selected }: any) => {
+const AmountInput = ({ selected, setAmount, user }: any) => {
+
   return (
     <div className="mt-5 ">
       <div className="flex items-center justify-end gap-2">
@@ -11,6 +12,9 @@ const AmountInput = ({ selected }: any) => {
         <input
           className="w-full py-3 pl-5 rounded-lg bg-border_color focus:outline-none"
           type="text"
+          onChange={(e) => {
+            setAmount(e.target.value);
+          }}
         />
         <button className="absolute text-sm dark:text-yellow text-blue right-20 top-3 hover:opacity-70">
           Max

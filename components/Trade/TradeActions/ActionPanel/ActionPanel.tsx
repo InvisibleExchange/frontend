@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Tab } from "@headlessui/react";
 
 import classNames from "classnames";
 import LimitTabPanel from "./LimitTabPanel";
 import MarketTabPanel from "./MarketTabPanel";
+import WalletContext from "../../../../context/WalletContext";
 
-const ActionPanel = () => {
+const ActionPanel = ({ perpType, token }) => {
   let [categories] = useState(["Limit", "Market"]);
   return (
     <div>
@@ -26,8 +27,8 @@ const ActionPanel = () => {
           ))}
         </Tab.List>
         <Tab.Panels className="mt-2">
-          <LimitTabPanel />
-          <MarketTabPanel />
+          <LimitTabPanel perpType={perpType} token={token} />
+          <MarketTabPanel perpType={perpType} token={token} />
         </Tab.Panels>
       </Tab.Group>
     </div>

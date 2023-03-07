@@ -8,11 +8,14 @@ import { useState, useContext } from "react";
 // import useTranslation from "next-translate/useTranslation"
 import { WalletContext } from "../../../context/WalletContext";
 import { hideAddress } from "../../../utils/utils";
+import { UserContext } from "../../../context/UserContext";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
 function ConnectWallet() {
-  const { userAddress, username, network, connect, disconnect } =
+  const { user, userAddress, username, network, login, connect, disconnect } =
     useContext(WalletContext);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   function open() {
     setIsOpen(true);
@@ -38,7 +41,7 @@ function ConnectWallet() {
   } else {
     let usernameOrAddress;
     if (username) {
-      usernameOrAddress = <div className="font-mono text-sm">{username}</div>;
+      usernameOrAddress = <div className="font-mono text-sm">{username} </div>;
     } else if (userAddress) {
       usernameOrAddress = (
         <div className="font-mono text-sm">{hideAddress(userAddress)}</div>
@@ -53,7 +56,6 @@ function ConnectWallet() {
         onClick={disconnect}
       >
         <div className="w-3 h-3 rounded-full bg-green" />
-
         <div>{usernameOrAddress}</div>
         {/* <div className={styles.profile_anchor}>
           <ConnectButtonDropdown

@@ -13,6 +13,8 @@ import {
   tradeTypeSelector,
 } from "../../../../lib/store/features/apiSlice";
 
+const types = [{ name: "Perpetual" }, { name: "Spot" }];
+
 const marketList = [
   {
     pairs: "ETH/USDC",
@@ -28,9 +30,7 @@ const marketList = [
   },
 ];
 
-const types = [{ name: "Perpetual" }, { name: "Spot" }];
-
-export default function PairSelector() {
+export default function PairSelector({ setCurrentMarketParent, setType }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [currentMarket, setCurrentMarket] = useState<any>(marketList[0]);
 
@@ -40,10 +40,12 @@ export default function PairSelector() {
 
   const onSetCurrentMarket = (market: any) => {
     setCurrentMarket(market);
+    setCurrentMarketParent(market);
   };
 
   const onSelectType = (type: any) => {
     dispatch(setSelectTradeType(type));
+    setType(type.name.toLowerCase());
   };
 
   return (
