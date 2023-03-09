@@ -225,6 +225,7 @@ async function sendPerpOrder(
     feeLimit
   );
 
+
   let { perpOrder, pfrKey } = user.makePerpetualOrder(
     expirationTimestamp,
     position_effect_type,
@@ -237,6 +238,7 @@ async function sendPerpOrder(
     feeLimit,
     initial_margin
   );
+
 
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
@@ -575,11 +577,6 @@ async function sendChangeMargin(
             return pos;
           }
         });
-
-        console.log(
-          "Margin change successful!: ",
-          user.positionData[syntheticToken]
-        );
       } else {
         let msg =
           "Failed to submit order with error: \n" +

@@ -55,9 +55,9 @@ const OpenOrders = () => {
           <th className="pr-3">Buy/Sell</th>
           <th className="pr-3">Price</th>
           <th className="pr-3">Base Amount</th>
-          <th className="pr-3">Expiry</th>
           <th className="pr-3">Action</th>
-          <th className="pr-3">Time</th>
+          <th className="pr-3">Expiry</th>
+          <th className="pr-3">Fee Limit</th>
           <th className="pr-3">Cancel</th>
         </tr>
       </thead>
@@ -66,6 +66,7 @@ const OpenOrders = () => {
 
       {user && user.userId
         ? user.orders.map((order: any) => {
+            const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
             return (
               <tbody key={order.base_asset}>
                 <tr
@@ -74,7 +75,7 @@ const OpenOrders = () => {
                   )}
                 >
                   {/* SYMBOL */}
-                  <td className="gap-3 py-1 pl-5 font-medium">
+                  <td className={classNames("gap-3 py-1 pl-5 font-medium")}>
                     <p className="font-bold">
                       {IDS_TO_SYMBOLS[order.base_asset]}
                     </p>
@@ -83,23 +84,22 @@ const OpenOrders = () => {
                   {/* Market type */}
                   <td className="font-medium">SPOT</td>
                   {/* Buy sell */}
-                  <td className={classNames("pr-3 font-medium ")}>
+                  <td className={classNames("pr-3 font-medium")}>
                     {order.order_side ? "Buy" : "Sell"}
                   </td>
                   {/* Price */}
-                  <td className={classNames("pr-3 font-medium ")}>
-                    {order.price} USD
+                  <td className={classNames("pr-3 font-medium")}>
+                    {order.price.toFixed(2)} USD
                   </td>
                   {/* Amount */}
                   <td className={classNames("pr-3 font-medium ")}>
-                    {order.qty_left /
-                      10 ** DECIMALS_PER_ASSET[order.base_asset]}{" "}
+                    {(
+                      order.qty_left /
+                      10 ** DECIMALS_PER_ASSET[order.base_asset]
+                    ).toFixed(2)}{" "}
                     {IDS_TO_SYMBOLS[order.base_asset]}
                   </td>
-                  {/* Expiry */}
-                  <td className={classNames("pr-3 font-medium ")}>
-                    {order.expiration_timestamp}
-                  </td>
+
                   {/* Action */}
                   <td className={classNames("pr-3 font-medium ")}>
                     <div className="flex items-center gap-2">
@@ -108,10 +108,15 @@ const OpenOrders = () => {
                       </div>
                     </div>
                   </td>
-                  {/* Time */}
+                  {/* Expiry */}
                   <td className={classNames("pr-3 font-medium ")}>
-                    <p>2023-03-06</p>
-                    <p className="text-[12px]">14:55:40</p>
+                    <p>{expiry.toLocaleDateString()}</p>
+                    <p className="text-[12px]">{expiry.toLocaleTimeString()}</p>
+                  </td>
+                  {/* Fee Limit */}
+                  <td className={classNames("pr-3 font-medium ")}>
+                    {/* {order.fee_limit /
+                      10 ** DECIMALS_PER_ASSET[order.synthetic_token]} */}
                   </td>
                   {/* Cancel order */}
                   <td className={classNames("pl-3 font-medium ")}>
@@ -161,6 +166,8 @@ const OpenOrders = () => {
                 throw Error("invalid pos_effect_type");
             }
 
+            const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
+
             return (
               <tbody key={order.order_id}>
                 <tr
@@ -183,17 +190,15 @@ const OpenOrders = () => {
                   </td>
                   {/* Price */}
                   <td className={classNames("pr-3 font-medium ")}>
-                    {order.price} USD
+                    {order.price.toFixed(2)} USD
                   </td>
                   {/* Amount */}
                   <td className={classNames("pr-3 font-medium ")}>
-                    {order.qty_left /
-                      10 ** DECIMALS_PER_ASSET[order.synthetic_token]}{" "}
+                    {(
+                      order.qty_left /
+                      10 ** DECIMALS_PER_ASSET[order.synthetic_token]
+                    ).toFixed(3)}{" "}
                     {IDS_TO_SYMBOLS[order.synthetic_token]}
-                  </td>
-                  {/* Expiry */}
-                  <td className={classNames("pr-3 font-medium ")}>
-                    {order.expiration_timestamp}
                   </td>
                   {/* Action */}
                   <td className={classNames("pr-3 font-medium ")}>
@@ -203,10 +208,16 @@ const OpenOrders = () => {
                       </div>
                     </div>
                   </td>
-                  {/* Time */}
+                  {/* Expiry */}
                   <td className={classNames("pr-3 font-medium ")}>
-                    <p>2023-03-06</p>
-                    <p className="text-[12px]">14:55:40</p>
+                    <p>{expiry.toLocaleDateString()}</p>
+                    <p className="text-[12px]">{expiry.toLocaleTimeString()}</p>
+                  </td>
+                  {/* Fee Limit */}
+                  <td className={classNames("pr-3 font-medium ")}>
+                    {/* {order.fee_limit /
+                      10 ** DECIMALS_PER_ASSET[order.synthetic_token]}{" "}
+                    {IDS_TO_SYMBOLS[order.synthetic_token]} */}
                   </td>
                   <td className={classNames(" pl-3 font-medium ")}>
                     {!cancelling ? (

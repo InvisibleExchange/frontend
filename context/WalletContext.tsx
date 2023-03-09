@@ -4,6 +4,7 @@ import {
   useState,
   Dispatch,
   SetStateAction,
+  useReducer,
 } from "react";
 
 import { BigNumber, ethers, utils } from "ethers";
@@ -17,7 +18,18 @@ import mewWallet from "@web3-onboard/mew-wallet";
 import tallyHoWalletModule from "@web3-onboard/tallyho";
 // import logo from "../public/img/zz.svg"
 
+const {
+  handleSwapResult,
+  handlePerpSwapResult,
+  SPOT_MARKET_IDS_2_TOKENS,
+  PERP_MARKET_IDS_2_TOKENS,
+  SYMBOLS_TO_IDS,
+  SPOT_MARKET_IDS,
+  PERP_MARKET_IDS,
+  fetchLiquidity,
+} = require("../app_logic/helpers/utils");
 const User = require("../app_logic/users/Invisibl3User").default;
+const { trimHash } = require("../app_logic/users/Notes");
 
 import {
   NETWORKS,
@@ -26,6 +38,7 @@ import {
   NETWORK,
 } from "../data/networks";
 import { ZZToken } from "../data/zzTypes";
+import { TradeType } from "../components/Trade/BookTrades/BookTrades";
 
 interface Props {
   children: React.ReactNode;
@@ -42,12 +55,20 @@ export type WalletContextType = {
 
   connect: () => void;
   disconnect: () => void;
-  login: () => void;
+  login: () => any;
+  initialize: () => void;
   switchNetwork: (network: number) => Promise<boolean>;
   updateWalletBalance: (tokenAddressList: string[]) => void;
 
   balances: TokenBalanceObject;
   allowances: TokenAllowanceObject;
+  liquidity: {
+    [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
+  };
+  perpLiquidity: {
+    [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
+  };
+  getMarkPrice: (token: number, isPerp: boolean) => any;
 
   setBalances: Dispatch<SetStateAction<TokenBalanceObject>>;
   setAllowances: Dispatch<SetStateAction<TokenAllowanceObject>>;
@@ -65,6 +86,7 @@ export const WalletContext = createContext<WalletContextType>({
   connect: () => {},
   disconnect: () => {},
   login: async () => {},
+  initialize: () => {},
   switchNetwork: async (network: number) => {
     return false;
   },
@@ -72,6 +94,9 @@ export const WalletContext = createContext<WalletContextType>({
 
   balances: {},
   allowances: {},
+  liquidity: {},
+  perpLiquidity: {},
+  getMarkPrice: (token: number, isPerp: boolean) => 0,
 
   setBalances: () => {},
   setAllowances: () => {},
@@ -126,6 +151,12 @@ const onboard = Onboard({
 });
 
 function WalletProvider({ children }: Props) {
+  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  function forceRerender() {
+    forceUpdate();
+  }
+
   const [user, setUser] = useState<typeof User | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [network, setNetwork] = useState<NetworkType | null>(
@@ -139,6 +170,12 @@ function WalletProvider({ children }: Props) {
 
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
+  const [liquidity, setLiquidity] = useState<{
+    [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
+  }>({});
+  const [perpLiquidity, setPerpLiquidity] = useState<{
+    [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
+  }>({});
 
   const walletsSub = onboard.state.select("wallets");
   walletsSub.subscribe((wallets) => {
@@ -150,7 +187,6 @@ function WalletProvider({ children }: Props) {
       JSON.stringify(connectedWallets)
     );
 
-    // console.log("wallets", wallets)
     const primaryAddress = wallets[0]?.accounts?.[0]?.address;
     const primaryChain = parseInt(wallets[0]?.chains?.[0].id, 16);
     if (
@@ -262,8 +298,6 @@ function WalletProvider({ children }: Props) {
   };
 
   const login = async () => {
-    console.log("login started");
-
     const { loginUser } = require("../app_logic/helpers/utils");
 
     let user_;
@@ -275,7 +309,143 @@ function WalletProvider({ children }: Props) {
 
     if (user_) {
       setUser(user_);
+      listenToWebSocket(user_);
+      return user_;
     }
+  };
+
+  const getMarkPrice = (token: number, isPerp: boolean) => {
+    let bidLiq, askLiq;
+    if (isPerp) {
+      if (!perpLiquidity[token]) return 0;
+
+      let { bidQueue, askQueue } = perpLiquidity[token];
+
+      bidLiq = bidQueue;
+      askLiq = askQueue;
+    } else {
+      if (!liquidity[token]) return 0;
+
+      let { bidQueue, askQueue } = liquidity[token];
+
+      bidLiq = bidQueue;
+      askLiq = askQueue;
+    }
+
+    let topBidPrice = bidLiq[0]?.price;
+    let topAskPrice = askLiq[0]?.price;
+
+    if (!topBidPrice || !topAskPrice) return 0;
+
+    let markPrice = (topBidPrice + topAskPrice) / 2;
+
+    return markPrice;
+  };
+
+  const initialize = async () => {
+    if (Object.keys(liquidity).length && Object.keys(perpLiquidity).length)
+      return;
+
+    let liquidity_: any = {};
+    let perpLiquidity_: any = {};
+
+    for (const [token, _] of Object.entries(SPOT_MARKET_IDS)) {
+      let { bidQueue, askQueue } = await fetchLiquidity(token, false);
+      liquidity_[token] = { bidQueue, askQueue };
+    }
+
+    for (const [token, _] of Object.entries(PERP_MARKET_IDS)) {
+      let { bidQueue, askQueue } = await fetchLiquidity(token, true);
+      perpLiquidity_[token] = { bidQueue, askQueue };
+    }
+
+    setLiquidity(liquidity_);
+    setPerpLiquidity(perpLiquidity_);
+
+    // forceRerender();
+  };
+
+  const listenToWebSocket = (user: any) => {
+    let W3CWebSocket = require("websocket").w3cwebsocket;
+    let client = new W3CWebSocket("ws://localhost:50053/");
+
+    client.onopen = function () {
+      client.send(trimHash(user.userId, 64));
+    };
+
+    client.onmessage = function (e: any) {
+      let msg = JSON.parse(e.data);
+
+      // 1.)
+      // "message_id": LIQUIDITY_UPDATE,
+      // "type": "perpetual"/"spot"
+      // "market":  11 / 12 / 21 / 22
+      // "ask_liquidity": [ [price, size, timestamp], [price, size, timestamp], ... ]
+      // "bid_liquidity": [ [price, size, timestamp], [price, size, timestamp], ... ]
+
+      // 2.)
+      // "message_id": "PERPETUAL_SWAP",
+      // "order_id": u64,
+      // "swap_response": responseObject,
+      // -> handlePerpSwapResult(user, responseObject)
+
+      // 3.)
+      // "message_id": "SWAP_RESULT",
+      // "order_id": u64,
+      // "swap_response": responseObject,
+      // -> handleSwapResult(user, responseObject)
+
+      switch (msg.message_id) {
+        case "LIQUIDITY_UPDATE":
+          let askQueue = msg.ask_liquidity.map((item: any) => {
+            return {
+              price: item[0],
+              amount: item[1],
+              timestamp: item[2],
+            };
+          });
+          let bidQueue = msg.bid_liquidity.map((item: any) => {
+            return {
+              price: item[0],
+              amount: item[1],
+              timestamp: item[2],
+            };
+          });
+
+          let pairLiquidity = { bidQueue, askQueue };
+
+          if (msg.type === "perpetual") {
+            let token = PERP_MARKET_IDS_2_TOKENS[msg.market];
+
+            let liq = perpLiquidity;
+            liq[token] = pairLiquidity;
+
+            setPerpLiquidity(liq);
+          } else {
+            let token = SPOT_MARKET_IDS_2_TOKENS[msg.market];
+
+            let liq = liquidity;
+            liq[token] = pairLiquidity;
+
+            setLiquidity(liq);
+          }
+
+          break;
+
+        case "SWAP_RESULT":
+          handleSwapResult(user, msg.order_id, msg.swap_response);
+          break;
+
+        case "PERPETUAL_SWAP":
+          handlePerpSwapResult(user, msg.order_id, msg.swap_response);
+          break;
+
+        default:
+          break;
+      }
+
+      forceRerender();
+    };
   };
 
   // TODO: store user in local storage
@@ -295,11 +465,16 @@ function WalletProvider({ children }: Props) {
         connect: connectWallet,
         disconnect: disconnectWallet,
         login: login,
+        initialize: initialize,
         switchNetwork: _switchNetwork,
         updateWalletBalance: updateWalletBalance,
 
         balances,
         allowances,
+
+        liquidity: liquidity,
+        perpLiquidity: perpLiquidity,
+        getMarkPrice: getMarkPrice,
 
         setBalances,
         setAllowances,

@@ -27,8 +27,14 @@ const ActionPanel = ({ perpType, token }) => {
           ))}
         </Tab.List>
         <Tab.Panels className="mt-2">
-          <LimitTabPanel perpType={perpType} token={token} />
-          <MarketTabPanel perpType={perpType} token={token} />
+          <LimitTabPanel
+            perpType={perpType}
+            token={token}
+          />
+          <MarketTabPanel
+            perpType={perpType}
+            token={token}
+          />
         </Tab.Panels>
       </Tab.Group>
     </div>

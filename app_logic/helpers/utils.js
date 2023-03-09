@@ -99,7 +99,15 @@ function checkViableSizeAfterIncrease(position, added_size, added_price) {
     (position.position_size + scaledSize);
 
   let leverage =
-    (position.position_size + scaledSize * avgEntryPrice) / position.margin;
+    ((position.position_size + scaledSize) * avgEntryPrice) / position.margin;
+
+  let multiplier =
+    10 **
+    (DECIMALS_PER_ASSET[position.synthetic_token] +
+      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
+      COLLATERAL_TOKEN_DECIMALS);
+
+  leverage = leverage / multiplier;
 
   return leverage <= maxLeverage;
 }
@@ -288,18 +296,28 @@ const PERP_MARKET_IDS = {
   54321: 22,
 };
 
+const SPOT_MARKET_IDS_2_TOKENS = {
+  11: 12345,
+  12: 54321,
+};
+
+const PERP_MARKET_IDS_2_TOKENS = {
+  21: 12345,
+  22: 54321,
+};
+
 /**
  * gets the order book entries for a given market
  * ## Params:
- * @param  symbol "BTCUSD"/"ETHUSD"
+ * @param  token
  * @param  isPerp if is perpetual market
  * ## Returns:
  * @return {} {bid_queue, ask_queue}  queue structure= [price, size, timestamp]
  */
-async function fetchLiquidity(symbol, isPerp) {
-  let marketId = isPerp ? PERP_MARKET_IDS[symbol] : SPOT_MARKET_IDS[symbol];
+async function fetchLiquidity(token, isPerp) {
+  let marketId = isPerp ? PERP_MARKET_IDS[token] : SPOT_MARKET_IDS[token];
 
-  await axios
+  return await axios
     .post("http://localhost:4000/get_liquidity", {
       market_id: marketId,
       is_perp: isPerp,
@@ -308,10 +326,10 @@ async function fetchLiquidity(symbol, isPerp) {
       let liquidity_response = res.data.response;
 
       if (liquidity_response.successful) {
-        let bid_queue = liquidity_response.bid_queue;
-        let ask_queue = liquidity_response.ask_queue;
+        let bidQueue = liquidity_response.bid_queue;
+        let askQueue = liquidity_response.ask_queue;
 
-        return { bid_queue, ask_queue };
+        return { bidQueue, askQueue };
       } else {
         let msg =
           "Getting liquidity failed with error: \n" +
@@ -363,7 +381,7 @@ async function fetchLiquidity(symbol, isPerp) {
  *          new_amount_filled: u64,
  *   }
  */
-function handleSwapResult(user, swap_response) {
+function handleSwapResult(user, orderId, swap_response) {
   //
 
   let swapNoteObject = swap_response.swap_note;
@@ -380,9 +398,7 @@ function handleSwapResult(user, swap_response) {
     user.pfrNotes.push(newPfrNote);
   }
 
-  let order_id = swap_response.order_id;
-
-  let idx = user.orders.findIndex((o) => o.order_id == order_id);
+  let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
   order.qty_left = order.qty_left - swap_response.swap_note.amount;
 
@@ -402,9 +418,10 @@ function handleSwapResult(user, swap_response) {
  *       position: PerpPosition/null,
  *       new_pfr_info: [Note, u64,u64]>/null,
  *       return_collateral_note: Note/null,
+ *       qty: u64,
  *    }
  */
-function handlePerpSwapResult(user, swap_response) {
+function handlePerpSwapResult(user, orderId, swap_response) {
   //
 
   // ? Save position data (if not null)
@@ -439,17 +456,15 @@ function handlePerpSwapResult(user, swap_response) {
     }
   }
 
-  let order_id = swap_response.order_id;
-
-  let idx = user.orders.findIndex((o) => o.order_id == order_id);
-  let order = user.orders[idx];
-  order.qty_left = order.qty_left - swap_response.swap_note.amount;
+  let idx = user.perpetualOrders.findIndex((o) => o.order_id == orderId);
+  let order = user.perpetualOrders[idx];
+  order.qty_left = order.qty_left - swap_response.qty;
 
   // TODO: lest then 000
   if (order.qty_left <= 0) {
-    user.orders.splice(idx, 1);
+    user.perpetualOrders.splice(idx, 1);
   } else {
-    user.orders[idx] = order;
+    user.perpetualOrders[idx] = order;
   }
 }
 
@@ -577,9 +592,12 @@ module.exports = {
   handlePerpSwapResult,
   handleNoteSplit,
   getActiveOrders,
+  fetchLiquidity,
   loginUser,
   SYMBOLS_TO_IDS,
   IDS_TO_SYMBOLS,
   PERP_MARKET_IDS,
   SPOT_MARKET_IDS,
+  SPOT_MARKET_IDS_2_TOKENS,
+  PERP_MARKET_IDS_2_TOKENS,
 };

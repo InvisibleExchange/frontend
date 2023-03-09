@@ -29,10 +29,13 @@ type props = {
 };
 
 const TradeForm = ({ type, perpType, token }: props) => {
-  const { user, userAddress, login, username, network, connect, disconnect } =
-    useContext(WalletContext);
+  let { user, userAddress, login, connect } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  let positionData =
+    user && user.userId ? user.positionData[SYMBOLS_TO_IDS[token]] : null;
+  positionData = positionData ? positionData[0] : null;
 
   const tradeType = useSelector(tradeTypeSelector);
 
@@ -47,6 +50,20 @@ const TradeForm = ({ type, perpType, token }: props) => {
           onClick={async () => {
             if (perpType == "perpetual") {
               try {
+                if (positionData && positionData.order_side == "Long") {
+                  if (
+                    // TODO: This should account for active orders as well
+                    !checkViableSizeAfterIncrease(
+                      positionData,
+                      baseAmount,
+                      price
+                    )
+                  ) {
+                    alert("Increase size too large for current margin");
+                    return;
+                  }
+                }
+
                 let expirationTimesamp = 1000;
                 let feeLimitPercent = 0.07;
 
@@ -54,7 +71,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
                   user,
                   "Long",
                   expirationTimesamp,
-                  "Open",
+                  positionData ? "Modify" : "Open",
                   SYMBOLS_TO_IDS[token],
                   baseAmount,
                   type == "market" ? null : price,
@@ -94,13 +111,26 @@ const TradeForm = ({ type, perpType, token }: props) => {
           onClick={async () => {
             if (perpType == "perpetual") {
               try {
+                if (positionData && positionData.order_side == "Short") {
+                  if (
+                    !checkViableSizeAfterIncrease(
+                      positionData,
+                      baseAmount,
+                      price
+                    )
+                  ) {
+                    alert("Increase size too large for current margin");
+                    return;
+                  }
+                }
+
                 let expirationTimesamp = 1000;
                 let feeLimitPercent = 0.07;
                 await sendPerpOrder(
                   user,
                   "Short",
                   expirationTimesamp,
-                  "Open",
+                  positionData ? "Modify" : "Open",
                   SYMBOLS_TO_IDS[token],
                   baseAmount,
                   type == "market" ? null : price,
@@ -154,10 +184,8 @@ const TradeForm = ({ type, perpType, token }: props) => {
     return (
       <div>
         {isLoading ? (
-          <div className="row">
-            <div className=" col-3  mt-14 ml-32 mr-32">
-              <LoadingSpinner />
-            </div>
+          <div className="mt-14 ml-32 mr-32">
+            <LoadingSpinner />
           </div>
         ) : (
           <button
@@ -165,7 +193,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
             onClick={async () => {
               try {
                 setIsLoading(true);
-                await login();
+                user = await login();
                 setIsLoading(false);
               } catch (error) {
                 console.log(error);
@@ -200,10 +228,8 @@ const TradeForm = ({ type, perpType, token }: props) => {
     if (perpType == "perpetual") {
       if (baseAmount) {
         let nominalValue = baseAmount * price;
+
         let initMargin = nominalValue / leverage;
-
-        // ! check that initMargin is not greater than maxLeverage
-
         setQuoteAmount(Number(initMargin.toFixed(3)));
       }
     } else {
@@ -216,26 +242,29 @@ const TradeForm = ({ type, perpType, token }: props) => {
   const handleBaseAmountChange = (e: any) => {
     if (!e.target.value) {
       setBaseAmount(null);
-      setLeverage(20);
+      setMaxLeverage(MAX_LEVERAGE);
       return;
     }
 
-    let baseAmount = Number(Number(e.target.value).toFixed(3));
+    let baseAmount_ = Number(Number(e.target.value).toFixed(3));
 
-    setBaseAmount(baseAmount);
+    setBaseAmount(baseAmount_);
     if (perpType == "perpetual") {
       if (price) {
-        let nominalValue = baseAmount * price;
+        let nominalValue = baseAmount_ * price;
         let initMargin = nominalValue / leverage;
 
         setQuoteAmount(Number(initMargin.toFixed(3)));
       }
 
-      let max_leverage = get_max_leverage(SYMBOLS_TO_IDS[token], baseAmount);
+      let max_leverage = get_max_leverage(SYMBOLS_TO_IDS[token], baseAmount_);
       setMaxLeverage(Number(max_leverage.toFixed(1)));
+      if (leverage > max_leverage) {
+        setLeverage(Number(max_leverage.toFixed(1)));
+      }
     } else {
       if (price) {
-        let quoteAmount = baseAmount * price;
+        let quoteAmount = baseAmount_ * price;
         setQuoteAmount(Number(quoteAmount.toFixed(3)));
       }
     }
@@ -302,7 +331,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
       {/* Base input ====================================== */}
       <div className="relative mt-6">
         <input
-          name="price"
+          name="amount"
           className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
           type="number"
           step={0.01}
@@ -328,50 +357,56 @@ const TradeForm = ({ type, perpType, token }: props) => {
         </div>
       ) : null}
       {/* Quote input ====================================== */}
-      <div className="relative mt-5">
-        <input
-          name="price"
-          className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
-          placeholder={perpType != "perpetual" ? "Total" : "Initial Margin"}
-          type="number"
-          step={0.01}
-          value={quoteAmount?.toString()}
-          onChange={handleQuoteAmountChange}
-        />
-        <div className="absolute top-0 right-0 w-16 px-3 py-1.5 text-base font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
-          USDC
-        </div>
-      </div>
-      {/* Available collateral ====================================== */}
-      <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
-        <p className="text-[12px]">Available balance</p>
-        <p>
-          {user && user.userId
-            ? user.getAvailableAmount(COLLATERAL_TOKEN) /
-              10 ** COLLATERAL_TOKEN_DECIMALS
-            : 0}{" "}
-          USDC
-        </p>
-      </div>
-      {/* Slider ====================================== */}
-      <div className="mx-2 mt-12">
-        {tradeType.name === "Perpetual" ? (
-          <TooltipPerpetualSlider
-            tipFormatter={percentFormatter}
-            tipProps={{ overlayClassName: "foo" }}
-            maxLeverage={maxLeverage}
-            onChange={handleSliderChange}
+      {perpType == "perpetual" && !!positionData ? null : (
+        <div className="relative mt-5">
+          <input
+            name="price"
+            className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
+            placeholder={perpType != "perpetual" ? "Total" : "Initial Margin"}
+            type="number"
+            step={0.01}
+            value={quoteAmount?.toString()}
+            onChange={handleQuoteAmountChange}
           />
-        ) : (
-          <div>
-            <TooltipSpotSlider
+          <div className="absolute top-0 right-0 w-16 px-3 py-1.5 text-base font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
+            USDC
+          </div>
+        </div>
+      )}
+      {/* Available collateral ====================================== */}
+      {perpType == "perpetual" && !!positionData ? null : (
+        <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
+          <p className="text-[12px]">Available balance</p>
+          <p>
+            {user && user.userId
+              ? user.getAvailableAmount(COLLATERAL_TOKEN) /
+                10 ** COLLATERAL_TOKEN_DECIMALS
+              : 0}{" "}
+            USDC
+          </p>
+        </div>
+      )}
+      {/* Slider ====================================== */}
+      {perpType == "perpetual" && !!positionData ? null : (
+        <div className="mx-2 mt-12">
+          {tradeType.name === "Perpetual" ? (
+            <TooltipPerpetualSlider
               tipFormatter={percentFormatter}
               tipProps={{ overlayClassName: "foo" }}
-              onChange={console.log}
+              maxLeverage={maxLeverage}
+              onChange={handleSliderChange}
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <div>
+              <TooltipSpotSlider
+                tipFormatter={percentFormatter}
+                tipProps={{ overlayClassName: "foo" }}
+                onChange={console.log}
+              />
+            </div>
+          )}
+        </div>
+      )}
       {/* Submit button ====================================== */}
       {userAddress
         ? user && user.userId
@@ -381,7 +416,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
       {/* Fee ====================================== */}
       <div className="flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
         <p className="font-light text-[12px]">Protocol fee</p>
-        <p>{type === "market" ? "0.05%" : "0.00%"}</p>
+        <p>{"0.00%-0.05%"}</p>
       </div>
     </div>
   );

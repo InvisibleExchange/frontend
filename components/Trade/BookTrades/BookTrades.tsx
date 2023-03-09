@@ -3,37 +3,57 @@ import { WalletContext } from "../../../context/WalletContext";
 import Book from "./Book/Book";
 import Trades from "./Trades/Trades";
 
+const {
+  fetchLiquidity,
+  SYMBOLS_TO_IDS,
+} = require("../../../app_logic/helpers/utils");
+
 export type TradeType = {
-  size: number;
-  side: "buy" | "sell";
+  amount: number;
   price: number;
-  time: number;
+  timestamp: number;
 };
 
-export default function BookTrades() {
-  const { network } = useContext(WalletContext);
+interface Props {
+  token: string;
+  type: "perpetual" | "spot";
+}
 
-  const [tab, setTab] = useState<"Book" | "Trades">("Book");
+export default function BookTrades({ token, type }: Props) {
+  const { liquidity, perpLiquidity } = useContext(WalletContext);
 
-  const [ws, setWs] = useState<WebSocket>();
-  const [trades, setTrades] = useState<TradeType[]>([]);
+  const [initBq, setInitBq] = useState([]);
+  const [initAq, setInitAq] = useState([]);
 
-  let element;
-  switch (tab) {
-    case "Book":
-      element = <Book />;
-      break;
-    case "Trades":
-      element = <Trades trades={trades} />;
-      break;
-    default:
-      break;
-  }
+  let LIQ =
+    type == "spot"
+      ? liquidity[SYMBOLS_TO_IDS[token]]
+      : perpLiquidity[SYMBOLS_TO_IDS[token]];
+
+  let bidQueue = LIQ ? LIQ.bidQueue : [];
+  let askQueue = LIQ ? LIQ.askQueue : [];
+  useEffect(() => {
+    const getLiquidity = async () => {
+      let { bidQueue: bq, askQueue: aq } = await fetchLiquidity(
+        SYMBOLS_TO_IDS[token],
+        type == "spot" ? false : true
+      );
+
+      setInitBq(bq);
+      setInitAq(aq);
+    };
+
+    getLiquidity();
+  }, [token, type]);
 
   return (
     <div className="w-full h-[70vh]">
-      <Book />
-      <Trades trades={trades} />
+      <Book
+        token={token}
+        bidQueue={bidQueue && bidQueue.length > 0 ? bidQueue : initBq}
+        askQueue={askQueue && askQueue.length > 0 ? askQueue : initAq}
+      />
+      <Trades token={token} type={type} />
     </div>
   );
 }

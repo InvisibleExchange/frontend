@@ -17,7 +17,7 @@ class PerpOrder {
     close_order_fields
   ) {
     this.expiration_timestamp = expiration_timestamp;
-    this.position = position;
+    this.position = { ...position };
     this.position_effect_type = position_effect_type;
     this.order_side = order_side;
     this.synthetic_token = synthetic_token;

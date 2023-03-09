@@ -17,22 +17,24 @@ const marketList = [
   },
 ];
 
-export default function TradeActions() {
-  const [currentMarket, setCurrentMarket] = useState<any>(marketList[0]);
-  const [type, setType] = useState<any>("perpetual");
-
+export default function TradeActions({
+  setGlobalMarket,
+  globalMarket,
+  setGlobalType,
+  globalType,
+}: any) {
   return (
     <div className="flex flex-col border rounded-sm border-border_color">
       <PairSelector
-        setCurrentMarketParent={setCurrentMarket}
-        setType={setType}
+        setCurrentMarketParent={setGlobalMarket}
+        setType={setGlobalType}
       />
       <ActionPanel
-        perpType={type}
+        perpType={globalType}
         token={
-          type == "perpetual"
-            ? currentMarket.perpetual.split("-")[0]
-            : currentMarket.pairs.split("/")[0]
+          globalType == "perpetual"
+            ? globalMarket.perpetual.split("-")[0]
+            : globalMarket.pairs.split("/")[0]
         }
       />
     </div>

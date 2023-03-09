@@ -85,7 +85,11 @@
   /* --onboard-wallet-button-box-shadow: red; */
   --onboard-wallet-button-box-shadow-hover: lime;
   --onboard-wallet-app-icon-border-color: var(--fg_below_color);
+
+
+  
 }
+
 
 @media (prefers-color-scheme: dark) {
   :root {

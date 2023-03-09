@@ -30,7 +30,11 @@ const marketList = [
   },
 ];
 
-export default function PairSelector({ setCurrentMarketParent, setType }) {
+export default function PairSelector({
+  setCurrentMarketParent,
+
+  setType,
+}) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [currentMarket, setCurrentMarket] = useState<any>(marketList[0]);
 

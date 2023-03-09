@@ -10,6 +10,8 @@ const {
   deleteDoc,
   where,
   query,
+  orderBy,
+  limit,
 } = require("firebase/firestore");
 const bigInt = require("big-integer");
 
@@ -542,12 +544,23 @@ async function fetchUserFills(user_id_) {
 /**
  * @param {} n number of fills to fetch
  */
-async function fetchLatestFills(n) {
-  const q = query(
-    collection(db, `fills`),
-    orderBy("timestamp", "desc"),
-    limit(n)
-  );
+async function fetchLatestFills(n, isPerp, token) {
+  let q;
+  if (isPerp) {
+    q = query(
+      collection(db, "perp_fills"),
+      where("synthetic_token", "==", token),
+      orderBy("timestamp", "desc"),
+      limit(n)
+    );
+  } else {
+    q = query(
+      collection(db, `fills`),
+      where("base_token", "==", token),
+      orderBy("timestamp", "desc"),
+      limit(n)
+    );
+  }
 
   const querySnapshot = await getDocs(q);
   let fills = querySnapshot.docs.map((doc) => doc.data());

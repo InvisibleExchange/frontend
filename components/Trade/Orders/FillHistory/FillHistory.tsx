@@ -28,8 +28,11 @@ const FillHistory = () => {
 
       {user && user.userId
         ? user.fills.map((fill: any) => {
-            let id = fill.time + Math.round(Math.random() * 1000);
+            let id = fill.time + fill.base_token;
 
+            let color = fill.side == "Buy" ? "text-green_lighter" : "text-red";
+
+            const timestamp = new Date(fill.time * 1000);
             return (
               <tbody key={id}>
                 <tr
@@ -37,7 +40,12 @@ const FillHistory = () => {
                     "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
                   )}
                 >
-                  <td className="py-2.5 pl-5 font-medium  flex items-center gap-3">
+                  <td
+                    className={classNames(
+                      "py-2.5 pl-5 font-medium  flex items-center gap-3 " +
+                        color
+                    )}
+                  >
                     {fill.isPerp
                       ? IDS_TO_SYMBOLS[fill.base_token].toString() + "-PERP"
                       : IDS_TO_SYMBOLS[fill.base_token].toString() + "/USDC"}
@@ -46,19 +54,27 @@ const FillHistory = () => {
                     {fill.side}
                   </td>
                   <td className={classNames("pr-3 font-medium text-left")}>
-                    {fill.amount / 10 ** DECIMALS_PER_ASSET[fill.base_token]}{" "}
+                    {(
+                      fill.amount /
+                      10 ** DECIMALS_PER_ASSET[fill.base_token]
+                    ).toFixed(3)}{" "}
                     {IDS_TO_SYMBOLS[fill.base_token]}
                   </td>
                   <td className={classNames("pr-3 font-medium text-left")}>
-                    {fill.price /
-                      10 ** PRICE_DECIMALS_PER_ASSET[fill.base_token]}{" "}
+                    {(
+                      fill.price /
+                      10 ** PRICE_DECIMALS_PER_ASSET[fill.base_token]
+                    ).toFixed(2)}{" "}
                     USD
                   </td>
                   <td className="pr-3 font-medium text-left">
                     {fill.isPerp ? "PERPETUAL" : "SPOT"}
                   </td>
-                  <td className={classNames("pr-3 font-medium text-left")}>
-                    {fill.time} format!
+                  <td className={classNames("pr-3 font-medium ")}>
+                    <p>{timestamp.toLocaleDateString()}</p>
+                    <p className="text-[12px]">
+                      {timestamp.toLocaleTimeString()}
+                    </p>
                   </td>
                 </tr>
               </tbody>
