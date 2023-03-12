@@ -1,10 +1,6 @@
 const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note } = require("../users/Notes");
-const {
-  storeNewNote,
-  removeNoteFromDb,
-} = require("./firebase/firebaseConnection");
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -112,6 +108,28 @@ function checkViableSizeAfterIncrease(position, added_size, added_price) {
   return leverage <= maxLeverage;
 }
 
+function checkViableSizeAfterFlip(position, added_size, added_price) {
+  let new_size =
+    added_size * 10 ** DECIMALS_PER_ASSET[position.synthetic_token] -
+    position.position_size;
+  const maxLeverage = get_max_leverage(position.synthetic_token, new_size);
+
+  let scaledPrice =
+    added_price * 10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+
+  let leverage = (new_size * scaledPrice) / position.margin;
+
+  let multiplier =
+    10 **
+    (DECIMALS_PER_ASSET[position.synthetic_token] +
+      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
+      COLLATERAL_TOKEN_DECIMALS);
+
+  leverage = leverage / multiplier;
+
+  return leverage <= maxLeverage;
+}
+
 /// Things we keep track of
 /// Index prices
 /// Orderbooks
@@ -131,9 +149,10 @@ function _getBankruptcyPrice(
   const multiplier1 = 10 ** decConversion1;
 
   if (orderSide == "Long" || orderSide == 0) {
-    return entryPrice - (margin * multiplier1) / size;
+    return Math.floor(entryPrice) - Math.floor((margin * multiplier1) / size);
   } else {
-    const bp = entryPrice + (margin * multiplier1) / size;
+    const bp =
+      Math.floor(entryPrice) + Math.floor((margin * multiplier1) / size);
     return bp;
   }
 }
@@ -148,9 +167,9 @@ function _getLiquidationPrice(entryPrice, bankruptcyPrice, orderSide) {
 
   // liquidation price is 2% above/below the bankruptcy price
   if (orderSide == "Long" || orderSide == 0) {
-    return bankruptcyPrice + (mm_rate * entryPrice) / 100;
+    return bankruptcyPrice + Math.floor((mm_rate * entryPrice) / 100);
   } else {
-    return bankruptcyPrice - (mm_rate * entryPrice) / 100;
+    return bankruptcyPrice - Math.floor((mm_rate * entryPrice) / 100);
   }
 }
 
@@ -398,6 +417,11 @@ function handleSwapResult(user, orderId, swap_response) {
     user.pfrNotes.push(newPfrNote);
   }
 
+  if (user.refundNotes[orderId]) {
+    user.noteData[COLLATERAL_TOKEN].push(user.refundNotes[orderId]);
+    user.refundNotes[orderId] = null;
+  }
+
   let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
   order.qty_left = order.qty_left - swap_response.swap_note.amount;
@@ -427,11 +451,8 @@ function handlePerpSwapResult(user, orderId, swap_response) {
   // ? Save position data (if not null)
   let position = swap_response.position;
   if (position) {
-    if (user.positionData[position.token]) {
-      user.positionData[position.token].push(position);
-    } else {
-      user.positionData[position.token] = [position];
-    }
+    user.positionData[position.synthetic_token] = [position];
+    console.log("position saved: ", user.positionData);
   }
 
   // ? Save partiall fill note (if not null)
@@ -456,15 +477,29 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     }
   }
 
+  console.log(user.refundNotes);
+  if (user.refundNotes[orderId]) {
+    user.noteData[COLLATERAL_TOKEN].push(user.refundNotes[orderId]);
+    user.refundNotes[orderId] = null;
+
+    console.log("noteData in update: ", user.noteData);
+  } else {
+    console.log("refund note not found");
+    user.refundNotes[orderId] = true;
+  }
+
   let idx = user.perpetualOrders.findIndex((o) => o.order_id == orderId);
   let order = user.perpetualOrders[idx];
-  order.qty_left = order.qty_left - swap_response.qty;
 
-  // TODO: lest then 000
-  if (order.qty_left <= 0) {
-    user.perpetualOrders.splice(idx, 1);
-  } else {
-    user.perpetualOrders[idx] = order;
+  if (order) {
+    order.qty_left = order.qty_left - swap_response.qty;
+
+    // TODO: lest then 000
+    if (order.qty_left <= 0) {
+      user.perpetualOrders.splice(idx, 1);
+    } else {
+      user.perpetualOrders[idx] = order;
+    }
   }
 }
 
@@ -477,26 +512,31 @@ function handleNoteSplit(user, zero_idxs, notesIn, notesOut) {
   //
 
   for (const noteIn of notesIn) {
-    user.noteData[noteIn.token].filter((n) => n.index != noteIn.index);
+    user.noteData[noteIn.token] = user.noteData[noteIn.token].filter(
+      (n) => n.index != noteIn.index
+    );
   }
 
   if (notesIn.length > notesOut.length) {
     for (let i = notesOut.length; i < notesIn.length; i++) {
       let note = notesIn[i];
-      removeNoteFromDb(note);
+      // removeNoteFromDb(note);
+      user.noteData[note.token] = user.noteData[note.token].filter(
+        (n) => n.index != note.index
+      );
     }
 
     for (let i = 0; i < zero_idxs.length; i++) {
       let note = notesOut[i];
       note.index = zero_idxs[i];
-      storeNewNote(note);
+      // storeNewNote(note);
       user.noteData[note.token].push(note);
     }
   } else {
     for (let i = 0; i < zero_idxs.length; i++) {
       let note = notesOut[i];
       note.index = zero_idxs[i];
-      storeNewNote(note);
+      // storeNewNote(note);
       user.noteData[note.token].push(note);
     }
   }
@@ -586,6 +626,7 @@ module.exports = {
   calulateLiqPriceInDecreaseSize,
   calulateLiqPriceInFlipSide,
   checkViableSizeAfterIncrease,
+  checkViableSizeAfterFlip,
   getCurrentLeverage,
   averageEntryPrice,
   handleSwapResult,
@@ -600,4 +641,6 @@ module.exports = {
   SPOT_MARKET_IDS,
   SPOT_MARKET_IDS_2_TOKENS,
   PERP_MARKET_IDS_2_TOKENS,
+  _getBankruptcyPrice,
+  _getLiquidationPrice,
 };

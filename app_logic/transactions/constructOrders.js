@@ -2,29 +2,24 @@ const { checkPerpOrderValidity } = require("../helpers/orderHelpers");
 const { trimHash, Note } = require("../users/Notes");
 
 const axios = require("axios");
-const {
-  storeOrderId,
-  storeNewNote,
-  removeNoteFromDb,
-} = require("../helpers/firebase/firebaseConnection");
+const { storeOrderId } = require("../helpers/firebase/firebaseConnection");
 const {
   COLLATERAL_TOKEN,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   handleNoteSplit,
+  _getBankruptcyPrice,
+  _getLiquidationPrice,
 } = require("../helpers/utils");
-const {
-  submit_perpetual_order,
-  execute_deposit,
-  execute_withdrawal,
-  submit_limit_order,
-} = require("../helpers/grpcConnection");
+const { computeHashOnElements } = require("../helpers/pedersen");
 
 // const path = require("path");
 // require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const EXPRESS_APP_URL = "http://localhost:4000"; // process.env.EXPRESS_APP_URL;
+
+// TODO: Remove notes only after order is confirmed
 
 /**
  * This constructs a spot swap and sends it to the backend
@@ -148,6 +143,17 @@ async function sendSpotOrder(
           refund_note: limitOrder.refund_note,
         };
 
+        if (orderData.notes_in.length > 0) {
+          for (let note of orderData.notes_in) {
+            user.noteData[note.token] = user.noteData[note.token].filter(
+              (n) => n.index != note.index
+            );
+          }
+        }
+        if (orderData.refund_note) {
+          user.refundNotes[order_response.order_id] = orderData.refund_note;
+        }
+
         user.orders.push(orderData);
       } else {
         let msg =
@@ -225,7 +231,6 @@ async function sendPerpOrder(
     feeLimit
   );
 
-
   let { perpOrder, pfrKey } = user.makePerpetualOrder(
     expirationTimestamp,
     position_effect_type,
@@ -239,12 +244,11 @@ async function sendPerpOrder(
     initial_margin
   );
 
-
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
 
-  console.log(orderJson);
+  console.log("Sending order to backend: ", orderJson);
 
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
@@ -285,6 +289,33 @@ async function sendPerpOrder(
               : 0,
         };
 
+        if (orderData.notes_in.length > 0) {
+          for (let note of orderData.notes_in) {
+            user.noteData[note.token] = user.noteData[note.token].filter(
+              (n) => n.index != note.index
+            );
+          }
+        }
+
+        // ? Add the refund note
+        if (orderData.refund_note) {
+          if (user.refundNotes[order_response.order_id]) {
+            // If this is a market order then we can add the refund note immediately
+            user.noteData[orderData.refund_note.token].push(
+              orderData.refund_note
+            );
+
+            console.log("user.noteData after order id", user.noteData);
+          } else {
+            // If this is a limit order then we need to wait for the order to be filled
+            // (untill we receive a response through the websocket)
+
+            user.refundNotes[order_response.order_id] = orderData.refund_note;
+
+            console.log("user.refundNotes after order id", user.refundNotes);
+          }
+        }
+
         user.perpetualOrders.push(orderData);
       } else {
         let msg =
@@ -294,6 +325,8 @@ async function sendPerpOrder(
         throw new Error(msg);
       }
     });
+
+  console.log("user.refundNotes", user.refundNotes);
 }
 
 async function sendLiquidationOrder(user, expirationTime, position) {
@@ -364,10 +397,32 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
         console.log("Order canceled successfuly!");
 
         if (isPerp) {
+          for (let i = 0; i < user.perpetualOrders.length; i++) {
+            let ord = user.perpetualOrders[i];
+            if (ord.order_id == orderId) {
+              let notes_in = ord.notes_in;
+              if (notes_in.length > 0) {
+                for (let note of notes_in) {
+                  user.noteData[note.token].push(note);
+                }
+              }
+            }
+          }
+
           user.perpetualOrders = user.perpetualOrders.filter(
             (o) => o.order_id != orderId
           );
         } else {
+          let ord = user.orders[i];
+          if (ord.orderId == orderId) {
+            let notes_in = ord.notes_in;
+            if (notes_in.length > 0) {
+              for (let note of notes_in) {
+                user.noteData[note.token].push(note);
+              }
+            }
+          }
+
           user.orders = user.orders.filter((o) => o.order_id != orderId);
         }
 
@@ -395,8 +450,6 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
 
   let deposit = user.makeDepositOrder(depositId, amount, token, pubKey);
 
-  console.log("deposit: ", deposit.toGrpcObject());
-
   await axios
     .post(`${EXPRESS_APP_URL}/execute_deposit`, deposit.toGrpcObject())
     .then((res) => {
@@ -408,7 +461,7 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
           const idx = zero_idxs[i];
           let note = deposit.notes[i];
           note.index = idx;
-          storeNewNote(note);
+          // storeNewNote(note)
 
           if (!user.noteData[note.token]) {
             user.noteData[note.token] = [note];
@@ -447,7 +500,10 @@ async function sendWithdrawal(user, amount, token, starkKey) {
 
         for (let i = 0; i < withdrawal.notes_in.length; i++) {
           let note = withdrawal.notes_in[i];
-          removeNoteFromDb(note);
+          user.noteData[note.token] = user.noteData[note.token].filter(
+            (n) => n.index != note.index
+          );
+          // removeNoteFromDb(note);
         }
       } else {
         let msg =
@@ -513,7 +569,7 @@ async function sendChangeMargin(
 ) {
   let margin_change = amount * 10 ** COLLATERAL_TOKEN_DECIMALS;
 
-  //todo:  if (direction == "decrease" && margin_change >= MARGIN_LEFT?) {}
+  //todo: if (direction == "decrease" && margin_change >= MARGIN_LEFT?) {}
   let { notes_in, refund_note, close_order_fields, position, signature } =
     user.changeMargin(
       positionAddress,
@@ -531,26 +587,32 @@ async function sendChangeMargin(
     close_order_fields: close_order_fields
       ? close_order_fields.toGrpcObject()
       : null,
-    position,
+    position: {
+      ...position,
+      order_side: position.order_side == "Long" ? 0 : 1,
+    },
     signature: {
       r: signature[0].toString(),
       s: signature[1].toString(),
     },
   };
 
+  console.log("noteData1: ", user.noteData);
   await axios
     .post(`${EXPRESS_APP_URL}/change_position_margin`, marginChangeMessage)
     .then((res) => {
       let marginChangeResponse = res.data.response;
       if (marginChangeResponse.successful) {
         if (direction == "Add") {
-          if (refund_note) {
-            storeNewNote(refund_note);
-          } else {
-            removeNoteFromDb(notes_in[0]);
+          for (let i = 0; i < notes_in.length; i++) {
+            let note = notes_in[i];
+            user.noteData[note.token] = user.noteData[note.token].filter(
+              (n) => n.index != note.index
+            );
           }
-          for (let i = 1; i < notes_in.length; i++) {
-            removeNoteFromDb(notes_in[i]);
+
+          if (refund_note) {
+            user.noteData[refund_note.token].push(refund_note);
           }
         } else {
           // dest_received_address: any, dest_received_blinding
@@ -561,7 +623,7 @@ async function sendChangeMargin(
             close_order_fields.dest_received_blinding,
             marginChangeResponse.return_collateral_index
           );
-          storeNewNote(returnCollateralNote);
+          // storeNewNote(returnCollateralNote);
           user.noteData[position.collateral_token].push(returnCollateralNote);
         }
 
@@ -571,6 +633,37 @@ async function sendChangeMargin(
         ].map((pos) => {
           if (pos.position_address == positionAddress) {
             pos.margin += direction == "Add" ? margin_change : -margin_change;
+
+            let bankruptcyPrice = _getBankruptcyPrice(
+              pos.entry_price,
+              pos.margin,
+              pos.position_size,
+              pos.order_side,
+              pos.synthetic_token
+            );
+
+            let liquidationPrice = _getLiquidationPrice(
+              pos.entry_price,
+              bankruptcyPrice,
+              pos.order_side
+            );
+
+            pos.bankruptcy_price = bankruptcyPrice;
+            pos.liquidation_price = liquidationPrice;
+
+            let hash = computeHashOnElements([
+              pos.order_side == "Long" ? 0 : 1,
+              pos.synthetic_token,
+              pos.position_size,
+              pos.entry_price,
+              pos.liquidation_price,
+              pos.position_address,
+              pos.last_funding_idx,
+            ]);
+
+            pos.hash = hash.toString();
+
+            console.log("pos: ", pos);
 
             return pos;
           } else {
@@ -584,6 +677,8 @@ async function sendChangeMargin(
         console.log(msg);
       }
     });
+
+  console.log("noteData2: ", user.noteData);
 }
 
 module.exports = {
@@ -596,3 +691,8 @@ module.exports = {
   sendChangeMargin,
   sendLiquidationOrder,
 };
+
+// // ========================
+
+// verify order signature: Some(1270017260089270687516297300848751004819581302746661782522231060681891660987) 3152498791076882037386150199679937572287600013373858450152118028363863484736  false
+// ERROR: Some("Invalid signature: r:\"672489961620869661533783067566567890964653373859868190397942575525995918575\" s:\"630460561905133549657111467315905963820137638510173938977707964503224628123\"")

@@ -35,6 +35,7 @@ class PerpOrder {
 
   hashOrder() {
     let order_side;
+
     switch (this.order_side) {
       case "Long":
         order_side = 0n;

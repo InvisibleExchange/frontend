@@ -61,10 +61,10 @@ class Note {
 
     return new Note(
       address,
-      BigInt(noteObject.token),
-      BigInt(noteObject.amount),
+      noteObject.token,
+      noteObject.amount,
       BigInt(noteObject.blinding),
-      BigInt(noteObject.index)
+      noteObject.index
     );
   }
 }

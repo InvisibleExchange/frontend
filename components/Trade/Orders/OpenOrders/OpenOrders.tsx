@@ -18,7 +18,7 @@ const {
 } = require("../../../../app_logic/transactions/constructOrders");
 
 const OpenOrders = () => {
-  const { user } = useContext(WalletContext);
+  const { user, forceRerender } = useContext(WalletContext);
 
   let [cancelling, setCancelling] = React.useState(false);
 
@@ -129,6 +129,7 @@ const OpenOrders = () => {
                             false,
                             order.base_asset
                           );
+                          forceRerender();
                         }}
                       >
                         <FaTrashAlt color="#C83131" size={20} />
@@ -229,6 +230,7 @@ const OpenOrders = () => {
                             true,
                             order.synthetic_token
                           );
+                          forceRerender();
                         }}
                       >
                         <FaTrashAlt color="#C83131" size={20} />

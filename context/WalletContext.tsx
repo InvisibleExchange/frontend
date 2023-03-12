@@ -52,6 +52,7 @@ export type WalletContextType = {
   ethersProvider: ethers.providers.BaseProvider;
   network: NetworkType | null;
   isLoading: boolean;
+  forceRerender: () => void;
 
   connect: () => void;
   disconnect: () => void;
@@ -82,6 +83,7 @@ export const WalletContext = createContext<WalletContextType>({
   ethersProvider: _getDefaultProvider(),
   network: _getDefaultNetwork(),
   isLoading: false,
+  forceRerender: () => {},
 
   connect: () => {},
   disconnect: () => {},
@@ -433,10 +435,12 @@ function WalletProvider({ children }: Props) {
           break;
 
         case "SWAP_RESULT":
+          console.log("msg", msg);
           handleSwapResult(user, msg.order_id, msg.swap_response);
           break;
 
         case "PERPETUAL_SWAP":
+          console.log("msg", msg);
           handlePerpSwapResult(user, msg.order_id, msg.swap_response);
           break;
 
@@ -461,6 +465,7 @@ function WalletProvider({ children }: Props) {
         ethersProvider: ethersProvider,
         network: network,
         isLoading: isLoading,
+        forceRerender: forceRerender,
 
         connect: connectWallet,
         disconnect: disconnectWallet,

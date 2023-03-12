@@ -15,6 +15,7 @@ const {
   MAX_LEVERAGE,
   COLLATERAL_TOKEN,
   checkViableSizeAfterIncrease,
+  checkViableSizeAfterFlip,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -29,13 +30,15 @@ type props = {
 };
 
 const TradeForm = ({ type, perpType, token }: props) => {
-  let { user, userAddress, login, connect } = useContext(WalletContext);
+  let { user, userAddress, login, connect, forceRerender } =
+    useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   let positionData =
     user && user.userId ? user.positionData[SYMBOLS_TO_IDS[token]] : null;
   positionData = positionData ? positionData[0] : null;
+  // console.log("positionData", positionData);
 
   const tradeType = useSelector(tradeTypeSelector);
 
@@ -48,8 +51,14 @@ const TradeForm = ({ type, perpType, token }: props) => {
       <div className="flex items-center gap-2 mt-14">
         <button
           onClick={async () => {
+            if (!user || !baseAmount) {
+              alert("Choose an amount to trade");
+              return;
+            }
+
             if (perpType == "perpetual") {
               try {
+                //
                 if (positionData && positionData.order_side == "Long") {
                   if (
                     // TODO: This should account for active orders as well
@@ -63,6 +72,23 @@ const TradeForm = ({ type, perpType, token }: props) => {
                     return;
                   }
                 }
+
+                if (positionData && positionData.order_side == "Short") {
+                  if (
+                    baseAmount * 10 ** DECIMALS_PER_ASSET[token] >
+                    positionData.position_size
+                  ) {
+                    if (
+                      // TODO: This should account for active orders as well
+                      !checkViableSizeAfterFlip(positionData, baseAmount, price)
+                    ) {
+                      alert("Increase size too large for current margin");
+                      return;
+                    }
+                  }
+                }
+
+                //
 
                 let expirationTimesamp = 1000;
                 let feeLimitPercent = 0.07;
@@ -102,6 +128,8 @@ const TradeForm = ({ type, perpType, token }: props) => {
                 alert("Error: " + error);
               }
             }
+
+            forceRerender();
           }}
           className="w-full py-2 uppercase rounded-md bg-green_lighter shadow-green font-overpass hover:shadow-green_dark hover:opacity-90"
         >
@@ -161,6 +189,8 @@ const TradeForm = ({ type, perpType, token }: props) => {
                 alert("Error: " + error);
               }
             }
+
+            forceRerender();
           }}
           className="w-full py-2 uppercase rounded-md bg-red_lighter shadow-red font-overpass hover:shadow-red_dark hover:opacity-90"
         >
@@ -195,6 +225,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
                 setIsLoading(true);
                 user = await login();
                 setIsLoading(false);
+                forceRerender();
               } catch (error) {
                 console.log(error);
               }
@@ -423,3 +454,5 @@ const TradeForm = ({ type, perpType, token }: props) => {
 };
 
 export default TradeForm;
+
+// HELPERS ================================================================================================

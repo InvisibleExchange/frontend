@@ -103,6 +103,8 @@ export default class User {
     this.positionData = {};
     this.positionPrivKeys = {}; // Maps {posAddress: privKey}
     //
+    this.refundNotes = {}; // {orderId: refundNote}
+    //
     this.pfrKeys = {}; // Maps {orderId: pfrPrivKey}
     this.fills = []; // [{base_token, amount, price, side, time, isPerp}]
   }
@@ -114,8 +116,8 @@ export default class User {
     if (!this.noteData[token]) {
       return 0;
     }
-    for (let x of this.noteData[token]) {
-      sum += x.amount;
+    for (let n of this.noteData[token]) {
+      sum += n.amount;
     }
 
     return sum;
@@ -291,6 +293,7 @@ export default class User {
       // ? Generate the dest spent and dest received addresses and blindings
       privKeys = notesIn.map((x) => x.privKey);
       let { KoS, koS, ytS } = this.getDestSpentAddresses(privKeys);
+      this.notePrivKeys[KoS.getX().toString()] = koS;
 
       // ? generate the refund note
       let refundNote =
@@ -306,6 +309,8 @@ export default class User {
 
       let { positionPrivKey, positionAddress } =
         this.getPositionAddress(synthetic_token);
+      this.positionPrivKeys[positionAddress.getX().toString()] =
+        positionPrivKey;
 
       open_order_fields = new OpenOrderFields(
         initial_margin,
@@ -322,6 +327,7 @@ export default class User {
       storePrivKey(this.userId, positionPrivKey, true);
     } else if (position_effect_type == "Close") {
       let { KoR, koR, ytR } = this.getDestReceivedAddresses(collateral_token);
+      this.notePrivKeys[KoR.getX().toString()] = koR;
 
       close_order_fields = new CloseOrderFields(KoR, ytR);
 
@@ -414,6 +420,8 @@ export default class User {
     let { KoS, koS, ytS } = this.getDestSpentAddresses(privKeys);
     let { KoR, koR, ytR } = this.getDestReceivedAddresses(token_received);
     let privKeySum = privKeys.reduce((a, b) => a + b, 0n);
+    this.notePrivKeys[KoS.getX().toString()] = privKeySum;
+    this.notePrivKeys[KoR.getX().toString()] = privKeySum;
 
     // ? generate the refund note
     let refundNote =
@@ -458,6 +466,7 @@ export default class User {
 
     let { KoR, koR, ytR } = this.getDestReceivedAddresses(depositToken);
     let note = new Note(KoR, depositToken, depositAmount, ytR);
+    this.notePrivKeys[KoR.getX().toString()] = koR;
 
     let sig = Deposit.signDeposit(depositId, [note], privKey);
 
@@ -469,8 +478,6 @@ export default class User {
       [note],
       sig
     );
-
-    this.notePrivKeys[BigInt(note.address.getX())] = koR;
 
     storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
@@ -490,6 +497,7 @@ export default class User {
     let privKeys = notesIn.map((x) => x.privKey);
     notesIn = notesIn.map((x) => x.note);
     let { KoS, koS, ytS } = this.getDestSpentAddresses(privKeys);
+    this.notePrivKeys[KoS.getX().toString()] = koS;
 
     // ? generate the refund note
     let refundNote = new Note(
@@ -615,6 +623,7 @@ export default class User {
       let { KoR, koR, ytR } = this.getDestReceivedAddresses(
         position.collateral_token
       );
+      this.notePrivKeys[KoR.getX().toString()] = koR;
 
       close_order_fields = new CloseOrderFields(KoR, ytR);
 
@@ -681,7 +690,7 @@ export default class User {
 
     let len = this.noteData[token].length;
     for (let i = 0; i < len; i++) {
-      const note = this.noteData[token].pop();
+      const note = this.noteData[token][i];
       const privKey = this.notePrivKeys[BigInt(note.address.getX())];
 
       amount += note.amount;

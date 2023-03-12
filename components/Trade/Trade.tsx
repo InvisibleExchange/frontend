@@ -10,17 +10,11 @@ import { WalletContext } from "../../context/WalletContext";
 export default function Trade() {
   const { initialize } = useContext(WalletContext);
 
-  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
   const [currentMarket, setCurrentMarket] = useState<any>({
     pairs: "ETH/USDC",
     perpetual: "ETH-Perpetual",
   });
   const [type, setType] = useState<any>("perpetual");
-
-  function forceRerender() {
-    console.log("rerender");
-    forceUpdate();
-  }
 
   initialize();
 

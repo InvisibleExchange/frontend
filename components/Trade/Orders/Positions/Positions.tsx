@@ -21,7 +21,7 @@ const {
   sendPerpOrder,
 } = require("../../../../app_logic/transactions/constructOrders");
 
-const Positions = (rerenderPage: any) => {
+const Positions = () => {
   let { user, getMarkPrice } = useContext(WalletContext);
 
   let positions: any[] = [];
@@ -54,42 +54,6 @@ const Positions = (rerenderPage: any) => {
         {/* */}
         {user && user.userId
           ? positions.map((pos) => {
-              const [qty, setQty] = useState<number | null>(null);
-              const [price, setPrice] = useState<number | null>(null);
-
-              const onChangeQty = (e: any) => {
-                let qty_ = parseFloat(e.target.value ?? 0);
-
-                qty_ = Math.max(0, qty_);
-                qty_ = Math.min(
-                  qty_,
-                  pos.position_size /
-                    10 ** DECIMALS_PER_ASSET[pos.synthetic_token]
-                );
-
-                console.log("qty_:", qty_);
-
-                setQty(qty_);
-              };
-
-              const onSumbitCloseOrder = async (isMarket: boolean) => {
-                try {
-                  await sendPerpOrder(
-                    user,
-                    pos.order_side === "Long" ? "Short" : "Long",
-                    1000,
-                    "Close",
-                    pos.synthetic_token,
-                    qty,
-                    isMarket ? null : price,
-                    0,
-                    0.07
-                  );
-                } catch (error) {
-                  alert(error);
-                }
-              };
-
               let markPrice = getMarkPrice(54321, true);
               let entryPrice =
                 pos.entry_price /
@@ -137,7 +101,7 @@ const Positions = (rerenderPage: any) => {
                       <p className="text-sm">
                         {size.toFixed(3)} {IDS_TO_SYMBOLS[pos.synthetic_token]}
                       </p>
-                      <AdjustSizeModal />
+                      {/* <AdjustSizeModal /> */}
                     </div>
                   </td>
                   <td className={classNames("pr-3 font-medium")}>
@@ -160,55 +124,16 @@ const Positions = (rerenderPage: any) => {
                         <p className="text-sm">{margin.toFixed(2)} USDC</p>
                         {/* <p className="text-[12px]">(Isolated)</p> */}
                       </div>
-                      <AdjustMarginModal
-                        position={pos}
-                        forceRerender={rerenderPage.rerenderPage}
-                      />
+                      <AdjustMarginModal position={pos} />
                     </div>
                   </td>
                   <td className={classNames("pr-3 font-medium " + pnlColor)}>
                     <p>{pnl.toFixed(2)} USD</p>
                     <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                   </td>
-                  <td className={classNames("pr-3 font-medium text-right")}>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={async () => {
-                          console.log("market");
-                          await onSumbitCloseOrder(true);
-                        }}
-                      >
-                        Market
-                      </button>
-                      |{" "}
-                      <button
-                        onClick={async () => {
-                          console.log("Limit");
-                          await onSumbitCloseOrder(false);
-                        }}
-                      >
-                        Limit
-                      </button>
-                      <input
-                        className="w-20 pl-1 rounded-sm focus:outline focus:outline-yellow bg-border_color"
-                        placeholder="price"
-                        type="number"
-                        step={0.01}
-                        value={price?.toString()}
-                        onChange={(e) => {
-                          setPrice(parseFloat(e.target.value));
-                        }}
-                      ></input>
-                      <input
-                        className="w-20 pl-1 rounded-sm focus:outline focus:outline-yellow bg-border_color"
-                        placeholder="qty"
-                        type="number"
-                        step={0.001}
-                        value={qty?.toString()}
-                        onChange={onChangeQty}
-                      ></input>
-                    </div>
-                  </td>
+                  {/*  */}
+                  <CloseField user={user} pos={pos} />
+                  {/*  */}
                 </tr>
               );
             })
@@ -219,3 +144,85 @@ const Positions = (rerenderPage: any) => {
 };
 
 export default Positions;
+
+const CloseField = ({ user, pos }: any) => {
+  const [closeQty, setCloseQty] = useState<number | null>(null);
+  const [closePrice, setClosePrice] = useState<number | null>(null);
+
+  const onChangeQty = (e: any) => {
+    if (!e.target.value) {
+      setCloseQty(null);
+      return;
+    }
+
+    let qty_ = parseFloat(e.target.value);
+
+    qty_ = Math.max(0, qty_);
+    qty_ = Math.min(
+      qty_,
+      pos.position_size / 10 ** DECIMALS_PER_ASSET[pos.synthetic_token]
+    );
+
+    setCloseQty(qty_);
+  };
+
+  const onSumbitCloseOrder = async (isMarket: boolean) => {
+    try {
+      await sendPerpOrder(
+        user,
+        pos.order_side == "Long" ? "Short" : "Long",
+        1000,
+        "Close",
+        pos.synthetic_token,
+        closeQty,
+        isMarket ? null : closePrice,
+        0,
+        0.07
+      );
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  return (
+    <td className={classNames("pr-3 font-medium text-right")}>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={async () => {
+            console.log("market");
+            await onSumbitCloseOrder(true);
+          }}
+        >
+          Market
+        </button>
+        |{" "}
+        <button
+          onClick={async () => {
+            console.log("Limit");
+            await onSumbitCloseOrder(false);
+          }}
+        >
+          Limit
+        </button>
+        <input
+          className="w-20 pl-1 rounded-sm focus:outline focus:outline-yellow bg-border_color"
+          placeholder="price"
+          type="number"
+          step={0.01}
+          value={closePrice?.toString()}
+          onChange={(e) => {
+            setClosePrice(parseFloat(e.target.value));
+          }}
+        ></input>
+        <input
+          className="w-20 pl-1 rounded-sm focus:outline focus:outline-yellow bg-border_color"
+          placeholder="qty"
+          type="number"
+          step={0.001}
+          value={closeQty?.toString()}
+          onChange={onChangeQty}
+        ></input>
+      </div>
+    </td>
+  );
+};

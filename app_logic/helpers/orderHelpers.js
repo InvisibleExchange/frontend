@@ -106,6 +106,7 @@ function checkPerpOrderValidity(
       throw "Insufficient balance";
     }
   } else {
+    console.log(user.positionData);
     if (!user.positionData[syntheticToken]) {
       console.log("Position does not exist. Try opening a position first");
       throw "order invalid";

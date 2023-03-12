@@ -276,9 +276,13 @@ async function storeUserData(userId, noteCounts, positionCounts) {
 async function storePrivKey(userId, privKey, isPosition) {
   let docRef;
   if (isPosition) {
-    docRef = doc(db, `users/${userId}/positionPrivKeys`, privKey.toString());
+    docRef = doc(
+      db,
+      `users/${userId}/positionPrivKeys`,
+      BigInt(privKey).toString()
+    );
   } else {
-    docRef = doc(db, `users/${userId}/privKeys`, privKey.toString());
+    docRef = doc(db, `users/${userId}/privKeys`, BigInt(privKey).toString());
   }
 
   await setDoc(docRef, {});

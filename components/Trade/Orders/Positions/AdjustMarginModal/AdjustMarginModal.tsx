@@ -26,9 +26,9 @@ const {
 
 const types = [{ name: "Add" }, { name: "Remove" }];
 
-const AdjustMarginModal = ({ position, forceRerender }: any) => {
+const AdjustMarginModal = ({ position }: any) => {
   const { theme } = useContext(ThemeContext);
-  const { user } = useContext(WalletContext);
+  const { user, forceRerender } = useContext(WalletContext);
 
   const minViableMargin = getMinViableMargin(position);
 
@@ -75,7 +75,7 @@ const AdjustMarginModal = ({ position, forceRerender }: any) => {
       selected.name
     );
 
-    forceRerender.rerenderPage();
+    forceRerender();
 
     closeModal();
   }

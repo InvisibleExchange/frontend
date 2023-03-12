@@ -6,7 +6,7 @@ import Positions from "./Positions";
 import FillHistory from "./FillHistory";
 import Balances from "./Balances";
 
-const Orders = (rerenderPage: any) => {
+const Orders = () => {
   let [categories] = useState([
     "Positions",
     "Open Orders",
@@ -36,7 +36,7 @@ const Orders = (rerenderPage: any) => {
         </Tab.List>
         <Tab.Panels className="min-h-[300px]">
           <Tab.Panel className={classNames("outline-none")}>
-            <Positions rerenderPage={rerenderPage} />
+            <Positions />
           </Tab.Panel>
           <Tab.Panel className={classNames("outline-none")}>
             <OpenOrders />
