@@ -104,6 +104,8 @@ export default class User {
     this.positionPrivKeys = {}; // Maps {posAddress: privKey}
     //
     this.refundNotes = {}; // {orderId: refundNote}
+    this.filledAmounts = {}; // {orderId: filledAmount}
+    this.awaittingOrder = false; // set to true when an order is created and to false when it's accepted (filled if market)
     //
     this.pfrKeys = {}; // Maps {orderId: pfrPrivKey}
     this.fills = []; // [{base_token, amount, price, side, time, isPerp}]
@@ -422,6 +424,10 @@ export default class User {
     let privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     this.notePrivKeys[KoS.getX().toString()] = privKeySum;
     this.notePrivKeys[KoR.getX().toString()] = privKeySum;
+
+    console.log("Kos", KoS.getX().toString());
+
+    console.log("pksum ", getKeyPair(privKeySum).getPublic().getX().toString());
 
     // ? generate the refund note
     let refundNote =

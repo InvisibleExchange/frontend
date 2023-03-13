@@ -3,16 +3,21 @@ const { trimHash, Note } = require("../users/Notes");
 
 const axios = require("axios");
 const { storeOrderId } = require("../helpers/firebase/firebaseConnection");
+
+const { computeHashOnElements } = require("../helpers/pedersen");
+
 const {
   COLLATERAL_TOKEN,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   handleNoteSplit,
+  DUST_AMOUNT_PER_ASSET,
+} = require("../helpers/utils");
+const {
   _getBankruptcyPrice,
   _getLiquidationPrice,
-} = require("../helpers/utils");
-const { computeHashOnElements } = require("../helpers/pedersen");
+} = require("../helpers/tradePriceCalculations");
 
 // const path = require("path");
 // require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
@@ -98,7 +103,7 @@ async function sendSpotOrder(
   let ts = new Date().getTime() / 3600_000; // number of hours since epoch
   let expirationTimestamp = Number.parseInt(ts.toString()) + expirationTime;
 
-  feeLimit = (feeLimit * receiveAmount) / 100;
+  feeLimit = Number.parseInt(((feeLimit * receiveAmount) / 100).toString());
 
   if (spendAmount > user.getAvailableAmount(spendToken)) {
     console.log("Insufficient balance");
@@ -119,6 +124,7 @@ async function sendSpotOrder(
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
 
+  user.awaittingOrder = true;
   await axios
     .post(`${EXPRESS_APP_URL}/submit_limit_order`, orderJson)
     .then(async (res) => {
@@ -128,6 +134,11 @@ async function sendSpotOrder(
         await storeOrderId(user.userId, order_response.order_id, pfrKey, false);
 
         // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
+
+        // If this is a taker order it might have been filled fully/partially before the response was received (here)
+        let filledAmount = user.filledAmounts[order_response.order_id]
+          ? user.filledAmounts[order_response.order_id]
+          : 0;
 
         order_side = order_side == "Buy" ? 0 : 1;
         let orderData = {
@@ -139,7 +150,7 @@ async function sendSpotOrder(
           order_id: order_response.order_id,
           order_side,
           price: price,
-          qty_left: receiveAmount,
+          qty_left: receiveAmount - filledAmount,
           refund_note: limitOrder.refund_note,
         };
 
@@ -150,16 +161,44 @@ async function sendSpotOrder(
             );
           }
         }
+
+        console.log("orderData: ", orderData);
+
+        // ? Add the refund note
         if (orderData.refund_note) {
-          user.refundNotes[order_response.order_id] = orderData.refund_note;
+          if (user.refundNotes[order_response.order_id]) {
+            // If this is a market order then we can add the refund note immediately
+            user.noteData[orderData.refund_note.token].push(
+              orderData.refund_note
+            );
+
+            console.log("refund note added1: ", orderData.refund_note);
+          } else {
+            // If this is a limit order then we need to wait for the order to be filled
+            // (untill we receive a response through the websocket)
+            user.refundNotes[order_response.order_id] = orderData.refund_note;
+
+            console.log("refund note added2: ", orderData.refund_note);
+          }
         }
 
-        user.orders.push(orderData);
+        if (
+          orderData.qty_left >=
+          DUST_AMOUNT_PER_ASSET[
+            orderData.order_side == 1 ? baseToken : quoteToken
+          ]
+        ) {
+          user.orders.push(orderData);
+        }
+
+        user.awaittingOrder = false;
       } else {
         let msg =
           "Failed to submit order with error: \n" +
           order_response.error_message;
         console.log(msg);
+
+        user.awaittingOrder = false;
         throw new Error(msg);
       }
     });
@@ -210,7 +249,9 @@ async function sendPerpOrder(
   collateralAmount = Number.parseInt(collateralAmount.toString());
 
   if (position_effect_type == "Open") {
-    initial_margin = initial_margin * 10 ** COLLATERAL_TOKEN_DECIMALS;
+    initial_margin = Number.parseInt(
+      initial_margin * 10 ** COLLATERAL_TOKEN_DECIMALS
+    );
   }
 
   let ts = new Date().getTime() / 3600_000; // number of hours since epoch
@@ -248,8 +289,6 @@ async function sendPerpOrder(
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
 
-  console.log("Sending order to backend: ", orderJson);
-
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
     .then((res) => {
@@ -262,6 +301,11 @@ async function sendPerpOrder(
 
         // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
 
+        // If this is a taker order it might have been filled fully/partially before the response was received (here)
+        let filledAmount = user.filledAmounts[order_response.order_id]
+          ? user.filledAmounts[order_response.order_id]
+          : 0;
+
         let orderData = {
           synthetic_token: perpOrder.synthetic_token,
           expiration_timestamp: perpOrder.expiration_timestamp,
@@ -273,7 +317,7 @@ async function sendPerpOrder(
           position_address: perpOrder.position
             ? perpOrder.position.position_address
             : null,
-          qty_left: perpOrder.synthetic_amount,
+          qty_left: perpOrder.synthetic_amount - filledAmount,
           notes_in:
             orderJson.position_effect_type == 0
               ? perpOrder.open_order_fields.notes_in
@@ -304,19 +348,19 @@ async function sendPerpOrder(
             user.noteData[orderData.refund_note.token].push(
               orderData.refund_note
             );
-
-            console.log("user.noteData after order id", user.noteData);
           } else {
             // If this is a limit order then we need to wait for the order to be filled
             // (untill we receive a response through the websocket)
 
             user.refundNotes[order_response.order_id] = orderData.refund_note;
-
-            console.log("user.refundNotes after order id", user.refundNotes);
           }
         }
 
-        user.perpetualOrders.push(orderData);
+        if (
+          orderData.qty_left >= DUST_AMOUNT_PER_ASSET[orderData.synthetic_token]
+        ) {
+          user.perpetualOrders.push(orderData);
+        }
       } else {
         let msg =
           "Failed to submit order with error: \n" +

@@ -94,6 +94,7 @@ class PerpOrder {
       this.fee_limit,
     ];
 
+
     let order_hash = computeHashOnElements(hash_inputs);
 
     if (pos_effect_type_int == 0) {
@@ -234,6 +235,7 @@ class OpenOrderFields {
     hash_inputs.push(this.collateral_token);
     hash_inputs.push(BigInt(this.position_address));
     hash_inputs.push(this.blinding);
+
 
     return computeHashOnElements(hash_inputs);
   }

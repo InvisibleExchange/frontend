@@ -81,15 +81,19 @@ export default function Book({ token, bidQueue, askQueue }: Props) {
           {askQueue
             ? askQueue.map((order) => {
                 let color = "text-red";
+
+                let amount =
+                  order.amount /
+                  10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
+
+                console.log("amount: ", amount);
+
                 return (
                   <div key={order.timestamp}>
                     <p className={classNames("pr-3 font-medium " + color)}>
-                      {(
-                        order.amount /
-                        10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
-                      ).toFixed()}{" "}
-                      {"----"} {order.price.toFixed(2)} {"----"}
-                      {order.timestamp}{" "}
+                      {amount.toFixed(3)} {"----"} {order.price.toFixed(2)}{" "}
+                      {"----"}
+                      {(amount * order.price).toFixed(3)}{" "}
                     </p>
                   </div>
                 );

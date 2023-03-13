@@ -58,252 +58,9 @@ function get_max_leverage(token, amount) {
   return maxLev;
 }
 
-function getMinViableMargin(position) {
-  const maxLeverage = get_max_leverage(
-    position.synthetic_token,
-    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
-  );
-
-  let maxLiquidationPrice = (1 - 1 / maxLeverage) * position.entry_price;
-
-  let multiplier =
-    10 **
-    (DECIMALS_PER_ASSET[position.synthetic_token] +
-      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
-      COLLATERAL_TOKEN_DECIMALS);
-
-  let minMargin = (position.position_size * maxLiquidationPrice) / maxLeverage;
-  minMargin = minMargin / multiplier;
-
-  return minMargin;
-}
-
-function checkViableSizeAfterIncrease(position, added_size, added_price) {
-  let new_size =
-    position.position_size /
-      10 ** DECIMALS_PER_ASSET[position.synthetic_token] +
-    added_size;
-  const maxLeverage = get_max_leverage(position.synthetic_token, new_size);
-
-  let scaledPrice =
-    added_price * 10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
-  let scaledSize =
-    added_size * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
-
-  let avgEntryPrice =
-    (position.position_size * position.entry_price + scaledSize * scaledPrice) /
-    (position.position_size + scaledSize);
-
-  let leverage =
-    ((position.position_size + scaledSize) * avgEntryPrice) / position.margin;
-
-  let multiplier =
-    10 **
-    (DECIMALS_PER_ASSET[position.synthetic_token] +
-      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
-      COLLATERAL_TOKEN_DECIMALS);
-
-  leverage = leverage / multiplier;
-
-  return leverage <= maxLeverage;
-}
-
-function checkViableSizeAfterFlip(position, added_size, added_price) {
-  let new_size =
-    added_size * 10 ** DECIMALS_PER_ASSET[position.synthetic_token] -
-    position.position_size;
-  const maxLeverage = get_max_leverage(position.synthetic_token, new_size);
-
-  let scaledPrice =
-    added_price * 10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
-
-  let leverage = (new_size * scaledPrice) / position.margin;
-
-  let multiplier =
-    10 **
-    (DECIMALS_PER_ASSET[position.synthetic_token] +
-      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
-      COLLATERAL_TOKEN_DECIMALS);
-
-  leverage = leverage / multiplier;
-
-  return leverage <= maxLeverage;
-}
-
 /// Things we keep track of
 /// Index prices
 /// Orderbooks
-
-function _getBankruptcyPrice(
-  entryPrice,
-  margin,
-  size,
-  orderSide,
-  syntheticToken
-) {
-  const syntheticDecimals = DECIMALS_PER_ASSET[syntheticToken];
-  const syntheticPriceDecimals = PRICE_DECIMALS_PER_ASSET[syntheticToken];
-
-  const decConversion1 =
-    syntheticPriceDecimals - COLLATERAL_TOKEN_DECIMALS + syntheticDecimals;
-  const multiplier1 = 10 ** decConversion1;
-
-  if (orderSide == "Long" || orderSide == 0) {
-    return Math.floor(entryPrice) - Math.floor((margin * multiplier1) / size);
-  } else {
-    const bp =
-      Math.floor(entryPrice) + Math.floor((margin * multiplier1) / size);
-    return bp;
-  }
-}
-
-function _getLiquidationPrice(entryPrice, bankruptcyPrice, orderSide) {
-  if (bankruptcyPrice == 0) {
-    return 0;
-  }
-
-  // maintnance margin
-  let mm_rate = 3; // 3% of 100
-
-  // liquidation price is 2% above/below the bankruptcy price
-  if (orderSide == "Long" || orderSide == 0) {
-    return bankruptcyPrice + Math.floor((mm_rate * entryPrice) / 100);
-  } else {
-    return bankruptcyPrice - Math.floor((mm_rate * entryPrice) / 100);
-  }
-}
-
-function calulateLiqPriceInMarginChangeModal(position, marginChange) {
-  marginChange = marginChange * 10 ** COLLATERAL_TOKEN_DECIMALS;
-
-  let bankruptcyPrice = _getBankruptcyPrice(
-    position.entry_price,
-    position.margin + marginChange,
-    position.position_size,
-    position.order_side,
-    position.synthetic_token
-  );
-
-  let liqPrice = _getLiquidationPrice(
-    position.entry_price,
-    bankruptcyPrice,
-    position.order_side
-  );
-
-  return Math.max(liqPrice, 0);
-}
-
-function calulateLiqPriceInIncreaseSize(position, sizeChange, indexPrice) {
-  let scaledPrice =
-    indexPrice * 10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
-  let scaledSize =
-    sizeChange * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
-
-  let avgEntryPrice =
-    (position.position_size * position.entry_price + scaledSize * scaledPrice) /
-    (position.position_size + scaledSize);
-
-  let bankruptcyPrice = _getBankruptcyPrice(
-    avgEntryPrice,
-    position.margin,
-    position.position_size + scaledSize,
-    position.order_side,
-    position.synthetic_token
-  );
-
-  let liqPrice = _getLiquidationPrice(
-    avgEntryPrice,
-    bankruptcyPrice,
-    position.order_side
-  );
-
-  return Math.max(liqPrice, 0);
-}
-
-function calulateLiqPriceInDecreaseSize(position, sizeChange) {
-  let scaledSize =
-    sizeChange * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
-
-  let new_size = position.position_size - scaledSize;
-
-  let bankruptcyPrice = _getBankruptcyPrice(
-    position.entry_price,
-    position.margin,
-    new_size,
-    position.order_side,
-    position.synthetic_token
-  );
-
-  let liqPrice = _getLiquidationPrice(
-    position.entry_price,
-    bankruptcyPrice,
-    position.order_side
-  );
-
-  return Math.max(liqPrice, 0);
-}
-
-function calulateLiqPriceInFlipSide(position, sizeChange, indexPrice) {
-  let scaledSize =
-    sizeChange * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
-  let scaledPrice =
-    indexPrice * 10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
-
-  let new_size = scaledSize - position.position_size;
-
-  let newOrderSide = position.order_side == "Long" ? "Short" : "Long";
-
-  let bankruptcyPrice = _getBankruptcyPrice(
-    scaledPrice,
-    position.margin,
-    new_size,
-    newOrderSide,
-    position.synthetic_token
-  );
-
-  let liqPrice = _getLiquidationPrice(
-    scaledPrice,
-    bankruptcyPrice,
-    newOrderSide
-  );
-
-  return Math.max(liqPrice, 0);
-}
-
-function getCurrentLeverage(indexPrice, size, margin, syntheticToken) {
-  if (indexPrice == 0) {
-    throw "Index price cannot be 0";
-  }
-
-  const syntheticDecimals = DECIMALS_PER_ASSET[syntheticToken];
-  const syntheticPriceDecimals = PRICE_DECIMALS_PER_ASSET[syntheticToken];
-
-  const decimalConversion =
-    syntheticDecimals +
-    syntheticPriceDecimals -
-    (COLLATERAL_TOKEN_DECIMALS + LEVERAGE_DECIMALS);
-
-  const multiplier = 10 ** decimalConversion;
-
-  const currentLeverage = (indexPrice * size) / (margin * multiplier);
-
-  return currentLeverage;
-}
-
-function averageEntryPrice(
-  current_size,
-  current_entry_price,
-  added_size,
-  added_entry_price
-) {
-  let prev_nominal_usd = current_size * current_entry_price;
-  let added_nominal_usd = added_size * added_entry_price;
-
-  let average_entry_price =
-    (prev_nominal_usd + added_nominal_usd) / (current_size + added_size);
-
-  return average_entry_price;
-}
 
 const SPOT_MARKET_IDS = {
   12345: 11,
@@ -418,19 +175,25 @@ function handleSwapResult(user, orderId, swap_response) {
   }
 
   if (user.refundNotes[orderId]) {
-    user.noteData[COLLATERAL_TOKEN].push(user.refundNotes[orderId]);
+    let refund_note = user.refundNotes[orderId];
+    user.noteData[refund_note.token].push(refund_note);
     user.refundNotes[orderId] = null;
+  } else {
+    user.refundNotes[orderId] = true;
   }
 
   let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
-  order.qty_left = order.qty_left - swap_response.swap_note.amount;
-
-  // TODO: lest then 000
-  if (order.qty_left <= 0) {
-    user.orders.splice(idx, 1);
+  if (order) {
+    order.qty_left = order.qty_left - swap_response.swap_note.amount;
+    // TODO: lest then 000
+    if (order.qty_left <= 0) {
+      user.orders.splice(idx, 1);
+    } else {
+      user.orders[idx] = order;
+    }
   } else {
-    user.orders[idx] = order;
+    user.filledAmounts[orderId] = swap_response.swap_note.amount;
   }
 }
 
@@ -438,10 +201,13 @@ function handleSwapResult(user, orderId, swap_response) {
  * Handles the result received from the backend after a perpetual swap executed.
  * @param  result  The result structure is:
  *  result format:
+ *
+ *
  *   {
  *       position: PerpPosition/null,
  *       new_pfr_info: [Note, u64,u64]>/null,
  *       return_collateral_note: Note/null,
+ *       synthetic_token: u64,
  *       qty: u64,
  *    }
  */
@@ -452,7 +218,6 @@ function handlePerpSwapResult(user, orderId, swap_response) {
   let position = swap_response.position;
   if (position) {
     user.positionData[position.synthetic_token] = [position];
-    console.log("position saved: ", user.positionData);
   }
 
   // ? Save partiall fill note (if not null)
@@ -475,16 +240,20 @@ function handlePerpSwapResult(user, orderId, swap_response) {
         returnCollateralNoteObject,
       ];
     }
+
+    if (!position) {
+      console.log(
+        "removing position data for token:",
+        swap_response.synthetic_token
+      );
+      user.positionData[swap_response.synthetic_token] = [];
+    }
   }
 
-  console.log(user.refundNotes);
   if (user.refundNotes[orderId]) {
     user.noteData[COLLATERAL_TOKEN].push(user.refundNotes[orderId]);
     user.refundNotes[orderId] = null;
-
-    console.log("noteData in update: ", user.noteData);
   } else {
-    console.log("refund note not found");
     user.refundNotes[orderId] = true;
   }
 
@@ -500,6 +269,8 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     } else {
       user.perpetualOrders[idx] = order;
     }
+  } else {
+    user.filledAmounts[orderId] = swap_response.qty;
   }
 }
 
@@ -619,16 +390,7 @@ module.exports = {
   COLLATERAL_TOKEN_DECIMALS,
   COLLATERAL_TOKEN,
   get_max_leverage,
-  getMinViableMargin,
   MAX_LEVERAGE,
-  calulateLiqPriceInMarginChangeModal,
-  calulateLiqPriceInIncreaseSize,
-  calulateLiqPriceInDecreaseSize,
-  calulateLiqPriceInFlipSide,
-  checkViableSizeAfterIncrease,
-  checkViableSizeAfterFlip,
-  getCurrentLeverage,
-  averageEntryPrice,
   handleSwapResult,
   handlePerpSwapResult,
   handleNoteSplit,
@@ -641,6 +403,4 @@ module.exports = {
   SPOT_MARKET_IDS,
   SPOT_MARKET_IDS_2_TOKENS,
   PERP_MARKET_IDS_2_TOKENS,
-  _getBankruptcyPrice,
-  _getLiquidationPrice,
 };

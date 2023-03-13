@@ -1,5 +1,4 @@
-const { getKeyPair, sign} =
-  require("starknet").ec;
+const { getKeyPair, sign } = require("starknet").ec;
 const { computeHashOnElements } = require("../helpers/pedersen");
 
 /* global BigInt */
@@ -57,6 +56,7 @@ module.exports = class LimitOrder {
         this.dest_received_blinding,
       ]);
 
+
     return computeHashOnElements(hashInputs);
   }
 
@@ -73,6 +73,7 @@ module.exports = class LimitOrder {
     let sig = sign(keyPair, "0x" + order_hash.toString(16));
 
     this.signature = sig;
+
 
     return sig;
   }

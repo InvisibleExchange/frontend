@@ -14,11 +14,14 @@ const {
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   LEVERAGE_DECIMALS,
-  calulateLiqPriceInMarginChangeModal,
-  getMinViableMargin,
   COLLATERAL_TOKEN_DECIMALS,
   COLLATERAL_TOKEN,
 } = require("../../../../../app_logic/helpers/utils");
+
+const {
+  calulateLiqPriceInMarginChangeModal,
+  getMinViableMargin,
+} = require("../../../../../app_logic/helpers/tradePriceCalculations");
 
 const {
   sendChangeMargin,

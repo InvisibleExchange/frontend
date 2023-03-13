@@ -11,12 +11,20 @@ const {
   get_max_leverage,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
+  PRICE_DECIMALS_PER_ASSET,
   SYMBOLS_TO_IDS,
   MAX_LEVERAGE,
   COLLATERAL_TOKEN,
+} = require("../../../../../app_logic/helpers/utils");
+
+const {
   checkViableSizeAfterIncrease,
   checkViableSizeAfterFlip,
-} = require("../../../../../app_logic/helpers/utils");
+  calcAvgEntryInIncreaseSize,
+  calulateLiqPriceInIncreaseSize,
+  calulateLiqPriceInDecreaseSize,
+  calulateLiqPriceInFlipSide,
+} = require("../../../../../app_logic/helpers/tradePriceCalculations");
 
 const {
   sendSpotOrder,
@@ -36,9 +44,11 @@ const TradeForm = ({ type, perpType, token }: props) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   let positionData =
-    user && user.userId ? user.positionData[SYMBOLS_TO_IDS[token]] : null;
+    user && user.userId && perpType == "perpetual"
+      ? user.positionData[SYMBOLS_TO_IDS[token]]
+      : null;
   positionData = positionData ? positionData[0] : null;
-  // console.log("positionData", positionData);
+  console.log("positionData", positionData);
 
   const tradeType = useSelector(tradeTypeSelector);
 
@@ -277,6 +287,12 @@ const TradeForm = ({ type, perpType, token }: props) => {
       return;
     }
 
+    if (Number(e.target.value) == 0) {
+      setBaseAmount(e.target.value);
+      setMaxLeverage(MAX_LEVERAGE);
+      return;
+    }
+
     let baseAmount_ = Number(Number(e.target.value).toFixed(3));
 
     setBaseAmount(baseAmount_);
@@ -365,7 +381,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
           name="amount"
           className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
           type="number"
-          step={0.01}
+          step={0.001}
           value={baseAmount?.toString()}
           onChange={handleBaseAmountChange}
           placeholder="Amount"
@@ -391,11 +407,11 @@ const TradeForm = ({ type, perpType, token }: props) => {
       {perpType == "perpetual" && !!positionData ? null : (
         <div className="relative mt-5">
           <input
-            name="price"
+            name="quote"
             className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
             placeholder={perpType != "perpetual" ? "Total" : "Initial Margin"}
             type="number"
-            step={0.01}
+            step={0.001}
             value={quoteAmount?.toString()}
             onChange={handleQuoteAmountChange}
           />
@@ -449,6 +465,87 @@ const TradeForm = ({ type, perpType, token }: props) => {
         <p className="font-light text-[12px]">Protocol fee</p>
         <p>{"0.00%-0.05%"}</p>
       </div>
+
+      {positionData ? (
+        <div className="mt-5 pt-5 flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
+          <p className="text-[13px]">
+            <div>
+              <div>
+                New Size:{" "}
+                {baseAmount && price
+                  ? calculateNewSize(positionData, baseAmount, true)
+                  : null}{" "}
+                {baseAmount && price ? token : null}
+              </div>
+              <div className="mt-1">
+                Average Entry Price:{" "}
+                {baseAmount && price
+                  ? calculateAvgEntryPrice(
+                      positionData,
+                      baseAmount,
+                      price,
+                      true
+                    ).toFixed(2)
+                  : ""}
+                {baseAmount && price ? "USD" : null}
+              </div>
+              <div className="mt-1">
+                Est. Liq. Price:{" "}
+                {baseAmount && price
+                  ? calculateNewLiqPrice(
+                      positionData,
+                      baseAmount,
+                      price,
+                      true
+                    ).toFixed(2)
+                  : ""}{" "}
+                {baseAmount && price ? "USD" : null}
+              </div>
+            </div>
+          </p>
+          <div>
+            <div>|</div>
+            <div>|</div>
+            <div>|</div>
+          </div>
+
+          <p className="text-[13px]">
+            <div>
+              <div>
+                New Size:{" "}
+                {baseAmount && price
+                  ? calculateNewSize(positionData, baseAmount, false)
+                  : null}{" "}
+                {baseAmount && price ? token : null}
+              </div>
+              <div className="mt-1">
+                Average Entry Price:{" "}
+                {baseAmount && price
+                  ? calculateAvgEntryPrice(
+                      positionData,
+                      baseAmount,
+                      price,
+                      false
+                    ).toFixed(2)
+                  : ""}{" "}
+                {baseAmount && price ? "USD" : null}
+              </div>
+              <div className="mt-1">
+                Est. Liq. Price:{" "}
+                {baseAmount && price
+                  ? calculateNewLiqPrice(
+                      positionData,
+                      baseAmount,
+                      price,
+                      false
+                    ).toFixed(2)
+                  : ""}{" "}
+                {baseAmount && price ? "USD" : null}
+              </div>
+            </div>
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -456,3 +553,128 @@ const TradeForm = ({ type, perpType, token }: props) => {
 export default TradeForm;
 
 // HELPERS ================================================================================================
+
+function calculateNewSize(
+  position: any,
+  increaseSize: number,
+  isBuy: boolean
+): number {
+  let size =
+    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+
+  if (isBuy) {
+    if (position.order_side == "Long") {
+      return size + increaseSize;
+    } else {
+      if (increaseSize > size) {
+        return increaseSize - size;
+      } else {
+        return size - increaseSize;
+      }
+    }
+  } else {
+    if (position.order_side == "Short") {
+      return size + increaseSize;
+    } else {
+      if (increaseSize > size) {
+        return increaseSize - size;
+      } else {
+        return size - increaseSize;
+      }
+    }
+  }
+}
+
+function calculateAvgEntryPrice(
+  position: any,
+  increaseSize: number,
+  price: number,
+  isBuy: boolean
+): number {
+  if (isBuy) {
+    if (position.order_side == "Long") {
+      return calcAvgEntryInIncreaseSize(position, increaseSize, price);
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return price;
+      } else {
+        return (
+          position.entry_price /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  } else {
+    if (position.order_side == "Short") {
+      return calcAvgEntryInIncreaseSize(position, increaseSize, price);
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return price;
+      } else {
+        return (
+          position.entry_price /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  }
+}
+
+function calculateNewLiqPrice(
+  position: any,
+  increaseSize: number,
+  price: number,
+  isBuy: boolean
+): number {
+  if (isBuy) {
+    if (position.order_side == "Long") {
+      return (
+        calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
+        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+      );
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return (
+          calulateLiqPriceInFlipSide(position, increaseSize, price) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      } else {
+        return (
+          calulateLiqPriceInDecreaseSize(position, increaseSize) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  } else {
+    if (position.order_side == "Short") {
+      return (
+        calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
+        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+      );
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return (
+          calulateLiqPriceInFlipSide(position, increaseSize, price) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      } else {
+        return (
+          calulateLiqPriceInDecreaseSize(position, increaseSize) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  }
+}
