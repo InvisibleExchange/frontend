@@ -56,7 +56,6 @@ module.exports = class LimitOrder {
         this.dest_received_blinding,
       ]);
 
-
     return computeHashOnElements(hashInputs);
   }
 
@@ -74,6 +73,9 @@ module.exports = class LimitOrder {
 
     this.signature = sig;
 
+    console.log("Signature: ", sig);
+    console.log("Order hash: ", order_hash.toString());
+    console.log("pub key: ", keyPair.getPublic().getX().toString());
 
     return sig;
   }

@@ -39,6 +39,7 @@ import {
 } from "../data/networks";
 import { ZZToken } from "../data/zzTypes";
 import { TradeType } from "../components/Trade/BookTrades/BookTrades";
+import { marketList } from "../data/markets";
 
 interface Props {
   children: React.ReactNode;
@@ -53,6 +54,11 @@ export type WalletContextType = {
   network: NetworkType | null;
   isLoading: boolean;
   forceRerender: () => void;
+
+  selectedMarket: any;
+  setSelectedMarket: any;
+  selectedType: "spot" | "perpetual";
+  setSelectedType: any;
 
   connect: () => void;
   disconnect: () => void;
@@ -84,6 +90,11 @@ export const WalletContext = createContext<WalletContextType>({
   network: _getDefaultNetwork(),
   isLoading: false,
   forceRerender: () => {},
+
+  selectedMarket: null,
+  setSelectedMarket: () => {},
+  selectedType: "perpetual",
+  setSelectedType: () => {},
 
   connect: () => {},
   disconnect: () => {},
@@ -170,6 +181,11 @@ function WalletProvider({ children }: Props) {
   const [userAddress, setUserAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const [selectedMarket, setSelectedMarket] = useState(marketList[0]);
+  const [selectedType, setSelectedType] = useState<"spot" | "perpetual">(
+    "perpetual"
+  );
+
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
   const [liquidity, setLiquidity] = useState<{
@@ -219,7 +235,6 @@ function WalletProvider({ children }: Props) {
   }, []);
 
   const connectWallet = async (label?: string) => {
-    console.log("start connectWallet");
     try {
       setIsLoading(true);
       let wallets;
@@ -466,6 +481,11 @@ function WalletProvider({ children }: Props) {
         network: network,
         isLoading: isLoading,
         forceRerender: forceRerender,
+
+        selectedType: selectedType,
+        setSelectedType: setSelectedType,
+        selectedMarket: selectedMarket,
+        setSelectedMarket: setSelectedMarket,
 
         connect: connectWallet,
         disconnect: disconnectWallet,

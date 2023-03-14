@@ -4,17 +4,31 @@ import MarketStats from "./MarketStats/MarketStats";
 import Orders from "./Orders/Orders";
 import Chart from "./Chart";
 import TradeActions from "./TradeActions/TradeActions";
-import { useContext, useReducer, useState } from "react";
+import { useContext, useEffect, useReducer, useState } from "react";
 import { WalletContext } from "../../context/WalletContext";
 
-export default function Trade() {
-  const { initialize } = useContext(WalletContext);
+import { marketList } from "../../data/markets";
 
-  const [currentMarket, setCurrentMarket] = useState<any>({
-    pairs: "ETH/USDC",
-    perpetual: "ETH-Perpetual",
+export default function Trade() {
+  const {
+    initialize,
+    selectedType,
+    setSelectedType,
+    selectedMarket,
+    setSelectedMarket,
+  } = useContext(WalletContext);
+
+  const [currentMarket, setCurrentMarket] = useState<any>(() => {
+    return selectedMarket ? selectedMarket : marketList[0];
   });
-  const [type, setType] = useState<any>("perpetual");
+  const [type, setType] = useState<any>(() => {
+    return selectedType ? selectedType : "perpetual";
+  });
+
+  useEffect(() => {
+    setSelectedType(type);
+    setSelectedMarket(currentMarket);
+  }, [type, currentMarket]);
 
   initialize();
 

@@ -12,31 +12,18 @@ import {
   setSelectTradeType,
   tradeTypeSelector,
 } from "../../../../lib/store/features/apiSlice";
+import { marketList } from "../../../../data/markets";
 
 const types = [{ name: "Perpetual" }, { name: "Spot" }];
 
-const marketList = [
-  {
-    pairs: "ETH/USDC",
-    lastPrice: "0.0000202555",
-    change: +1.58,
-    perpetual: "ETH-Perpetual",
-  },
-  {
-    pairs: "BTC/USDC",
-    lastPrice: "1.0000202555",
-    change: -1.58,
-    perpetual: "BTC-Perpetual",
-  },
-];
-
 export default function PairSelector({
+  currentMarketParent,
   setCurrentMarketParent,
-
+  type,
   setType,
 }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [currentMarket, setCurrentMarket] = useState<any>(marketList[0]);
+  const [currentMarket, setCurrentMarket] = useState<any>(currentMarketParent);
 
   const dispatch = useDispatch();
 

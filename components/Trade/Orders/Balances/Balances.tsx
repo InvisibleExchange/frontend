@@ -9,7 +9,7 @@ const {
 } = require("../../../../app_logic/helpers/utils");
 
 const Balances = () => {
-  const { user } = useContext(WalletContext);
+  const { user, getMarkPrice } = useContext(WalletContext);
 
   let userBalances: { token: any; balance: any }[] = [];
   if (user && user.userId) {
@@ -45,11 +45,17 @@ const Balances = () => {
                     {IDS_TO_SYMBOLS[token]}
                   </td>
                   <td className="font-medium  dark:text-white text-fg_below_color">
-                    {balance / 10 ** DECIMALS_PER_ASSET[token]}{" "}
+                    {(balance / 10 ** DECIMALS_PER_ASSET[token]).toFixed(3)}{" "}
                     {IDS_TO_SYMBOLS[token]}
                   </td>
                   <td className={classNames("pr-3 font-medium")}>
-                    {balance / 10 ** DECIMALS_PER_ASSET[token]} * Price USD
+                    {IDS_TO_SYMBOLS[token] == "USDC"
+                      ? (balance / 10 ** DECIMALS_PER_ASSET[token]).toFixed(2)
+                      : (
+                          (balance / 10 ** DECIMALS_PER_ASSET[token]) *
+                          getMarkPrice(token, false)
+                        ).toFixed(3)}{" "}
+                    USD
                   </td>
                 </tr>
               );

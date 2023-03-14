@@ -2,21 +2,6 @@ import React, { useState } from "react";
 import PairSelector from "./PairSelector/PairSelector";
 import ActionPanel from "./ActionPanel";
 
-const marketList = [
-  {
-    pairs: "ETH/USDC",
-    lastPrice: "0.0000202555",
-    change: +1.58,
-    perpetual: "ETH-Perpetual",
-  },
-  {
-    pairs: "BTC/USDC",
-    lastPrice: "1.0000202555",
-    change: -1.58,
-    perpetual: "BTC-Perpetual",
-  },
-];
-
 export default function TradeActions({
   setGlobalMarket,
   globalMarket,
@@ -26,7 +11,9 @@ export default function TradeActions({
   return (
     <div className="flex flex-col border rounded-sm border-border_color">
       <PairSelector
+        currentMarketParent={globalMarket}
         setCurrentMarketParent={setGlobalMarket}
+        type={globalType}
         setType={setGlobalType}
       />
       <ActionPanel

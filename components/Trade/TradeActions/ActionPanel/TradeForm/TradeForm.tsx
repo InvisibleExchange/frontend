@@ -48,7 +48,6 @@ const TradeForm = ({ type, perpType, token }: props) => {
       ? user.positionData[SYMBOLS_TO_IDS[token]]
       : null;
   positionData = positionData ? positionData[0] : null;
-  console.log("positionData", positionData);
 
   const tradeType = useSelector(tradeTypeSelector);
 
@@ -390,14 +389,16 @@ const TradeForm = ({ type, perpType, token }: props) => {
           {token}
         </div>
       </div>
-      {/* availbale base ====================================== */}
+      {/* Available base ====================================== */}
       {perpType == "spot" ? (
         <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
           <p className="text-[12px]">Available balance</p>
           <p>
             {user && user.userId
-              ? user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
-                10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+              ? (
+                  user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
+                  10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+                ).toFixed(3)
               : 0}{" "}
             {token}
           </p>
@@ -426,8 +427,10 @@ const TradeForm = ({ type, perpType, token }: props) => {
           <p className="text-[12px]">Available balance</p>
           <p>
             {user && user.userId
-              ? user.getAvailableAmount(COLLATERAL_TOKEN) /
-                10 ** COLLATERAL_TOKEN_DECIMALS
+              ? (
+                  user.getAvailableAmount(COLLATERAL_TOKEN) /
+                  10 ** COLLATERAL_TOKEN_DECIMALS
+                ).toFixed(2)
               : 0}{" "}
             USDC
           </p>
