@@ -41,6 +41,8 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
+const EXPRESS_APP_URL = "http://localhost:4000";
+
 function get_max_leverage(token, amount) {
   let [min_bound, max_bound] = LEVERAGE_BOUNDS_PER_ASSET[token];
 
@@ -94,7 +96,7 @@ async function fetchLiquidity(token, isPerp) {
   let marketId = isPerp ? PERP_MARKET_IDS[token] : SPOT_MARKET_IDS[token];
 
   return await axios
-    .post("http://localhost:4000/get_liquidity", {
+    .post(`${EXPRESS_APP_URL}/get_liquidity`, {
       market_id: marketId,
       is_perp: isPerp,
     })
@@ -355,7 +357,7 @@ async function loginUser(signer) {
 
 async function getActiveOrders(order_ids, perp_order_ids) {
   return await axios
-    .post("http://localhost:4000/get_orders", { order_ids, perp_order_ids })
+    .post(`${EXPRESS_APP_URL}/get_orders`, { order_ids, perp_order_ids })
     .then((res) => {
       let order_response = res.data.response;
 
