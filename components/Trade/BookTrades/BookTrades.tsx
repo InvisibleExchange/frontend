@@ -22,8 +22,8 @@ interface Props {
 export default function BookTrades({ token, type }: Props) {
   const { liquidity, perpLiquidity } = useContext(WalletContext);
 
-  const [initBq, setInitBq] = useState([]);
-  const [initAq, setInitAq] = useState([]);
+  const [initBq, setInitBq] = useState<any[]>([]);
+  const [initAq, setInitAq] = useState<any[]>([]);
 
   let LIQ =
     type == "spot"

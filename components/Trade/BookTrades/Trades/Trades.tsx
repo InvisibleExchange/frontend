@@ -34,7 +34,6 @@ export default function Trades({ token, type }: Props) {
     };
 
     // const interval = setInterval(() => {
-    // TODO
     //   fetchFills();
     // }, 10000);
 
@@ -46,11 +45,11 @@ export default function Trades({ token, type }: Props) {
   return (
     <div className="flex flex-col flex-1 mt-5 border rounded-sm h-[calc(50%-1.25rem)] border-border_color">
       <div className="px-4 py-3 text-sm tracking-wider font-overpass bg-fg_above_color">
-        Market Trades
+        Latest Fills
       </div>
       <div className="flex py-1 text-sm">
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
-          Size <div className="px-1 py-0.5 ml-1 ">({token})</div>
+          Size <div className="px-1 py-0.5 ml-1 ">(ETH)</div>
         </div>
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
           Price <div className="px-1 py-0.5 ml-1 bg-border_color">(USDC)</div>
@@ -61,19 +60,27 @@ export default function Trades({ token, type }: Props) {
       </div>
       <div className="overflow-x-hidden overflow-y-scroll table_contents">
         {fills
-          ? fills.map((fill: any) => {
+          ? fills.map((fill: any, index: number) => {
               const timestamp = new Date(fill.timestamp * 1000);
+
+              let amount =
+                fill.amount / 10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
+
+              let price =
+                fill.price /
+                10 ** PRICE_DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
+
               return (
-                <div key={fill.timestamp + fill.user_id_a + fill.user_id_b}>
-                  <p className={classNames("pr-3 font-medium")}>
-                    {fill.amount /
-                      10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]}{" "}
-                    ---{" "}
-                    {fill.price /
-                      10 **
-                        PRICE_DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]}{" "}
-                    --- {timestamp.toLocaleTimeString()}
-                  </p>
+                <div className="flex" key={index}>
+                  <div className="flex items-center justify-center flex-grow py-1 text-base">
+                    {amount}
+                  </div>
+                  <div className="flex items-center justify-center flex-grow py-1 text-base ">
+                    {price}
+                  </div>
+                  <div className="flex items-center justify-center flex-grow py-1 text-sm ">
+                    {timestamp.toLocaleTimeString()}
+                  </div>
                 </div>
               );
             })

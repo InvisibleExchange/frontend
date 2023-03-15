@@ -1,11 +1,6 @@
 import React, { useContext, useReducer, useState } from "react";
 import classNames from "classnames";
 import AdjustMarginModal from "./AdjustMarginModal";
-import AdjustSizeModal from "./AdjustSizeModal";
-
-import Button from "react-bootstrap/Button";
-import OverlayTrigger from "react-bootstrap/OverlayTrigger";
-import Tooltip from "react-bootstrap/Tooltip";
 
 import { WalletContext } from "../../../../context/WalletContext";
 
@@ -32,114 +27,119 @@ const Positions = () => {
   }
 
   return (
-    <table className="w-full table-fixed">
-      {/*  */}
-      <thead className="text-fg_middle_color text-[13px] font-overpass text-left">
-        <tr>
-          <th className="py-2 pl-5 text-left font-overpass">Symbol</th>
-          <th className="">Size</th>
-          <th className="pr-3 ">Entry Price</th>
-          <th className="pr-3 ">Mark Price</th>
-          <th className="pr-3 ">Liq.Price</th>
-          <th className="pr-3 ">Leverage</th>
-          <th className="pr-3 ">Margin</th>
-          <th className="pr-3 ">PNL(ROE %)</th>
-          <th className="pr-3  w-96">Close All Positions</th>
-        </tr>
-      </thead>
+    <div className="block footer-table-wrp">
+      <table className="w-full table-fixed">
+        {/*  */}
+        <thead className="text-fg_middle_color text-[13px] font-overpass text-left bg-bg_color">
+          <tr>
+            <th className="py-2 pl-5 text-left font-overpass">Symbol</th>
+            <th className="">Size</th>
+            <th className="pr-3 ">Entry Price</th>
+            <th className="pr-3 ">Mark Price</th>
+            <th className="pr-3 ">Liq.Price</th>
+            <th className="pr-3 ">Leverage</th>
+            <th className="pr-3 ">Margin</th>
+            <th className="pr-3 ">PNL(ROE %)</th>
+            <th className="pr-3  w-96">Close All Positions</th>
+          </tr>
+        </thead>
 
-      {/*  */}
+        {/*  */}
 
-      <tbody>
-        {/* */}
-        {user && user.userId
-          ? positions.map((pos) => {
-              let markPrice = getMarkPrice(54321, true);
-              let entryPrice =
-                pos.entry_price /
-                10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token];
-              let size =
-                pos.position_size /
-                10 ** DECIMALS_PER_ASSET[pos.synthetic_token];
-              let margin = pos.margin / 10 ** COLLATERAL_TOKEN_DECIMALS;
+        <tbody className="overflow-y-auto max-h-24">
+          {/* */}
+          {user && user.userId
+            ? positions.map((pos) => {
+                let markPrice = getMarkPrice(54321, true);
+                let entryPrice =
+                  pos.entry_price /
+                  10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token];
+                let size =
+                  pos.position_size /
+                  10 ** DECIMALS_PER_ASSET[pos.synthetic_token];
+                let margin = pos.margin / 10 ** COLLATERAL_TOKEN_DECIMALS;
 
-              let pnl =
-                pos.order_side == "Long"
-                  ? (markPrice - entryPrice) * size
-                  : (entryPrice - markPrice) * size;
-              let pnlPercent = (pnl / margin) * 100;
+                let pnl =
+                  pos.order_side == "Long"
+                    ? (markPrice - entryPrice) * size
+                    : (entryPrice - markPrice) * size;
+                let pnlPercent = (pnl / margin) * 100;
 
-              let symbolColor =
-                pos.order_side == "Long" ? "text-green_lighter" : "text-red";
-              let pnlColor = pnl >= 0 ? "text-green_lighter" : "text-red";
+                let symbolColor =
+                  pos.order_side == "Long" ? "text-green_lighter" : "text-red";
+                let pnlColor = pnl >= 0 ? "text-green_lighter" : "text-red";
 
-              return (
-                <tr
-                  key={pos.position_address}
-                  className={classNames(
-                    "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
-                  )}
-                >
-                  <td className={classNames("gap-3 py-1 pl-5 font-medium")}>
-                    <p
-                      className={classNames(
-                        "font-bold " + symbolColor.toString()
-                      )}
-                    >
-                      {IDS_TO_SYMBOLS[pos.synthetic_token] + "-PERP"}
-                    </p>
-                    <p
-                      className={classNames(
-                        "text-[12px] " + symbolColor.toString()
-                      )}
-                    >
-                      ({pos.order_side})
-                    </p>
-                  </td>
-                  <td className="font-medium ">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm">
-                        {size.toFixed(3)} {IDS_TO_SYMBOLS[pos.synthetic_token]}
+                return (
+                  <tr
+                    key={pos.position_address}
+                    className={classNames(
+                      "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
+                    )}
+                  >
+                    <td className={classNames("gap-3 py-1 pl-5 font-medium")}>
+                      <p
+                        className={classNames(
+                          "font-bold " + symbolColor.toString()
+                        )}
+                      >
+                        {IDS_TO_SYMBOLS[pos.synthetic_token] + "-PERP"}
                       </p>
-                      {/* <AdjustSizeModal /> */}
-                    </div>
-                  </td>
-                  <td className={classNames("pr-3 font-medium")}>
-                    {entryPrice.toFixed(2)}
-                  </td>
-                  <td className={classNames("pr-3 font-medium ")}>
-                    {markPrice.toFixed(2)} USD
-                  </td>
-                  <td className={classNames("pr-3 font-medium ")}>
-                    {(
-                      pos.liquidation_price /
-                      10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token]
-                    ).toFixed(2)}{" "}
-                    USD
-                  </td>
-                  <td className={classNames("pr-3 font-medium ")}>Leverage</td>
-                  <td className={classNames("pr-3 font-medium ")}>
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <p className="text-sm">{margin.toFixed(2)} USDC</p>
-                        {/* <p className="text-[12px]">(Isolated)</p> */}
+                      <p
+                        className={classNames(
+                          "text-[12px] " + symbolColor.toString()
+                        )}
+                      >
+                        ({pos.order_side})
+                      </p>
+                    </td>
+                    <td className="font-medium ">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm">
+                          {size.toFixed(3)}{" "}
+                          {IDS_TO_SYMBOLS[pos.synthetic_token]}
+                        </p>
+                        {/* <AdjustSizeModal /> */}
                       </div>
-                      <AdjustMarginModal position={pos} />
-                    </div>
-                  </td>
-                  <td className={classNames("pr-3 font-medium " + pnlColor)}>
-                    <p>{pnl.toFixed(2)} USD</p>
-                    <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
-                  </td>
-                  {/*  */}
-                  <CloseField user={user} pos={pos} />
-                  {/*  */}
-                </tr>
-              );
-            })
-          : null}
-      </tbody>
-    </table>
+                    </td>
+                    <td className={classNames("pr-3 font-medium")}>
+                      {entryPrice.toFixed(2)}
+                    </td>
+                    <td className={classNames("pr-3 font-medium ")}>
+                      {markPrice.toFixed(2)} USD
+                    </td>
+                    <td className={classNames("pr-3 font-medium ")}>
+                      {(
+                        pos.liquidation_price /
+                        10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token]
+                      ).toFixed(2)}{" "}
+                      USD
+                    </td>
+                    <td className={classNames("pr-3 font-medium ")}>
+                      Leverage
+                    </td>
+                    <td className={classNames("pr-3 font-medium ")}>
+                      <div className="flex items-center gap-2">
+                        <div>
+                          <p className="text-sm">{margin.toFixed(2)} USDC</p>
+                          {/* <p className="text-[12px]">(Isolated)</p> */}
+                        </div>
+                        <AdjustMarginModal position={pos} />
+                      </div>
+                    </td>
+                    <td className={classNames("pr-3 font-medium " + pnlColor)}>
+                      <p>{pnl.toFixed(2)} USD</p>
+                      <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
+                    </td>
+                    {/*  */}
+                    <CloseField user={user} pos={pos} />
+                    {/*  */}
+                  </tr>
+                );
+              })
+            : null}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

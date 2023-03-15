@@ -85,11 +85,7 @@
   /* --onboard-wallet-button-box-shadow: red; */
   --onboard-wallet-button-box-shadow-hover: lime;
   --onboard-wallet-app-icon-border-color: var(--fg_below_color);
-
-
-  
 }
-
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -199,22 +195,18 @@ article > div > div {
   height: 300px !important;
 }
 
-
-@keyframes spinner {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.table-wrp {
+  max-height: 40vh;
+  overflow-y: auto;
+  display: block;
 }
-.loading-spinner {
-  width: 30px;
-  height: 30px;
-  border: 10px solid #868687; /* Light grey */
-  border-top: 10px solid #000000; /* Black */
-  border-radius: 50%;
-  animation: spinner 1s linear infinite;
+thead {
+  position: sticky;
+  top: -1px;
 }
 
-
+.footer-table-wrp {
+  max-height: 30vh;
+  overflow-y: auto;
+  display: block;
+}

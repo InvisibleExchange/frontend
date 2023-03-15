@@ -27,7 +27,18 @@ interface Props {
   token: string;
 }
 
-export default function Book({ token, bidQueue, askQueue }: Props) {
+export default function Book({ token, bidQueue, askQueue: aq }: Props) {
+  let askQueue: any[] = [];
+  for (let i = aq.length - 1; i >= 0; i--) {
+    askQueue.push(aq[i]);
+  }
+
+  let spread =
+    !askQueue.length || !bidQueue.length
+      ? 0
+      : askQueue[askQueue.length - 1].price - bidQueue[0].price;
+  let spreadPercentage = spread == 0 ? 0 : (spread / askQueue[0].price) * 100;
+
   return (
     <div className="border rounded-sm h-1/2 border-border_color">
       <div className="px-4 py-3 text-sm tracking-wider font-overpass bg-fg_above_color">
@@ -35,66 +46,70 @@ export default function Book({ token, bidQueue, askQueue }: Props) {
       </div>
       <div className="flex py-1 text-sm">
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
-          Size{" "}
-          <div className="px-1 py-0.5 ml-1 text-fg_below_color">({token})</div>
+          Price <div className="px-1 py-0.5 ml-1">(USDC)</div>
         </div>
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
-          Price <div className="px-1 py-0.5 ml-1">(USDC)</div>
+          Size{" "}
+          <div className="px-1 py-0.5 ml-1 text-fg_below_color">({token})</div>
         </div>
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
           Total(USDC)
         </div>
       </div>
-      <div className="overflow-x-hidden overflow-y-scroll table_contents">
-        <div className=""></div>
-        <div className="flex p-1 border-y-2 border-y-border_color">
-          <div className="flex justify-center flex-1">Spread</div>
-          <div className="flex justify-center flex-1">
-            {/* {prettyBalance(spread)} */}
-          </div>
-          <div className="flex justify-center flex-1">
-            {/* {prettyBalance(spreadPercentage, 2)}% */}
-          </div>
-        </div>
-        <div className="">
-          {bidQueue
-            ? bidQueue.map((order) => {
-                let color = "text-green_lighter";
-
+      <div className="overflow-x-hidden overflow-y-scroll table_contents ">
+        {/* ASK QUEUE */}
+        <div className="h-[120px] overflow-y-scroll table_contents">
+          {askQueue.length > 0
+            ? askQueue.map((order, index) => {
                 let amount =
                   order.amount /
                   10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
 
                 return (
-                  <div key={order.timestamp}>
-                    <p className={classNames("pr-3 font-medium " + color)}>
-                      {amount.toFixed(3)} {"----"} {order.price.toFixed(2)}{" "}
-                      {"----"} {(amount * order.price).toFixed(3)}{" "}
-                    </p>
+                  <div className="flex" key={index}>
+                    <div className="flex items-center justify-center flex-grow py-1 text-base  text-red">
+                      {order.price.toFixed(2)}
+                    </div>
+                    <div className="flex items-center justify-center flex-grow py-1 text-base">
+                      {amount.toFixed(3)}
+                    </div>
+                    <div className="flex items-center justify-center flex-grow py-1 text-sm">
+                      {(amount * order.price).toFixed(2)}
+                    </div>
                   </div>
                 );
               })
             : null}
         </div>
-        <br></br>
-        <div className="">
-          {askQueue
-            ? askQueue.map((order) => {
-                let color = "text-red";
 
+        {/* SPREAD */}
+        <div className="flex p-1 border-y-2 border-y-border_color">
+          <div className="flex justify-center flex-1">{spread.toFixed(2)}</div>
+          <div className="flex justify-center flex-1">
+            {spreadPercentage.toFixed(2) + "%"}
+          </div>
+          <div className="flex justify-center flex-1">Spread</div>
+        </div>
+
+        {/* BID QUEUE */}
+        <div className="h-[120px] overflow-y-scroll table_contents">
+          {bidQueue
+            ? bidQueue.map((order, index) => {
                 let amount =
                   order.amount /
                   10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
 
-                console.log("amount: ", amount);
-
                 return (
-                  <div key={order.timestamp}>
-                    <p className={classNames("pr-3 font-medium " + color)}>
-                      {amount.toFixed(3)} {"----"} {order.price.toFixed(2)}{" "}
-                      {"----"}
-                      {(amount * order.price).toFixed(3)}{" "}
-                    </p>
+                  <div className="flex" key={index}>
+                    <div className="flex items-center justify-center flex-grow py-1 text-base text-green">
+                      {order.price.toFixed(2)}
+                    </div>
+                    <div className="flex items-center justify-center flex-grow py-1 text-base">
+                      {amount.toFixed(3)}
+                    </div>
+                    <div className="flex items-center justify-center flex-grow py-1 text-sm">
+                      {(amount * order.price).toFixed(2)}
+                    </div>
                   </div>
                 );
               })
@@ -104,3 +119,44 @@ export default function Book({ token, bidQueue, askQueue }: Props) {
     </div>
   );
 }
+
+// {bidQueue
+//   ? bidQueue.map((order) => {
+//       let color = "text-green_lighter";
+
+//       let amount =
+//         order.amount /
+//         10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
+
+//       return (
+//         <div key={order.timestamp}>
+//           <p className={classNames("pr-3 font-medium " + color)}>
+//             {amount.toFixed(3)} {"----"} {order.price.toFixed(2)}{" "}
+//             {"----"} {(amount * order.price).toFixed(3)}{" "}
+//           </p>
+//         </div>
+//       );
+//     })
+//   : null}
+
+// {askQueue
+//   ? askQueue.map((order) => {
+//       let color = "text-red";
+
+//       let amount =
+//         order.amount /
+//         10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
+
+//       console.log("amount: ", amount);
+
+//       return (
+//         <div key={order.timestamp}>
+//           <p className={classNames("pr-3 font-medium " + color)}>
+//             {amount.toFixed(3)} {"----"} {order.price.toFixed(2)}{" "}
+//             {"----"}
+//             {(amount * order.price).toFixed(3)}{" "}
+//           </p>
+//         </div>
+//       );
+//     })
+//   : null}
