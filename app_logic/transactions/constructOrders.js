@@ -75,8 +75,10 @@ async function sendSpotOrder(
     spendToken = quoteToken;
     receiveToken = baseToken;
 
-    spendAmount = quoteAmount * 10 ** quoteDecimals;
-    let priceScaled = price ? price * 10 ** priceDecimals : null;
+    spendAmount = Number.parseInt(quoteAmount * 10 ** quoteDecimals);
+    let priceScaled = price
+      ? Number.parseInt(price * 10 ** priceDecimals)
+      : null;
     receiveAmount = price
       ? Number.parseInt(
           (BigInt(spendAmount) * 10n ** BigInt(decimalMultiplier)) /
@@ -87,8 +89,10 @@ async function sendSpotOrder(
     spendToken = baseToken;
     receiveToken = quoteToken;
 
-    spendAmount = baseAmount * 10 ** baseDecimals;
-    let priceScaled = price ? price * 10 ** priceDecimals : null;
+    spendAmount = Number.parseInt(baseAmount * 10 ** baseDecimals);
+    let priceScaled = price
+      ? Number.parseInt(price * 10 ** priceDecimals)
+      : null;
     receiveAmount = price
       ? Number.parseInt(
           (BigInt(spendAmount) * BigInt(priceScaled)) /
@@ -289,6 +293,8 @@ async function sendPerpOrder(
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
 
+  console.log("Order submitted successful!", orderJson);
+
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
     .then((res) => {
@@ -421,6 +427,8 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
     !orderId ||
     !(orderSide == true || orderSide == false)
   ) {
+    console.log(isPerp, marketId, orderId, orderSide);
+
     throw new Error("Invalid parameters");
   }
 
@@ -457,12 +465,14 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
             (o) => o.order_id != orderId
           );
         } else {
-          let ord = user.orders[i];
-          if (ord.orderId == orderId) {
-            let notes_in = ord.notes_in;
-            if (notes_in.length > 0) {
-              for (let note of notes_in) {
-                user.noteData[note.token].push(note);
+          for (let i = 0; i < user.orders.length; i++) {
+            let ord = user.orders[i];
+            if (ord.orderId == orderId) {
+              let notes_in = ord.notes_in;
+              if (notes_in.length > 0) {
+                for (let note of notes_in) {
+                  user.noteData[note.token].push(note);
+                }
               }
             }
           }

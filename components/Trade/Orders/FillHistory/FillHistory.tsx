@@ -12,12 +12,6 @@ const FillHistory = () => {
   const { user } = useContext(WalletContext);
   // [{base_token, amount, price, side, time, isPerp}]
 
-  if (user.fills && user.fills.length > 0) {
-    for (let i = 0; i < 9; i++) {
-      user.fills.push(user.fills[0]);
-    }
-  }
-
   return (
     <div className="block footer-table-wrp">
       <table className="w-full table-fixed">

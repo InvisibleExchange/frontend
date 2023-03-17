@@ -17,7 +17,7 @@ class PerpOrder {
     close_order_fields
   ) {
     this.expiration_timestamp = expiration_timestamp;
-    this.position = { ...position };
+    this.position = position ? { ...position } : null;
     this.position_effect_type = position_effect_type;
     this.order_side = order_side;
     this.synthetic_token = synthetic_token;
@@ -93,7 +93,6 @@ class PerpOrder {
       this.collateral_amount,
       this.fee_limit,
     ];
-
 
     let order_hash = computeHashOnElements(hash_inputs);
 
@@ -182,6 +181,7 @@ class PerpOrder {
       ? this.close_order_fields.toGrpcObject()
       : null;
 
+    console.log("pos: ", this.position);
     if (this.position) {
       this.position.order_side = this.position.order_side == "Long" ? 0 : 1;
     }
@@ -235,7 +235,6 @@ class OpenOrderFields {
     hash_inputs.push(this.collateral_token);
     hash_inputs.push(BigInt(this.position_address));
     hash_inputs.push(this.blinding);
-
 
     return computeHashOnElements(hash_inputs);
   }

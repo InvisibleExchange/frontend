@@ -170,15 +170,20 @@ function handleSwapResult(user, orderId, swap_response) {
     user.noteData[swapNote.token] = [swapNote];
   }
 
-  let newPfrNote_ = swap_response.new_pfr_note;
-  if (newPfrNote_) {
-    let newPfrNote = Note.fromGrpcObject(newPfrNote_);
-    user.pfrNotes.push(newPfrNote);
-  }
+  // let newPfrNote_ = swap_response.new_pfr_note;
+  // if (newPfrNote_) {
+  //   let newPfrNote = Note.fromGrpcObject(newPfrNote_);
+  //   user.pfrNotes.push(newPfrNote);
+  // }
 
   if (user.refundNotes[orderId]) {
     let refund_note = user.refundNotes[orderId];
-    user.noteData[refund_note.token].push(refund_note);
+
+    if (user.noteData[refund_note.token]) {
+      user.noteData[refund_note.token].push(refund_note);
+    } else {
+      user.noteData[refund_note.token] = [refund_note];
+    }
     user.refundNotes[orderId] = null;
   } else {
     user.refundNotes[orderId] = true;
@@ -222,12 +227,12 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     user.positionData[position.synthetic_token] = [position];
   }
 
-  // ? Save partiall fill note (if not null)
-  let newPfrInfo = swap_response.new_pfr_info;
-  if (newPfrInfo && newPfrInfo[0]) {
-    let newPfrNote = Note.fromGrpcObject(newPfrInfo[0]);
-    user.pfrNotes.push(newPfrNote);
-  }
+  // // ? Save partiall fill note (if not null)
+  // let newPfrInfo = swap_response.new_pfr_info;
+  // if (newPfrInfo && newPfrInfo[0]) {
+  //   let newPfrNote = Note.fromGrpcObject(newPfrInfo[0]);
+  //   user.pfrNotes.push(newPfrNote);
+  // }
 
   // ? Save return collateral note (if not null)
   let returnCollateralNote = swap_response.return_collateral_note;
@@ -253,7 +258,14 @@ function handlePerpSwapResult(user, orderId, swap_response) {
   }
 
   if (user.refundNotes[orderId]) {
-    user.noteData[COLLATERAL_TOKEN].push(user.refundNotes[orderId]);
+    let refund_note = user.refundNotes[orderId];
+
+    if (user.noteData[refund_note.token]) {
+      user.noteData[refund_note.token].push(refund_note);
+    } else {
+      user.noteData[refund_note.token] = [refund_note];
+    }
+
     user.refundNotes[orderId] = null;
   } else {
     user.refundNotes[orderId] = true;

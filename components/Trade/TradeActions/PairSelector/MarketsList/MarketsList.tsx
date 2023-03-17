@@ -89,22 +89,22 @@ export default function MarketsList({
         })}
       </div>
 
-      <div>
+      <div className="block table-wrp">
         <table className="w-full table-fixed">
-          <thead className="border-y border-border_color text-fg_middle_color">
+          <thead className="sticky border-y border-border_color text-fg_middle_color ">
             <tr>
-              <th className="py-2 pl-3 text-[13px] font-light text-left font-overpass">
+              <th className="py-2 pl-3 text-[13px] font-light text-left font-overpass bg-bg_color">
                 Pairs
               </th>
-              <th className="text-[13px] font-light text-right font-overpass">
+              <th className="text-[13px] font-light text-right font-overpass bg-bg_color">
                 Last Price
               </th>
-              <th className="pr-3 text-[13px] font-light text-right font-overpass">
+              <th className="pr-3 text-[13px] font-light text-right font-overpass bg-bg_color">
                 Change
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="overflow-y-auto max-h-24">
             {filteredMarkets.map((item: any, index: any) => {
               return (
                 <tr
@@ -117,7 +117,7 @@ export default function MarketsList({
                     setCurrentMarket(item);
                   }}
                 >
-                  <td className="py-2.5 pl-3  flex items-center gap-3">
+                  <td className="py-2.5 pl-3  max-h-12 flex items-center gap-3 overflow-y-auto">
                     <button>
                       <HiOutlineStar className="w-3 h-3" />
                     </button>
@@ -125,12 +125,12 @@ export default function MarketsList({
                       {item.pairs}
                     </p>
                   </td>
-                  <td className="text-sm text-right dark:text-white text-fg_below_color">
+                  <td className="text-sm text-right dark:text-white text-fg_below_color max-h-12">
                     {item.lastPrice}
                   </td>
                   <td
                     className={classNames(
-                      "pr-3 text-sm text-right",
+                      "pr-3 text-sm text-right max-h-12",
                       item.change > 0 ? "text-green_lighter" : "text-red"
                     )}
                   >

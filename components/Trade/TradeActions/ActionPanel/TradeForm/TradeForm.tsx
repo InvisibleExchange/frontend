@@ -41,6 +41,10 @@ const TradeForm = ({ type, perpType, token }: props) => {
   let { user, userAddress, login, connect, forceRerender } =
     useContext(WalletContext);
 
+  if (user && user.userId) {
+    console.log(user.noteData);
+  }
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   let positionData =
@@ -681,3 +685,6 @@ function calculateNewLiqPrice(
     }
   }
 }
+
+
+
