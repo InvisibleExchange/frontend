@@ -8,6 +8,12 @@ import TooltipSpotSlider from "../TooltipSpotSlider";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
 
 const {
+  _renderActionButtons,
+  _renderConnectButton,
+  _renderLoginButton,
+} = require("./FormHelpers");
+
+const {
   get_max_leverage,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
@@ -26,24 +32,16 @@ const {
   calulateLiqPriceInFlipSide,
 } = require("../../../../../app_logic/helpers/tradePriceCalculations");
 
-const {
-  sendSpotOrder,
-  sendPerpOrder,
-} = require("../../../../../app_logic/transactions/constructOrders");
-
 type props = {
   type: string;
   perpType: string;
   token: string;
+  action: string;
 };
 
-const TradeForm = ({ type, perpType, token }: props) => {
+const TradeForm = ({ type, perpType, token, action }: props) => {
   let { user, userAddress, login, connect, forceRerender } =
     useContext(WalletContext);
-
-  if (user && user.userId) {
-    console.log(user.noteData);
-  }
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -53,203 +51,45 @@ const TradeForm = ({ type, perpType, token }: props) => {
       : null;
   positionData = positionData ? positionData[0] : null;
 
+  const maxBase = user
+    ? user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
+      10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+    : 0;
+  const maxQuote = user
+    ? user.getAvailableAmount(COLLATERAL_TOKEN) /
+      10 ** COLLATERAL_TOKEN_DECIMALS
+    : 0;
+
   const tradeType = useSelector(tradeTypeSelector);
 
   function percentFormatter(v: any) {
     return `${v}`;
   }
 
-  const _renderActionButtons = () => {
-    return (
-      <div className="flex items-center gap-2 mt-14">
-        <button
-          onClick={async () => {
-            if (!user || !baseAmount) {
-              alert("Choose an amount to trade");
-              return;
-            }
-
-            if (perpType == "perpetual") {
-              try {
-                //
-                if (positionData && positionData.order_side == "Long") {
-                  if (
-                    // TODO: This should account for active orders as well
-                    !checkViableSizeAfterIncrease(
-                      positionData,
-                      baseAmount,
-                      price
-                    )
-                  ) {
-                    alert("Increase size too large for current margin");
-                    return;
-                  }
-                }
-
-                if (positionData && positionData.order_side == "Short") {
-                  if (
-                    baseAmount * 10 ** DECIMALS_PER_ASSET[token] >
-                    positionData.position_size
-                  ) {
-                    if (
-                      // TODO: This should account for active orders as well
-                      !checkViableSizeAfterFlip(positionData, baseAmount, price)
-                    ) {
-                      alert("Increase size too large for current margin");
-                      return;
-                    }
-                  }
-                }
-
-                //
-
-                let expirationTimesamp = 1000;
-                let feeLimitPercent = 0.07;
-
-                await sendPerpOrder(
-                  user,
-                  "Long",
-                  expirationTimesamp,
-                  positionData ? "Modify" : "Open",
-                  SYMBOLS_TO_IDS[token],
-                  baseAmount,
-                  type == "market" ? null : price,
-                  quoteAmount,
-                  feeLimitPercent
-                );
-                alert("Success!");
-              } catch (error) {
-                alert("Error: " + error);
-              }
-            } else {
-              try {
-                let expirationTimesamp = 1000;
-                let feeLimitPercent = 0.07;
-                await sendSpotOrder(
-                  user,
-                  "Buy",
-                  expirationTimesamp,
-                  SYMBOLS_TO_IDS[token],
-                  COLLATERAL_TOKEN,
-                  baseAmount,
-                  quoteAmount,
-                  type == "market" ? null : price,
-                  feeLimitPercent
-                );
-                alert("Success!");
-              } catch (error) {
-                alert("Error: " + error);
-              }
-            }
-
-            forceRerender();
-          }}
-          className="w-full py-2 uppercase rounded-md bg-green_lighter shadow-green font-overpass hover:shadow-green_dark hover:opacity-90"
-        >
-          BUY
-        </button>
-        <button
-          onClick={async () => {
-            if (perpType == "perpetual") {
-              try {
-                if (positionData && positionData.order_side == "Short") {
-                  if (
-                    !checkViableSizeAfterIncrease(
-                      positionData,
-                      baseAmount,
-                      price
-                    )
-                  ) {
-                    alert("Increase size too large for current margin");
-                    return;
-                  }
-                }
-
-                let expirationTimesamp = 1000;
-                let feeLimitPercent = 0.07;
-                await sendPerpOrder(
-                  user,
-                  "Short",
-                  expirationTimesamp,
-                  positionData ? "Modify" : "Open",
-                  SYMBOLS_TO_IDS[token],
-                  baseAmount,
-                  type == "market" ? null : price,
-                  quoteAmount,
-                  feeLimitPercent
-                );
-                alert("Success!");
-              } catch (error) {
-                alert("Error: " + error);
-              }
-            } else {
-              let expirationTimesamp = 1000;
-              let feeLimitPercent = 0.07;
-              await sendSpotOrder(
-                user,
-                "Sell",
-                expirationTimesamp,
-                SYMBOLS_TO_IDS[token],
-                COLLATERAL_TOKEN,
-                baseAmount,
-                quoteAmount,
-                type == "market" ? null : price,
-                feeLimitPercent
-              );
-              alert("Success!");
-              try {
-              } catch (error) {
-                alert("Error: " + error);
-              }
-            }
-
-            forceRerender();
-          }}
-          className="w-full py-2 uppercase rounded-md bg-red_lighter shadow-red font-overpass hover:shadow-red_dark hover:opacity-90"
-        >
-          SELL
-        </button>
-      </div>
+  function renderActionButtons() {
+    return _renderActionButtons(
+      user,
+      baseAmount,
+      price,
+      perpType,
+      positionData,
+      token,
+      type,
+      quoteAmount,
+      forceRerender,
+      action
     );
-  };
 
-  const _renderConnectButton = () => {
-    return (
-      <button
-        className="w-full px-8 py-2 font-medium text-center text-white rounded-md mt-14 bg-blue hover:opacity-75"
-        onClick={() => connect()}
-      >
-        Connect Wallet
-      </button>
-    );
-  };
-  const _renderLoginButton = () => {
-    return (
-      <div>
-        {isLoading ? (
-          <div className="mt-14 ml-32 mr-32">
-            <LoadingSpinner />
-          </div>
-        ) : (
-          <button
-            className="w-full px-8 py-2 font-medium text-center text-white rounded-md mt-14 bg-blue hover:opacity-75"
-            onClick={async () => {
-              try {
-                setIsLoading(true);
-                user = await login();
-                setIsLoading(false);
-                forceRerender();
-              } catch (error) {
-                console.log(error);
-              }
-            }}
-          >
-            Login
-          </button>
-        )}
-      </div>
-    );
-  };
+    // return <div></div>;
+  }
+
+  function renderConnectButton() {
+    return _renderConnectButton(connect);
+  }
+
+  function renderLoginButton() {
+    return _renderLoginButton(isLoading, setIsLoading, login, forceRerender);
+  }
 
   const [leverage, setLeverage] = useState(1);
   const [maxLeverage, setMaxLeverage] = useState(MAX_LEVERAGE);
@@ -280,6 +120,9 @@ const TradeForm = ({ type, perpType, token }: props) => {
       if (baseAmount) {
         let quoteAmount = baseAmount * price;
         setQuoteAmount(Number(quoteAmount.toFixed(3)));
+      } else if (quoteAmount) {
+        let baseAmount = quoteAmount / price;
+        setBaseAmount(Number(baseAmount.toFixed(3)));
       }
     }
   };
@@ -356,6 +199,24 @@ const TradeForm = ({ type, perpType, token }: props) => {
         let initMargin = nominalValue / leverage;
 
         setQuoteAmount(Number(initMargin.toFixed(3)));
+      }
+    } else {
+      if (action == "buy") {
+        let quoteAmount = (val / 100) * maxQuote;
+        setQuoteAmount(Number(quoteAmount.toFixed(3)));
+
+        if (price) {
+          let baseAmount_ = quoteAmount / price;
+          setBaseAmount(Number(baseAmount_.toFixed(3)));
+        }
+      } else {
+        let baseAmount_ = (val / 100) * maxBase;
+        setBaseAmount(Number(baseAmount_.toFixed(3)));
+
+        if (price) {
+          let quoteAmount = baseAmount_ * price;
+          setQuoteAmount(Number(quoteAmount.toFixed(3)));
+        }
       }
     }
   };
@@ -455,7 +316,7 @@ const TradeForm = ({ type, perpType, token }: props) => {
               <TooltipSpotSlider
                 tipFormatter={percentFormatter}
                 tipProps={{ overlayClassName: "foo" }}
-                onChange={console.log}
+                onChange={handleSliderChange}
               />
             </div>
           )}
@@ -464,9 +325,9 @@ const TradeForm = ({ type, perpType, token }: props) => {
       {/* Submit button ====================================== */}
       {userAddress
         ? user && user.userId
-          ? _renderActionButtons()
-          : _renderLoginButton()
-        : _renderConnectButton()}
+          ? renderActionButtons()
+          : renderLoginButton()
+        : renderConnectButton()}
       {/* Fee ====================================== */}
       <div className="flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
         <p className="font-light text-[12px]">Protocol fee</p>
@@ -685,6 +546,3 @@ function calculateNewLiqPrice(
     }
   }
 }
-
-
-

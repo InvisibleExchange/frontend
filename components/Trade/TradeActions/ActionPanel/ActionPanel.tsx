@@ -5,12 +5,21 @@ import classNames from "classnames";
 import LimitTabPanel from "./LimitTabPanel";
 import MarketTabPanel from "./MarketTabPanel";
 import WalletContext from "../../../../context/WalletContext";
+import PerpetualForm from "./PerpetualForm/PerpetualForm";
+import SpotForm from "./SpotForm";
 
 const ActionPanel = ({ perpType, token }) => {
   let [categories] = useState(["Limit", "Market"]);
+
   return (
     <div>
-      <Tab.Group>
+      {perpType == "perpetual" ? (
+        <PerpetualForm perpType={perpType} token={token} />
+      ) : (
+        <SpotForm perpType={perpType} token={token} />
+      )}
+
+      {/* <Tab.Group>
         <Tab.List className="flex pl-4 space-x-5 rounded-xl bg-blue-900/20">
           {categories.map((category) => (
             <Tab
@@ -36,7 +45,7 @@ const ActionPanel = ({ perpType, token }) => {
             token={token}
           />
         </Tab.Panels>
-      </Tab.Group>
+      </Tab.Group> */}
     </div>
   );
 };
