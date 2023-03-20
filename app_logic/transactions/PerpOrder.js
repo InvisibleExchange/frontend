@@ -181,7 +181,6 @@ class PerpOrder {
       ? this.close_order_fields.toGrpcObject()
       : null;
 
-    console.log("pos: ", this.position);
     if (this.position) {
       this.position.order_side = this.position.order_side == "Long" ? 0 : 1;
     }

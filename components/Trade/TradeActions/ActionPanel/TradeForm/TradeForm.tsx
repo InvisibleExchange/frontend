@@ -6,6 +6,7 @@ import { tradeTypeSelector } from "../../../../../lib/store/features/apiSlice";
 import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import TooltipSpotSlider from "../TooltipSpotSlider";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
+import { Toggle } from "../../../../Layout/Toggle/ToggleButton";
 
 const {
   _renderActionButtons,
@@ -77,10 +78,9 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       type,
       quoteAmount,
       forceRerender,
-      action
+      action,
+      refundNow
     );
-
-    // return <div></div>;
   }
 
   function renderConnectButton() {
@@ -221,6 +221,10 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
     }
   };
 
+  const [refundNow, setRefundNow] = useState<boolean>(false);
+
+  console.log(user ? user.noteData : null);
+
   return (
     <div className="mt-2">
       {/* Price ====================================== */}
@@ -322,6 +326,16 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
           )}
         </div>
       )}
+      {/*  */}
+
+      <div className="pt-5 mt-5 pb-0 mb-0">
+        <Toggle
+          label={"refund immediately"}
+          toggled={refundNow}
+          onClick={setRefundNow}
+        />
+      </div>
+
       {/* Submit button ====================================== */}
       {userAddress
         ? user && user.userId

@@ -49,6 +49,8 @@ async function sendSpotOrder(
   price,
   feeLimit
 ) {
+  console.log("SEND SPOT ORDER");
+
   if (
     !expirationTime ||
     !baseToken ||
@@ -128,6 +130,8 @@ async function sendSpotOrder(
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
 
+  console.log(orderJson);
+
   user.awaittingOrder = true;
   await axios
     .post(`${EXPRESS_APP_URL}/submit_limit_order`, orderJson)
@@ -150,7 +154,7 @@ async function sendSpotOrder(
           quote_asset: quoteToken,
           expiration_timestamp: expirationTime,
           fee_limit: feeLimit,
-          notes_in: limitOrder.notesIn,
+          notes_in: limitOrder.notes_in,
           order_id: order_response.order_id,
           order_side,
           price: price,
@@ -166,8 +170,6 @@ async function sendSpotOrder(
           }
         }
 
-        console.log("orderData: ", orderData);
-
         // ? Add the refund note
         if (orderData.refund_note) {
           if (user.refundNotes[order_response.order_id]) {
@@ -175,14 +177,10 @@ async function sendSpotOrder(
             user.noteData[orderData.refund_note.token].push(
               orderData.refund_note
             );
-
-            console.log("refund note added1: ", orderData.refund_note);
           } else {
             // If this is a limit order then we need to wait for the order to be filled
             // (untill we receive a response through the websocket)
             user.refundNotes[order_response.order_id] = orderData.refund_note;
-
-            console.log("refund note added2: ", orderData.refund_note);
           }
         }
 
@@ -293,8 +291,6 @@ async function sendPerpOrder(
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
 
-  console.log("Order submitted successful!", orderJson);
-
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
     .then((res) => {
@@ -376,7 +372,7 @@ async function sendPerpOrder(
       }
     });
 
-  console.log("user.refundNotes", user.refundNotes);
+  console.log("SEND PERP ORDER");
 }
 
 async function sendLiquidationOrder(user, expirationTime, position) {
@@ -398,8 +394,6 @@ async function sendLiquidationOrder(user, expirationTime, position) {
 
       if (order_response.successful) {
         console.log("Order submitted successful!");
-
-        console.log("order_response: ", order_response);
       } else {
         let msg =
           "Failed to submit order with error: \n" +
@@ -427,9 +421,13 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
     !orderId ||
     !(orderSide == true || orderSide == false)
   ) {
-    console.log(isPerp, marketId, orderId, orderSide);
-
     throw new Error("Invalid parameters");
+  }
+
+  if (orderSide === 1 || orderSide === false) {
+    orderSide = false;
+  } else {
+    orderSide = true;
   }
 
   let cancelReq = {
@@ -439,6 +437,8 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
     user_id: trimHash(user.userId, 64).toString(),
     is_perp: isPerp,
   };
+
+  console.log(cancelReq);
 
   await axios
     .post("http://localhost:4000/cancel_order", cancelReq)
@@ -479,11 +479,6 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
 
           user.orders = user.orders.filter((o) => o.order_id != orderId);
         }
-
-        // TODO !
-        // if (order_response.pfr_note) {
-        //   user.pfrNotes.filter((n) => n.index != order_response.pfr_note.index);
-        // }
       } else {
         console.log("error canceling order: ", order_response.error_message);
       }
@@ -592,6 +587,8 @@ async function sendSplitOrder(user, token, newAmounts) {
     .then((res) => {
       let split_response = res.data.response;
 
+      console.log("SPLIT RESPONSE: ", split_response);
+
       if (split_response.successful) {
         let zero_idxs = split_response.zero_idxs;
 
@@ -602,6 +599,8 @@ async function sendSplitOrder(user, token, newAmounts) {
         console.log(msg);
       }
     });
+
+  console.log("SEND SPLIT ORDER");
 }
 
 // * ======================================================================
@@ -651,7 +650,6 @@ async function sendChangeMargin(
     },
   };
 
-  console.log("noteData1: ", user.noteData);
   await axios
     .post(`${EXPRESS_APP_URL}/change_position_margin`, marginChangeMessage)
     .then((res) => {
@@ -717,8 +715,6 @@ async function sendChangeMargin(
 
             pos.hash = hash.toString();
 
-            console.log("pos: ", pos);
-
             return pos;
           } else {
             return pos;
@@ -731,8 +727,6 @@ async function sendChangeMargin(
         console.log(msg);
       }
     });
-
-  console.log("noteData2: ", user.noteData);
 }
 
 module.exports = {

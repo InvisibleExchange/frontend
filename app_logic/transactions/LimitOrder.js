@@ -16,7 +16,7 @@ module.exports = class LimitOrder {
     dest_received_address,
     dest_spent_blinding,
     dest_received_blinding,
-    notesIn,
+    notes_in,
     refund_note
   ) {
     this.expiration_timestamp = expiration_timestamp;
@@ -31,14 +31,14 @@ module.exports = class LimitOrder {
     this.dest_spent_blinding = dest_spent_blinding;
     this.dest_received_blinding = dest_received_blinding;
     // ==================================
-    this.notesIn = notesIn;
+    this.notes_in = notes_in;
     this.refund_note = refund_note;
     this.order_hash = this.hashOrder();
     this.signature = null;
   }
 
   hashOrder() {
-    let noteHashes = this.notesIn.map((note) => note.hash);
+    let noteHashes = this.notes_in.map((note) => note.hash);
     let refundHash = this.refund_note ? this.refund_note.hash : 0n;
 
     let hashInputs = noteHashes
@@ -73,10 +73,6 @@ module.exports = class LimitOrder {
 
     this.signature = sig;
 
-    console.log("Signature: ", sig);
-    console.log("Order hash: ", order_hash.toString());
-    console.log("pub key: ", keyPair.getPublic().getX().toString());
-
     return sig;
   }
 
@@ -98,7 +94,7 @@ module.exports = class LimitOrder {
       },
       dest_spent_blinding: this.dest_spent_blinding.toString(),
       dest_received_blinding: this.dest_received_blinding.toString(),
-      notes_in: this.notesIn.map((note) => note.toGrpcObject()),
+      notes_in: this.notes_in.map((note) => note.toGrpcObject()),
       refund_note: this.refund_note ? this.refund_note.toGrpcObject() : null,
       signature: {
         r: this.signature[0].toString(),

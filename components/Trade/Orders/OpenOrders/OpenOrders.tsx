@@ -39,9 +39,6 @@ const OpenOrders = () => {
 
     await sendCancelOrder(user, orderId, orderSide, isPerp, marketId);
 
-    console.log("order cancelled");
-    console.log("user orders: ", user.perpetualOrders);
-
     setCancelling(false);
   };
 
@@ -80,6 +77,7 @@ const OpenOrders = () => {
               const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
               let baseAsset = isPerp ? order.synthetic_token : order.base_asset;
 
+              let color = order.order_side ? "text-red" : "text-green_lighter";
               return (
                 <tbody key={baseAsset} className="overflow-y-auto max-h-24">
                   <tr
@@ -88,23 +86,27 @@ const OpenOrders = () => {
                     )}
                   >
                     {/* SYMBOL */}
-                    <td className={classNames("gap-3 py-1 pl-5 font-medium")}>
+                    <td
+                      className={classNames(
+                        "gap-3 py-1 pl-5 font-medium " + color
+                      )}
+                    >
                       <p className="font-bold">{IDS_TO_SYMBOLS[baseAsset]}</p>
                       {/* <p className="text-[12px]">(Perpetual)</p> */}
                     </td>
                     {/* Market type */}
                     <td className="font-medium">
-                      {isPerp ? "PERPETUAl" : "SPOT"}
+                      {isPerp ? "PERPETUAL" : "SPOT"}
                     </td>
                     {/* Buy sell */}
                     <td className={classNames("pr-3 font-medium")}>
                       {order.order_side
                         ? isPerp
-                          ? "Long"
-                          : "Buy"
+                          ? "Short"
+                          : "Sell"
                         : isPerp
-                        ? "Short"
-                        : "Sell"}
+                        ? "Long"
+                        : "Buy"}
                     </td>
                     {/* Price */}
                     <td className={classNames("pr-3 font-medium")}>

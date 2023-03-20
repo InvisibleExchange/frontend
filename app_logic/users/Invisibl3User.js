@@ -42,6 +42,12 @@ const {
 } = require("../transactions/PerpOrder");
 const Withdrawal = require("../transactions/Withdrawal");
 
+const DUST_AMOUNT_PER_ASSET = {
+  12345: 100, // BTC ~ 1c
+  54321: 1000, // ETH ~ 1c
+  55555: 1000, // USDC ~ 0.1c
+};
+
 /* global BigInt */
 
 const USER_ID_MASK =
@@ -134,6 +140,11 @@ export default class User {
       userData.privKeys.length > 0
         ? userData.privKeys.map((pk) => getKeyPair(pk))
         : [];
+
+    console.log(
+      "keyPairs",
+      keyPairs.map((kp) => kp.getPublic().getX().toString())
+    );
 
     let { emptyPrivKeys, noteData, notePrivKeys } = await fetchNoteData(
       keyPairs,
@@ -299,7 +310,7 @@ export default class User {
 
       // ? generate the refund note
       let refundNote =
-        refundAmount > 0
+        refundAmount > DUST_AMOUNT_PER_ASSET[collateral_token]
           ? new Note(
               KoS,
               collateral_token,
@@ -425,13 +436,9 @@ export default class User {
     this.notePrivKeys[KoS.getX().toString()] = privKeySum;
     this.notePrivKeys[KoR.getX().toString()] = privKeySum;
 
-    console.log("Kos", KoS.getX().toString());
-
-    console.log("pksum ", getKeyPair(privKeySum).getPublic().getX().toString());
-
     // ? generate the refund note
     let refundNote =
-      refundAmount > 0
+      refundAmount > DUST_AMOUNT_PER_ASSET[token_spent]
         ? new Note(KoS, token_spent, refundAmount, ytS, notesIn[0].note.index)
         : null;
 
@@ -694,9 +701,20 @@ export default class User {
     let notesIn = [];
     let amount = 0;
 
-    let len = this.noteData[token].length;
-    for (let i = 0; i < len; i++) {
-      const note = this.noteData[token][i];
+    console.log(this.noteData);
+    console.log(token);
+    let noteIn = this.noteData[token].find((n) => n.amount == spendAmount);
+    if (noteIn) {
+      const privKey = this.notePrivKeys[BigInt(noteIn.address.getX())];
+      return { notesIn: [{ privKey, note: noteIn }], refundAmount: 0 };
+    }
+
+    let notes = [...this.noteData[token]];
+    notes = notes.sort((a, b) => b.amount - a.amount);
+    console.log("notes", notes);
+
+    for (let i = 0; i < notes.length; i++) {
+      const note = notes[i];
       const privKey = this.notePrivKeys[BigInt(note.address.getX())];
 
       amount += note.amount;

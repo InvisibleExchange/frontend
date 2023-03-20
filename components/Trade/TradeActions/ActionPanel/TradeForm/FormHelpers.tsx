@@ -22,6 +22,7 @@ const {
 const {
   sendSpotOrder,
   sendPerpOrder,
+  sendSplitOrder,
 } = require("../../../../../app_logic/transactions/constructOrders");
 
 const _renderActionButtons = (
@@ -34,9 +35,9 @@ const _renderActionButtons = (
   type,
   quoteAmount,
   forceRerender,
-  action
+  action,
+  refundNow
 ) => {
-
   return (
     <>
       {action === "none" ? (
@@ -50,7 +51,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
-            forceRerender
+            forceRerender,
+            refundNow
           )}
           {_renderAskButton(
             user,
@@ -61,7 +63,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
-            forceRerender
+            forceRerender,
+            refundNow
           )}
         </div>
       ) : action === "buy" ? (
@@ -75,7 +78,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
-            forceRerender
+            forceRerender,
+            refundNow
           )}
         </div>
       ) : (
@@ -89,7 +93,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
-            forceRerender
+            forceRerender,
+            refundNow
           )}
         </div>
       )}
@@ -108,8 +113,11 @@ const _renderBuyButton = (
   token,
   type,
   quoteAmount,
-  forceRerender
+  forceRerender,
+  refundNow
 ) => {
+  refundNow = type == "market" ? false : refundNow;
+
   return (
     <button
       onClick={async () => {
@@ -117,7 +125,6 @@ const _renderBuyButton = (
           alert("Choose an amount to trade");
           return;
         }
-
         if (perpType == "perpetual") {
           try {
             //
@@ -151,6 +158,10 @@ const _renderBuyButton = (
             let expirationTimesamp = 1000;
             let feeLimitPercent = 0.07;
 
+            if (!positionData && refundNow) {
+              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
+            }
+
             await sendPerpOrder(
               user,
               "Long",
@@ -170,6 +181,11 @@ const _renderBuyButton = (
           try {
             let expirationTimesamp = 1000;
             let feeLimitPercent = 0.07;
+
+            if (refundNow) {
+              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
+            }
+
             await sendSpotOrder(
               user,
               "Buy",
@@ -205,8 +221,11 @@ const _renderAskButton = (
   token,
   type,
   quoteAmount,
-  forceRerender
+  forceRerender,
+  refundNow
 ) => {
+  refundNow = type == "market" ? false : refundNow;
+
   return (
     <button
       onClick={async () => {
@@ -223,6 +242,11 @@ const _renderAskButton = (
 
             let expirationTimesamp = 1000;
             let feeLimitPercent = 0.07;
+
+            if (!positionData && refundNow) {
+              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
+            }
+
             await sendPerpOrder(
               user,
               "Short",
@@ -239,21 +263,26 @@ const _renderAskButton = (
             alert("Error: " + error);
           }
         } else {
-          let expirationTimesamp = 1000;
-          let feeLimitPercent = 0.07;
-          await sendSpotOrder(
-            user,
-            "Sell",
-            expirationTimesamp,
-            SYMBOLS_TO_IDS[token],
-            COLLATERAL_TOKEN,
-            baseAmount,
-            quoteAmount,
-            type == "market" ? null : price,
-            feeLimitPercent
-          );
-          alert("Success!");
           try {
+            let expirationTimesamp = 1000;
+            let feeLimitPercent = 0.07;
+
+            if (refundNow) {
+              await sendSplitOrder(user, SYMBOLS_TO_IDS[token], [baseAmount]);
+            }
+
+            await sendSpotOrder(
+              user,
+              "Sell",
+              expirationTimesamp,
+              SYMBOLS_TO_IDS[token],
+              COLLATERAL_TOKEN,
+              baseAmount,
+              quoteAmount,
+              type == "market" ? null : price,
+              feeLimitPercent
+            );
+            alert("Success!");
           } catch (error) {
             alert("Error: " + error);
           }
