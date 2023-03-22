@@ -20,7 +20,7 @@ interface Props {
 }
 
 export default function BookTrades({ token, type }: Props) {
-  const { liquidity, perpLiquidity } = useContext(WalletContext);
+  const { liquidity, perpLiquidity, getMarkPrice } = useContext(WalletContext);
 
   const [initBq, setInitBq] = useState<any[]>([]);
   const [initAq, setInitAq] = useState<any[]>([]);
@@ -52,6 +52,7 @@ export default function BookTrades({ token, type }: Props) {
         token={token}
         bidQueue={bidQueue && bidQueue.length > 0 ? bidQueue : initBq}
         askQueue={askQueue && askQueue.length > 0 ? askQueue : initAq}
+        getMarkPrice={getMarkPrice}
       />
       <Trades token={token} type={type} />
     </div>

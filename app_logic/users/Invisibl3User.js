@@ -141,11 +141,6 @@ export default class User {
         ? userData.privKeys.map((pk) => getKeyPair(pk))
         : [];
 
-    console.log(
-      "keyPairs",
-      keyPairs.map((kp) => kp.getPublic().getX().toString())
-    );
-
     let { emptyPrivKeys, noteData, notePrivKeys } = await fetchNoteData(
       keyPairs,
       this.privateSeed
@@ -185,6 +180,9 @@ export default class User {
   }
 
   async handleActiveOrders(badOrderIds, orders, badPerpOrderIds, perpOrders) {
+    console.log("badOrderIds", badOrderIds);
+    console.log("orders", orders);
+
     let activeOrderNoteIndexes = [];
 
     let pfrKeys = [];
@@ -212,16 +210,23 @@ export default class User {
 
     let newNoteData = {};
     for (const [token, arr] of Object.entries(this.noteData)) {
-      newNoteData[token] = arr.filter(
-        (note) => !activeOrderNoteIndexes.includes(note.index.toString())
-      );
+      newNoteData[token] = [];
+      for (const note of arr) {
+        if (!activeOrderNoteIndexes.includes(note.index.toString())) {
+          newNoteData[token].push(note);
+        }
+      }
 
       for (const pfrKey of pfrKeys) {
         let addr = getKeyPair(pfrKey).getPublic().getX();
 
-        let idx = newNoteData[token].findIndex(
-          (n) => n.address.getX().toString() === addr.toString()
-        );
+        let idxs = newNoteData[token]
+          .filter((n) => n.address.getX().toString() == addr.toString())
+          .map((n) => Number.parseInt(n.index));
+        let maxIdx = Math.max(...idxs);
+
+        let idx = newNoteData[token].findIndex((n) => n.index == maxIdx);
+
         if (idx !== -1) {
           newNoteData[token].splice(idx, 1);
         }
@@ -305,17 +310,18 @@ export default class User {
 
       // ? Generate the dest spent and dest received addresses and blindings
       privKeys = notesIn.map((x) => x.privKey);
-      let { KoS, koS, ytS } = this.getDestSpentAddresses(privKeys);
-      this.notePrivKeys[KoS.getX().toString()] = koS;
+      let { __, _, ytS } = this.getDestSpentAddresses(privKeys);
+      let { KoR, koR, ytR } = this.getDestReceivedAddresses(synthetic_token);
+      this.notePrivKeys[KoR.getX().toString()] = koR;
 
       // ? generate the refund note
       let refundNote =
         refundAmount > DUST_AMOUNT_PER_ASSET[collateral_token]
           ? new Note(
-              KoS,
+              KoR,
               collateral_token,
               refundAmount,
-              ytS,
+              ytR,
               notesIn[0].note.index
             )
           : null;
@@ -336,7 +342,7 @@ export default class User {
 
       storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
-      storePrivKey(this.userId, koS, false);
+      storePrivKey(this.userId, koR, false);
       storePrivKey(this.userId, positionPrivKey, true);
     } else if (position_effect_type == "Close") {
       let { KoR, koR, ytR } = this.getDestReceivedAddresses(collateral_token);
@@ -429,17 +435,17 @@ export default class User {
     );
 
     // ? Generate the dest spent and dest received addresses and blindings
+
     let privKeys = notesIn.map((x) => x.privKey);
-    let { KoS, koS, ytS } = this.getDestSpentAddresses(privKeys);
+    let { __, _, ytS } = this.getDestSpentAddresses(privKeys);
     let { KoR, koR, ytR } = this.getDestReceivedAddresses(token_received);
     let privKeySum = privKeys.reduce((a, b) => a + b, 0n);
-    this.notePrivKeys[KoS.getX().toString()] = privKeySum;
-    this.notePrivKeys[KoR.getX().toString()] = privKeySum;
+    this.notePrivKeys[KoR.getX().toString()] = koR;
 
     // ? generate the refund note
     let refundNote =
       refundAmount > DUST_AMOUNT_PER_ASSET[token_spent]
-        ? new Note(KoS, token_spent, refundAmount, ytS, notesIn[0].note.index)
+        ? new Note(KoR, token_spent, refundAmount, ytS, notesIn[0].note.index)
         : null;
 
     let limitOrder = new LimitOrder(
@@ -450,7 +456,6 @@ export default class User {
       amount_received,
       price,
       fee_limit,
-      KoS,
       KoR,
       ytS,
       ytR,
@@ -462,7 +467,6 @@ export default class User {
 
     storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
-    storePrivKey(this.userId, koS, false);
     storePrivKey(this.userId, koR, false);
 
     return { limitOrder, pfrKey: privKeySum };
@@ -701,8 +705,6 @@ export default class User {
     let notesIn = [];
     let amount = 0;
 
-    console.log(this.noteData);
-    console.log(token);
     let noteIn = this.noteData[token].find((n) => n.amount == spendAmount);
     if (noteIn) {
       const privKey = this.notePrivKeys[BigInt(noteIn.address.getX())];
@@ -711,7 +713,6 @@ export default class User {
 
     let notes = [...this.noteData[token]];
     notes = notes.sort((a, b) => b.amount - a.amount);
-    console.log("notes", notes);
 
     for (let i = 0; i < notes.length; i++) {
       const note = notes[i];
@@ -834,3 +835,13 @@ export default class User {
 //
 //
 //
+
+// [
+//   2211411919301942657731630998350445843808234806160174661579418690076063567093,
+//   0,
+//   1685983422123097497281157618370252723447453365270455305846298801295002199516,
+//   3001028476740585972637873014693011062054526548221354862511109716958367581287,
+//   0,
+//   2638313622833074501499509633035413186253891944276070750918520372332659074136,
+//   984316734154372992214912798444594818695345158783169051620457028266056300953,
+// ];

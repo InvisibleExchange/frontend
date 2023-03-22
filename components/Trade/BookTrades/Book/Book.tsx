@@ -25,9 +25,15 @@ interface Props {
   bidQueue: TradeType[];
   askQueue: TradeType[];
   token: string;
+  getMarkPrice: any;
 }
 
-export default function Book({ token, bidQueue, askQueue: aq }: Props) {
+export default function Book({
+  token,
+  bidQueue,
+  askQueue: aq,
+  getMarkPrice,
+}: Props) {
   let askQueue: any[] = [];
   for (let i = aq.length - 1; i >= 0; i--) {
     askQueue.push(aq[i]);
@@ -88,6 +94,7 @@ export default function Book({ token, bidQueue, askQueue: aq }: Props) {
           <div className="flex justify-center flex-1">
             {spreadPercentage.toFixed(2) + "%"}
           </div>
+
           <div className="flex justify-center flex-1">Spread</div>
         </div>
 

@@ -577,13 +577,9 @@ async function fetchLatestFills(n, isPerp, token) {
 // ================================================================
 
 module.exports = {
-  storeNewNote,
   fetchStoredNotes,
   storeUserData,
   fetchUserData,
-  removeNoteFromDb,
-  storeNewPosition,
-  removePositionFromDb,
   fetchStoredPosition,
   storeOnchainDeposit,
   storeDepositId,

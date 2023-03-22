@@ -148,6 +148,7 @@ async function sendSpotOrder(
           ? user.filledAmounts[order_response.order_id]
           : 0;
 
+
         order_side = order_side == "Buy" ? 0 : 1;
         let orderData = {
           base_asset: baseToken,
@@ -371,8 +372,6 @@ async function sendPerpOrder(
         throw new Error(msg);
       }
     });
-
-  console.log("SEND PERP ORDER");
 }
 
 async function sendLiquidationOrder(user, expirationTime, position) {
@@ -415,19 +414,16 @@ async function sendLiquidationOrder(user, expirationTime, position) {
  * @param marketId market id of the order
  */
 async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
-  if (
-    !(isPerp == true || isPerp == false) ||
-    !marketId ||
-    !orderId ||
-    !(orderSide == true || orderSide == false)
-  ) {
+  if (!(isPerp === true || isPerp === false) || !marketId || !orderId) {
     throw new Error("Invalid parameters");
   }
 
   if (orderSide === 1 || orderSide === false) {
     orderSide = false;
-  } else {
+  } else if (orderSide === 0 || orderSide === true) {
     orderSide = true;
+  } else {
+    throw new Error("Invalid order side");
   }
 
   let cancelReq = {
@@ -478,6 +474,12 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
           }
 
           user.orders = user.orders.filter((o) => o.order_id != orderId);
+        }
+
+        let pfrNote = order_response.pfr_note;
+        if (pfrNote) {
+          let note = Note.fromGrpcObject(pfrNote);
+          user.noteData[pfrNote.token].push(note);
         }
       } else {
         console.log("error canceling order: ", order_response.error_message);

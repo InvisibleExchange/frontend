@@ -12,7 +12,6 @@ module.exports = class LimitOrder {
     amount_received,
     price,
     fee_limit,
-    dest_spent_address,
     dest_received_address,
     dest_spent_blinding,
     dest_received_blinding,
@@ -26,7 +25,6 @@ module.exports = class LimitOrder {
     this.amount_received = amount_received;
     this.price = price;
     this.fee_limit = fee_limit;
-    this.dest_spent_address = dest_spent_address;
     this.dest_received_address = dest_received_address;
     this.dest_spent_blinding = dest_spent_blinding;
     this.dest_received_blinding = dest_received_blinding;
@@ -50,7 +48,6 @@ module.exports = class LimitOrder {
         this.amount_spent,
         this.amount_received,
         this.fee_limit,
-        BigInt(this.dest_spent_address.getX()),
         BigInt(this.dest_received_address.getX()),
         this.dest_spent_blinding,
         this.dest_received_blinding,
@@ -84,10 +81,6 @@ module.exports = class LimitOrder {
       amount_spent: this.amount_spent.toString(),
       amount_received: this.amount_received.toString(),
       fee_limit: this.fee_limit.toString(),
-      dest_spent_address: {
-        x: this.dest_spent_address.getX().toString(),
-        y: this.dest_spent_address.getY().toString(),
-      },
       dest_received_address: {
         x: this.dest_received_address.getX().toString(),
         y: this.dest_received_address.getY().toString(),

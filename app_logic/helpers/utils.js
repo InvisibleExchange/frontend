@@ -157,6 +157,7 @@ async function fetchLiquidity(token, isPerp) {
  *          swap_note: Note
  *          new_pfr_note: Note or null,
  *          new_amount_filled: u64,
+ *          fee_taken: u64,
  *   }
  */
 function handleSwapResult(user, orderId, swap_response) {
@@ -192,7 +193,10 @@ function handleSwapResult(user, orderId, swap_response) {
   let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
   if (order) {
-    order.qty_left = order.qty_left - swap_response.swap_note.amount;
+    console.log("order", order.qty_left, " - ", swap_response.swap_note.amount);
+
+    order.qty_left =
+      order.qty_left - swap_response.swap_note.amount - swap_response.fee_taken;
     // TODO: lest then 000
     if (order.qty_left <= 0) {
       user.orders.splice(idx, 1);
@@ -200,7 +204,8 @@ function handleSwapResult(user, orderId, swap_response) {
       user.orders[idx] = order;
     }
   } else {
-    user.filledAmounts[orderId] = swap_response.swap_note.amount;
+    user.filledAmounts[orderId] =
+      swap_response.swap_note.amount + swap_response.fee_taken;
   }
 }
 
@@ -216,6 +221,7 @@ function handleSwapResult(user, orderId, swap_response) {
  *       return_collateral_note: Note/null,
  *       synthetic_token: u64,
  *       qty: u64,
+ *       fee_taken: u64,
  *    }
  */
 function handlePerpSwapResult(user, orderId, swap_response) {
@@ -249,10 +255,6 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     }
 
     if (!position) {
-      console.log(
-        "removing position data for token:",
-        swap_response.synthetic_token
-      );
       user.positionData[swap_response.synthetic_token] = [];
     }
   }
@@ -275,7 +277,8 @@ function handlePerpSwapResult(user, orderId, swap_response) {
   let order = user.perpetualOrders[idx];
 
   if (order) {
-    order.qty_left = order.qty_left - swap_response.qty;
+    order.qty_left =
+      order.qty_left - swap_response.qty - swap_response.fee_taken;
 
     // TODO: lest then 000
     if (order.qty_left <= 0) {
@@ -284,7 +287,7 @@ function handlePerpSwapResult(user, orderId, swap_response) {
       user.perpetualOrders[idx] = order;
     }
   } else {
-    user.filledAmounts[orderId] = swap_response.qty;
+    user.filledAmounts[orderId] = swap_response.qty + swap_response.fee_taken;
   }
 }
 

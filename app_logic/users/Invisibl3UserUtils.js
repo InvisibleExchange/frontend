@@ -118,11 +118,6 @@ function signMarginChange(
   }
 }
 
-
-
-
-
-
 // ! CRYPTO HELPERS
 function _subaddressPrivKeys(privSpendKey, privViewKey, token) {
   // //ksi = ks + H(kv, i)

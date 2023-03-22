@@ -51,6 +51,8 @@ const OpenOrders = () => {
     });
   }
 
+  console.log("orders", orders);
+
   return (
     <div className="block footer-table-wrp">
       <table className="w-full table-fixed">
@@ -77,7 +79,10 @@ const OpenOrders = () => {
               const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
               let baseAsset = isPerp ? order.synthetic_token : order.base_asset;
 
-              let color = order.order_side ? "text-red" : "text-green_lighter";
+              let color =
+                order.order_side === 1 || order.order_side === false
+                  ? "text-red"
+                  : "text-green_lighter";
               return (
                 <tbody key={baseAsset} className="overflow-y-auto max-h-24">
                   <tr
@@ -100,7 +105,7 @@ const OpenOrders = () => {
                     </td>
                     {/* Buy sell */}
                     <td className={classNames("pr-3 font-medium")}>
-                      {order.order_side
+                      {order.order_side === 1 || order.order_side === false
                         ? isPerp
                           ? "Short"
                           : "Sell"
