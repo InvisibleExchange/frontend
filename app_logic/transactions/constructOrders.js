@@ -148,7 +148,6 @@ async function sendSpotOrder(
           ? user.filledAmounts[order_response.order_id]
           : 0;
 
-
         order_side = order_side == "Buy" ? 0 : 1;
         let orderData = {
           base_asset: baseToken,

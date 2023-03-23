@@ -19,6 +19,112 @@ interface Props {
   type: "perpetual" | "spot";
 }
 
+const sellData = [
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+];
+
+const data = [
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+  {
+    size: "0.022575",
+    price: "1.255564",
+    mine: "YES",
+  },
+];
+
 export default function Trades({ token, type }: Props) {
   let [fills, setFills] = useState<any>(null);
 
@@ -33,6 +139,7 @@ export default function Trades({ token, type }: Props) {
       setFills(fills_);
     };
 
+    // TODO: uncomment this
     // const interval = setInterval(() => {
     //   fetchFills();
     // }, 10000);
@@ -43,16 +150,16 @@ export default function Trades({ token, type }: Props) {
   }, [token, type]);
 
   return (
-    <div className="flex flex-col flex-1 mt-5 border rounded-sm h-[calc(50%-1.25rem)] border-border_color">
-      <div className="px-4 py-3 text-sm tracking-wider font-overpass bg-fg_above_color">
+    <div className="flex flex-col flex-1 mt-2 border rounded-sm h-[calc(36%-1.25rem)] border-border_color">
+      <div className="px-4 py-2 text-sm tracking-wider font-overpass bg-fg_above_color">
         Latest Fills
       </div>
-      <div className="flex py-1 text-sm">
+      <div className="flex py-0.5 text-sm">
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
-          Size <div className="px-1 py-0.5 ml-1 ">(ETH)</div>
+          Size <div className="px-1 py-0.5 ml-1 ">({token})</div>
         </div>
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
-          Price <div className="px-1 py-0.5 ml-1 bg-border_color">(USDC)</div>
+          Price <div className="px-1 ml-1 bg-border_color">(USDC)</div>
         </div>
         <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
           Time
@@ -72,13 +179,13 @@ export default function Trades({ token, type }: Props) {
 
               return (
                 <div className="flex" key={index}>
-                  <div className="flex items-center justify-center flex-grow py-1 text-base">
+                  <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
                     {amount}
                   </div>
-                  <div className="flex items-center justify-center flex-grow py-1 text-base ">
+                  <div className="flex items-center justify-center flex-grow py-0.5 text-sm ">
                     {price}
                   </div>
-                  <div className="flex items-center justify-center flex-grow py-1 text-sm ">
+                  <div className="flex items-center justify-center flex-grow py-0.5 text-sm ">
                     {timestamp.toLocaleTimeString()}
                   </div>
                 </div>
