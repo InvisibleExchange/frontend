@@ -41,7 +41,7 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-const EXPRESS_APP_URL = "http://localhost:4000";
+const EXPRESS_APP_URL = "http://54.212.28.196:4000";
 
 function get_max_leverage(token, amount) {
   let [min_bound, max_bound] = LEVERAGE_BOUNDS_PER_ASSET[token];

@@ -22,7 +22,7 @@ const {
 // const path = require("path");
 // require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
-const EXPRESS_APP_URL = "http://localhost:4000"; // process.env.EXPRESS_APP_URL;
+const EXPRESS_APP_URL = "http://54.212.28.196:4000"; // process.env.EXPRESS_APP_URL;
 
 // TODO: Remove notes only after order is confirmed
 
@@ -436,7 +436,7 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
   console.log(cancelReq);
 
   await axios
-    .post("http://localhost:4000/cancel_order", cancelReq)
+    .post(`${EXPRESS_APP_URL}/cancel_order`, cancelReq)
     .then((response) => {
       let order_response = response.data.response;
 
