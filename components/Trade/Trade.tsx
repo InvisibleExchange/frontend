@@ -54,8 +54,8 @@ export default function Trade() {
           globalType={type}
         />
         <div className="w-full col-span-2 2xl:col-span-3 bg-bg_color ">
-          <MarketStats />
-          {/* <Chart token={token} /> */}
+          <MarketStats token={token} perpType={type} />
+          <Chart token={token} />
         </div>
         <div>
           <BookTrades token={token} type={type} />

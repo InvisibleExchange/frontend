@@ -436,7 +436,7 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
   console.log(cancelReq);
 
   await axios
-    .post("http://localhost:4000/cancel_order", cancelReq)
+    .post(`${EXPRESS_APP_URL}/cancel_order`, cancelReq)
     .then((response) => {
       let order_response = response.data.response;
 

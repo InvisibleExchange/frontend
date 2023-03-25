@@ -1,8 +1,19 @@
 import classNames from "classnames";
-import React from "react";
+import React, { useContext } from "react";
 import styles from "./MarketStats.module.css";
+import { WalletContext } from "../../../context/WalletContext";
 
-export default function MarketStats() {
+const {
+  SYMBOLS_TO_IDS,
+  DECIMALS_PER_ASSET,
+  PRICE_DECIMALS_PER_ASSET,
+} = require("../../../app_logic/helpers/utils");
+
+export default function MarketStats({ token, perpType }: any) {
+  let { user, getMarkPrice } = useContext(WalletContext);
+
+  console.log("MARKET STATS", token, perpType);
+
   return (
     <div
       className={classNames(
@@ -11,8 +22,10 @@ export default function MarketStats() {
       )}
     >
       <div className={styles.price_container}>
-        <div className={styles.price}>0</div>
-        <div className={styles.price_usd}>$0.00</div>
+        <div className={styles.price}>
+          ${getMarkPrice(SYMBOLS_TO_IDS[token], perpType == "perpetual")}
+        </div>
+        {/* <div className={styles.price_usd}>$0.00</div> */}
       </div>
       <div className={styles.twentyfour_change}>
         <div className={styles.label}>24h Change</div>
