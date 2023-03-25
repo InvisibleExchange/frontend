@@ -193,8 +193,6 @@ function handleSwapResult(user, orderId, swap_response) {
   let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
   if (order) {
-    console.log("order", order.qty_left, " - ", swap_response.swap_note.amount);
-
     order.qty_left =
       order.qty_left - swap_response.swap_note.amount - swap_response.fee_taken;
     // TODO: lest then 000

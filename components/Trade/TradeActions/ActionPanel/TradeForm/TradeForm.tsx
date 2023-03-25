@@ -223,7 +223,6 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
 
   const [refundNow, setRefundNow] = useState<boolean>(true);
 
-  console.log(user ? user.noteData : null);
 
   return (
     <div className="mt-2">

@@ -51,8 +51,6 @@ const OpenOrders = () => {
     });
   }
 
-  console.log("orders", orders);
-
   return (
     <div className="block footer-table-wrp">
       <table className="w-full table-fixed">

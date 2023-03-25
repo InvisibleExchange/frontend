@@ -180,9 +180,6 @@ export default class User {
   }
 
   async handleActiveOrders(badOrderIds, orders, badPerpOrderIds, perpOrders) {
-    console.log("badOrderIds", badOrderIds);
-    console.log("orders", orders);
-
     let activeOrderNoteIndexes = [];
 
     let pfrKeys = [];

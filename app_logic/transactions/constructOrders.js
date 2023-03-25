@@ -49,7 +49,6 @@ async function sendSpotOrder(
   price,
   feeLimit
 ) {
-  console.log("SEND SPOT ORDER");
 
   if (
     !expirationTime ||
@@ -129,8 +128,6 @@ async function sendSpotOrder(
   let orderJson = limitOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = !price;
-
-  console.log(orderJson);
 
   user.awaittingOrder = true;
   await axios
@@ -297,7 +294,6 @@ async function sendPerpOrder(
       let order_response = res.data.response;
 
       if (order_response.successful) {
-        console.log("Order submitted successful!");
 
         storeOrderId(user.userId, order_response.order_id, pfrKey, true);
 
@@ -391,7 +387,6 @@ async function sendLiquidationOrder(user, expirationTime, position) {
       let order_response = res.data.response;
 
       if (order_response.successful) {
-        console.log("Order submitted successful!");
       } else {
         let msg =
           "Failed to submit order with error: \n" +
@@ -433,7 +428,6 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
     is_perp: isPerp,
   };
 
-  console.log(cancelReq);
 
   await axios
     .post(`${EXPRESS_APP_URL}/cancel_order`, cancelReq)
@@ -441,7 +435,6 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
       let order_response = response.data.response;
 
       if (order_response.successful) {
-        console.log("Order canceled successfuly!");
 
         if (isPerp) {
           for (let i = 0; i < user.perpetualOrders.length; i++) {
@@ -546,7 +539,6 @@ async function sendWithdrawal(user, amount, token, starkKey) {
       let withdrawal_response = res.data.response;
 
       if (withdrawal_response.successful) {
-        console.log("Withdrawal successful!");
 
         for (let i = 0; i < withdrawal.notes_in.length; i++) {
           let note = withdrawal.notes_in[i];
@@ -588,7 +580,6 @@ async function sendSplitOrder(user, token, newAmounts) {
     .then((res) => {
       let split_response = res.data.response;
 
-      console.log("SPLIT RESPONSE: ", split_response);
 
       if (split_response.successful) {
         let zero_idxs = split_response.zero_idxs;
@@ -601,7 +592,6 @@ async function sendSplitOrder(user, token, newAmounts) {
       }
     });
 
-  console.log("SEND SPLIT ORDER");
 }
 
 // * ======================================================================
