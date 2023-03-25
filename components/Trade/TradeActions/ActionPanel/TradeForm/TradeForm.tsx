@@ -221,7 +221,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
     }
   };
 
-  const [refundNow, setRefundNow] = useState<boolean>(false);
+  const [refundNow, setRefundNow] = useState<boolean>(true);
 
   console.log(user ? user.noteData : null);
 
@@ -328,13 +328,13 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       )}
       {/*  */}
 
-      <div className="pt-5 mt-5 pb-0 mb-0">
+      {/* <div className="pt-5 mt-5 pb-0 mb-0">
         <Toggle
           label={"refund immediately"}
           toggled={refundNow}
           onClick={setRefundNow}
         />
-      </div>
+      </div> */}
 
       {/* Submit button ====================================== */}
       {userAddress

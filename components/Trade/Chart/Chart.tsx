@@ -1,12 +1,15 @@
-import React from "react";
+import React, { useRef } from "react";
 import TradingViewWidget, { Themes } from "react-tradingview-widget";
 
 const Chart = ({ token }: any) => {
   const symbols = { BTC: "BINANCE:BTCUSD", ETH: "BINANCE:ETHUSD" };
 
+  const chartRef = useRef<any>();
+
   return (
     <div>
       <TradingViewWidget
+        ref={chartRef}
         symbol={symbols[token]}
         theme={Themes.DARK}
         save_image={false}
@@ -16,7 +19,7 @@ const Chart = ({ token }: any) => {
         timezone="Etc/UTC"
         locale="en"
         enable_publishing={false}
-        hide_legend={true}
+        hide_legend={false}
       />
     </div>
   );

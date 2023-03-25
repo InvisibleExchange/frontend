@@ -19,112 +19,6 @@ interface Props {
   type: "perpetual" | "spot";
 }
 
-const sellData = [
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-];
-
-const data = [
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-  {
-    size: "0.022575",
-    price: "1.255564",
-    mine: "YES",
-  },
-];
-
 export default function Trades({ token, type }: Props) {
   let [fills, setFills] = useState<any>(null);
 
@@ -139,14 +33,13 @@ export default function Trades({ token, type }: Props) {
       setFills(fills_);
     };
 
-    // TODO: uncomment this
-    // const interval = setInterval(() => {
-    //   fetchFills();
-    // }, 10000);
+    const interval = setInterval(() => {
+      fetchFills();
+    }, 10000);
 
     fetchFills();
 
-    // return () => clearInterval(interval);
+    return () => clearInterval(interval);
   }, [token, type]);
 
   return (
