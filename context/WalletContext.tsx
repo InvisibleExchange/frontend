@@ -351,8 +351,6 @@ function WalletProvider({ children }: Props) {
 
     let topBidPrice = bidLiq[0]?.price;
     let topAskPrice = askLiq[0]?.price;
-    
-
 
     if (!topBidPrice || !topAskPrice) return 0;
 
@@ -386,7 +384,7 @@ function WalletProvider({ children }: Props) {
 
   const listenToWebSocket = (user: any) => {
     let W3CWebSocket = require("websocket").w3cwebsocket;
-    let client = new W3CWebSocket("ws://localhost:50053/");
+    let client = new W3CWebSocket("ws://54.212.28.196:4000");
 
     client.onopen = function () {
       client.send(trimHash(user.userId, 64));
