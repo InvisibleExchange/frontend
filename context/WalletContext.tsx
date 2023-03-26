@@ -350,7 +350,7 @@ function WalletProvider({ children }: Props) {
     }
 
     let topBidPrice = bidLiq[0]?.price;
-    let topAskPrice = askLiq[0]?.price;
+    let topAskPrice = askLiq[askLiq.length - 1]?.price;
 
     if (!topBidPrice || !topAskPrice) return 0;
 

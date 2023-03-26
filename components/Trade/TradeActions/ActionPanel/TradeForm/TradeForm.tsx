@@ -94,60 +94,52 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
   const [leverage, setLeverage] = useState(1);
   const [maxLeverage, setMaxLeverage] = useState(MAX_LEVERAGE);
 
-  const [price, setPrice] = useState<number | null>(
-    type == "market" ? 1000 : null
+  const [price, setPrice] = useState<string | null>(
+    type == "market" ? "1000" : null
   );
-  const [baseAmount, setBaseAmount] = useState<number | null>(null);
-  const [quoteAmount, setQuoteAmount] = useState<number | null>(null);
+  const [baseAmount, setBaseAmount] = useState<string | null>(null);
+  const [quoteAmount, setQuoteAmount] = useState<string | null>(null);
 
   const handlePriceChange = (e: any) => {
-    if (!e.target.value) {
-      setPrice(null);
+    let price = formatInputNum(e.target.value, 2);
+    setPrice(price);
+
+    if (!price) {
       return;
     }
 
-    let price = Number(Number(e.target.value).toFixed(2));
-
-    setPrice(price);
     if (perpType == "perpetual") {
       if (baseAmount) {
-        let nominalValue = baseAmount * price;
+        let nominalValue = Number(baseAmount) * price;
 
         let initMargin = nominalValue / leverage;
-        setQuoteAmount(Number(initMargin.toFixed(3)));
+        setQuoteAmount(initMargin.toFixed(3));
       }
     } else {
       if (baseAmount) {
-        let quoteAmount = baseAmount * price;
-        setQuoteAmount(Number(quoteAmount.toFixed(3)));
+        let quoteAmount = Number(baseAmount) * price;
+        setQuoteAmount(quoteAmount.toFixed(3));
       } else if (quoteAmount) {
-        let baseAmount = quoteAmount / price;
-        setBaseAmount(Number(baseAmount.toFixed(3)));
+        let baseAmount = Number(quoteAmount) / price;
+        setBaseAmount(baseAmount.toFixed(3));
       }
     }
   };
   const handleBaseAmountChange = (e: any) => {
-    if (!e.target.value) {
-      setBaseAmount(null);
-      setMaxLeverage(MAX_LEVERAGE);
-      return;
-    }
-
-    if (Number(e.target.value) == 0) {
-      setBaseAmount(e.target.value);
-      setMaxLeverage(MAX_LEVERAGE);
-      return;
-    }
-
-    let baseAmount_ = Number(Number(e.target.value).toFixed(3));
-
+    let baseAmount_ = formatInputNum(e.target.value, 3);
     setBaseAmount(baseAmount_);
+
+    if (!baseAmount_ || baseAmount_ == "0") {
+      setMaxLeverage(MAX_LEVERAGE);
+      return;
+    }
+
     if (perpType == "perpetual") {
       if (price) {
-        let nominalValue = baseAmount_ * price;
+        let nominalValue = Number(baseAmount_) * Number(price);
         let initMargin = nominalValue / leverage;
 
-        setQuoteAmount(Number(initMargin.toFixed(3)));
+        setQuoteAmount(initMargin.toFixed(3));
       }
 
       let max_leverage = get_max_leverage(SYMBOLS_TO_IDS[token], baseAmount_);
@@ -157,32 +149,31 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       }
     } else {
       if (price) {
-        let quoteAmount = baseAmount_ * price;
-        setQuoteAmount(Number(quoteAmount.toFixed(3)));
+        let quoteAmount = Number(baseAmount_) * Number(price);
+        setQuoteAmount(quoteAmount.toFixed(3));
       }
     }
   };
   const handleQuoteAmountChange = (e: any) => {
-    if (!e.target.value) {
-      setQuoteAmount(null);
+    let quoteAmount = formatInputNum(e.target.value, 2);
+    setQuoteAmount(quoteAmount);
+
+    if (!quoteAmount || quoteAmount == "0") {
       return;
     }
 
-    let quoteAmount = Number(Number(e.target.value).toFixed(3));
-
-    setQuoteAmount(quoteAmount);
     if (perpType == "perpetual") {
       if (price && leverage) {
-        let baseAmount = (quoteAmount * leverage) / price;
-        setBaseAmount(Number(baseAmount.toFixed(3)));
+        let baseAmount = (Number(quoteAmount) * leverage) / Number(price);
+        setBaseAmount(baseAmount.toFixed(3));
 
         let max_leverage = get_max_leverage(SYMBOLS_TO_IDS[token], baseAmount);
         setMaxLeverage(Number(max_leverage.toFixed(1)));
       }
     } else {
       if (price) {
-        let baseAmount_ = quoteAmount / price;
-        setBaseAmount(Number(baseAmount_.toFixed(3)));
+        let baseAmount_ = Number(quoteAmount) / Number(price);
+        setBaseAmount(baseAmount_.toFixed(3));
       } else {
         setBaseAmount(null);
       }
@@ -195,27 +186,27 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       setLeverage(leverage_);
 
       if (price && baseAmount) {
-        let nominalValue = baseAmount * price;
+        let nominalValue = Number(baseAmount) * Number(price);
         let initMargin = nominalValue / leverage;
 
-        setQuoteAmount(Number(initMargin.toFixed(3)));
+        setQuoteAmount(initMargin.toFixed(3));
       }
     } else {
       if (action == "buy") {
         let quoteAmount = (val / 100) * maxQuote;
-        setQuoteAmount(Number(quoteAmount.toFixed(3)));
+        setQuoteAmount(quoteAmount.toFixed(3));
 
         if (price) {
-          let baseAmount_ = quoteAmount / price;
-          setBaseAmount(Number(baseAmount_.toFixed(3)));
+          let baseAmount_ = quoteAmount / Number(price);
+          setBaseAmount(baseAmount_.toFixed(3));
         }
       } else {
         let baseAmount_ = (val / 100) * maxBase;
-        setBaseAmount(Number(baseAmount_.toFixed(3)));
+        setBaseAmount(baseAmount_.toFixed(3));
 
         if (price) {
-          let quoteAmount = baseAmount_ * price;
-          setQuoteAmount(Number(quoteAmount.toFixed(3)));
+          let quoteAmount = baseAmount_ * Number(price);
+          setQuoteAmount(quoteAmount.toFixed(3));
         }
       }
     }
@@ -353,7 +344,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
               <div>
                 New Size:{" "}
                 {baseAmount && price
-                  ? calculateNewSize(positionData, baseAmount, true)
+                  ? calculateNewSize(positionData, Number(baseAmount), true)
                   : null}{" "}
                 {baseAmount && price ? token : null}
               </div>
@@ -362,8 +353,8 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
                 {baseAmount && price
                   ? calculateAvgEntryPrice(
                       positionData,
-                      baseAmount,
-                      price,
+                      Number(baseAmount),
+                      Number(price),
                       true
                     ).toFixed(2)
                   : ""}
@@ -374,8 +365,8 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
                 {baseAmount && price
                   ? calculateNewLiqPrice(
                       positionData,
-                      baseAmount,
-                      price,
+                      Number(baseAmount),
+                      Number(price),
                       true
                     ).toFixed(2)
                   : ""}{" "}
@@ -394,7 +385,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
               <div>
                 New Size:{" "}
                 {baseAmount && price
-                  ? calculateNewSize(positionData, baseAmount, false)
+                  ? calculateNewSize(positionData, Number(baseAmount), false)
                   : null}{" "}
                 {baseAmount && price ? token : null}
               </div>
@@ -403,8 +394,8 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
                 {baseAmount && price
                   ? calculateAvgEntryPrice(
                       positionData,
-                      baseAmount,
-                      price,
+                      Number(baseAmount),
+                      Number(price),
                       false
                     ).toFixed(2)
                   : ""}{" "}
@@ -415,8 +406,8 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
                 {baseAmount && price
                   ? calculateNewLiqPrice(
                       positionData,
-                      baseAmount,
-                      price,
+                      Number(baseAmount),
+                      Number(price),
                       false
                     ).toFixed(2)
                   : ""}{" "}
@@ -556,5 +547,27 @@ function calculateNewLiqPrice(
         );
       }
     }
+  }
+}
+
+function formatInputNum(val: any, decimals: number) {
+  if (!val) {
+    return null;
+  }
+
+  let decimalPointIndex = val.indexOf(".");
+  if (decimalPointIndex == 0) {
+    return "0" + val;
+  }
+
+  if (decimalPointIndex > -1) {
+    let numDigitsAfterDecimalPoint = val.length - decimalPointIndex - 1;
+    if (numDigitsAfterDecimalPoint > decimals) {
+      return Number(val).toFixed(decimals);
+    } else {
+      return val;
+    }
+  } else {
+    return val;
   }
 }

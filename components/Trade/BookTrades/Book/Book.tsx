@@ -28,9 +28,10 @@ export default function Book({
   askQueue,
   getMarkPrice,
 }: Props) {
-  const { userAddress } = useContext(WalletContext);
+  // const { userAddress } = useContext(WalletContext);
 
-  askQueue = askQueue.slice(0, 7);
+  [].slice();
+  askQueue = askQueue.slice(-7);
   bidQueue = bidQueue.slice(0, 7);
 
   let spread =
