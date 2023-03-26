@@ -32,14 +32,13 @@ export default function BookTrades({ token, type }: Props) {
 
   let bidQueue = LIQ ? LIQ.bidQueue : [];
   let askQueue = LIQ ? LIQ.askQueue : [];
+
   useEffect(() => {
     const getLiquidity = async () => {
       let { bidQueue: bq, askQueue: aq } = await fetchLiquidity(
         SYMBOLS_TO_IDS[token],
         type == "spot" ? false : true
       );
-
-      console.log("aq", aq);
 
       setInitBq(bq);
       setInitAq(aq);

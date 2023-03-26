@@ -30,7 +30,6 @@ export default function Book({
 }: Props) {
   // const { userAddress } = useContext(WalletContext);
 
-  [].slice();
   askQueue = askQueue.slice(-7);
   bidQueue = bidQueue.slice(0, 7);
 
