@@ -349,8 +349,6 @@ async function loginUser(signer) {
 
   let pk = keyDerivation.getPrivateKeyFromEthSignature(sig);
 
-  console.log(pk);
-
   let user = User.fromPrivKey(pk);
 
   await user.login();
