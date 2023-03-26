@@ -1,3 +1,4 @@
+import { useState } from "react";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
 
 const {
@@ -116,99 +117,119 @@ const _renderBuyButton = (
   forceRerender,
   refundNow
 ) => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   refundNow = type == "market" ? false : refundNow;
-
   return (
-    <button
-      onClick={async () => {
-        if (!user || !baseAmount) {
-          alert("Choose an amount to trade");
-          return;
-        }
-        if (perpType == "perpetual") {
-          try {
-            //
-            if (positionData && positionData.order_side == "Long") {
-              if (
-                // TODO: This should account for active orders as well
-                !checkViableSizeAfterIncrease(positionData, baseAmount, price)
-              ) {
-                alert("Increase size too large for current margin");
-                return;
-              }
-            }
+    <div>
+      {isLoading ? (
+        <div className="mt-14 ml-32 mr-32">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <button
+          onClick={async () => {
+            setIsLoading(true);
 
-            if (positionData && positionData.order_side == "Short") {
-              if (
-                baseAmount * 10 ** DECIMALS_PER_ASSET[token] >
-                positionData.position_size
-              ) {
-                if (
-                  // TODO: This should account for active orders as well
-                  !checkViableSizeAfterFlip(positionData, baseAmount, price)
-                ) {
-                  alert("Increase size too large for current margin");
-                  return;
+            if (!user || !baseAmount) {
+              alert("Choose an amount to trade");
+              setIsLoading(false);
+              return;
+            }
+            if (perpType == "perpetual") {
+              try {
+                //
+                if (positionData && positionData.order_side == "Long") {
+                  if (
+                    // TODO: This should account for active orders as well
+                    !checkViableSizeAfterIncrease(
+                      positionData,
+                      baseAmount,
+                      price
+                    )
+                  ) {
+                    alert("Increase size too large for current margin");
+                    setIsLoading(false);
+                    return;
+                  }
                 }
+
+                if (positionData && positionData.order_side == "Short") {
+                  if (
+                    baseAmount * 10 ** DECIMALS_PER_ASSET[token] >
+                    positionData.position_size
+                  ) {
+                    if (
+                      // TODO: This should account for active orders as well
+                      !checkViableSizeAfterFlip(positionData, baseAmount, price)
+                    ) {
+                      alert("Increase size too large for current margin");
+                      setIsLoading(false);
+                      return;
+                    }
+                  }
+                }
+
+                //
+
+                let expirationTimesamp = 1000;
+                let feeLimitPercent = 0.07;
+
+                if (!positionData && refundNow) {
+                  await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
+                }
+
+                await sendPerpOrder(
+                  user,
+                  "Long",
+                  expirationTimesamp,
+                  positionData ? "Modify" : "Open",
+                  SYMBOLS_TO_IDS[token],
+                  baseAmount,
+                  type == "market" ? null : price,
+                  quoteAmount,
+                  feeLimitPercent
+                );
+                alert("Success!");
+              } catch (error) {
+                alert("Error: " + error);
+              }
+            } else {
+              try {
+                let expirationTimesamp = 1000;
+                let feeLimitPercent = 0.07;
+
+                if (refundNow) {
+                  await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
+                }
+
+                await sendSpotOrder(
+                  user,
+                  "Buy",
+                  expirationTimesamp,
+                  SYMBOLS_TO_IDS[token],
+                  COLLATERAL_TOKEN,
+                  baseAmount,
+                  quoteAmount,
+                  type == "market" ? null : price,
+                  feeLimitPercent
+                );
+                alert("Success!");
+              } catch (error) {
+                alert("Error: " + error);
               }
             }
 
-            //
+            setIsLoading(false);
 
-            let expirationTimesamp = 1000;
-            let feeLimitPercent = 0.07;
-
-            if (!positionData && refundNow) {
-              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
-            }
-
-            await sendPerpOrder(
-              user,
-              "Long",
-              expirationTimesamp,
-              positionData ? "Modify" : "Open",
-              SYMBOLS_TO_IDS[token],
-              baseAmount,
-              type == "market" ? null : price,
-              quoteAmount,
-              feeLimitPercent
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        } else {
-          try {
-            let expirationTimesamp = 1000;
-            let feeLimitPercent = 0.07;
-
-            if (refundNow) {
-              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
-            }
-
-            await sendSpotOrder(
-              user,
-              "Buy",
-              expirationTimesamp,
-              SYMBOLS_TO_IDS[token],
-              COLLATERAL_TOKEN,
-              baseAmount,
-              quoteAmount,
-              type == "market" ? null : price,
-              feeLimitPercent
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        }
-
-        forceRerender();
-      }}
-      className="w-full py-2 uppercase rounded-md bg-green_lighter shadow-green font-overpass hover:shadow-green_dark hover:opacity-90"
-    >
-      BUY
-    </button>
+            forceRerender();
+          }}
+          className="w-full py-2 uppercase rounded-md bg-green_lighter shadow-green font-overpass hover:shadow-green_dark hover:opacity-90"
+        >
+          BUY
+        </button>
+      )}
+    </div>
   );
 };
 
@@ -224,76 +245,96 @@ const _renderAskButton = (
   forceRerender,
   refundNow
 ) => {
-  refundNow = type == "market" ? false : refundNow;
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  refundNow = type == "market" ? false : refundNow;
   return (
-    <button
-      onClick={async () => {
-        if (perpType == "perpetual") {
-          try {
-            if (positionData && positionData.order_side == "Short") {
-              if (
-                !checkViableSizeAfterIncrease(positionData, baseAmount, price)
-              ) {
-                alert("Increase size too large for current margin");
-                return;
+    <div>
+      {isLoading ? (
+        <div className="mt-14 ml-32 mr-32">
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <button
+          onClick={async () => {
+            setIsLoading(true);
+
+            if (perpType == "perpetual") {
+              try {
+                if (positionData && positionData.order_side == "Short") {
+                  if (
+                    !checkViableSizeAfterIncrease(
+                      positionData,
+                      baseAmount,
+                      price
+                    )
+                  ) {
+                    alert("Increase size too large for current margin");
+                    setIsLoading(false);
+                    return;
+                  }
+                }
+
+                let expirationTimesamp = 1000;
+                let feeLimitPercent = 0.07;
+
+                if (!positionData && refundNow) {
+                  await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
+                }
+
+                await sendPerpOrder(
+                  user,
+                  "Short",
+                  expirationTimesamp,
+                  positionData ? "Modify" : "Open",
+                  SYMBOLS_TO_IDS[token],
+                  baseAmount,
+                  type == "market" ? null : price,
+                  quoteAmount,
+                  feeLimitPercent
+                );
+                alert("Success!");
+              } catch (error) {
+                alert("Error: " + error);
+              }
+            } else {
+              try {
+                let expirationTimesamp = 1000;
+                let feeLimitPercent = 0.07;
+
+                if (refundNow) {
+                  await sendSplitOrder(user, SYMBOLS_TO_IDS[token], [
+                    baseAmount,
+                  ]);
+                }
+
+                await sendSpotOrder(
+                  user,
+                  "Sell",
+                  expirationTimesamp,
+                  SYMBOLS_TO_IDS[token],
+                  COLLATERAL_TOKEN,
+                  baseAmount,
+                  quoteAmount,
+                  type == "market" ? null : price,
+                  feeLimitPercent
+                );
+                alert("Success!");
+              } catch (error) {
+                alert("Error: " + error);
               }
             }
 
-            let expirationTimesamp = 1000;
-            let feeLimitPercent = 0.07;
+            setIsLoading(false);
 
-            if (!positionData && refundNow) {
-              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
-            }
-
-            await sendPerpOrder(
-              user,
-              "Short",
-              expirationTimesamp,
-              positionData ? "Modify" : "Open",
-              SYMBOLS_TO_IDS[token],
-              baseAmount,
-              type == "market" ? null : price,
-              quoteAmount,
-              feeLimitPercent
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        } else {
-          try {
-            let expirationTimesamp = 1000;
-            let feeLimitPercent = 0.07;
-
-            if (refundNow) {
-              await sendSplitOrder(user, SYMBOLS_TO_IDS[token], [baseAmount]);
-            }
-
-            await sendSpotOrder(
-              user,
-              "Sell",
-              expirationTimesamp,
-              SYMBOLS_TO_IDS[token],
-              COLLATERAL_TOKEN,
-              baseAmount,
-              quoteAmount,
-              type == "market" ? null : price,
-              feeLimitPercent
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        }
-
-        forceRerender();
-      }}
-      className="w-full py-2 uppercase rounded-md bg-red_lighter shadow-red font-overpass hover:shadow-red_dark hover:opacity-90"
-    >
-      SELL
-    </button>
+            forceRerender();
+          }}
+          className="w-full py-2 uppercase rounded-md bg-red_lighter shadow-red font-overpass hover:shadow-red_dark hover:opacity-90"
+        >
+          SELL
+        </button>
+      )}
+    </div>
   );
 };
 

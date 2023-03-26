@@ -39,6 +39,8 @@ export default function BookTrades({ token, type }: Props) {
         type == "spot" ? false : true
       );
 
+      console.log("bq", bq);
+
       setInitBq(bq);
       setInitAq(aq);
     };

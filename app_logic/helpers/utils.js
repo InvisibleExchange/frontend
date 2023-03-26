@@ -107,6 +107,8 @@ async function fetchLiquidity(token, isPerp) {
         let bidQueue = liquidity_response.bid_queue;
         let askQueue = liquidity_response.ask_queue;
 
+        console.log("askQueue", askQueue);
+
         return { bidQueue, askQueue };
       } else {
         let msg =

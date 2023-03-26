@@ -5,8 +5,6 @@ import { tradeTypeSelector } from "../../../../../lib/store/features/apiSlice";
 
 import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import TooltipSpotSlider from "../TooltipSpotSlider";
-import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
-import { Toggle } from "../../../../Layout/Toggle/ToggleButton";
 
 const {
   _renderActionButtons,
@@ -222,7 +220,6 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
   };
 
   const [refundNow, setRefundNow] = useState<boolean>(true);
-
 
   return (
     <div className="mt-2">
