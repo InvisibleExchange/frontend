@@ -77,7 +77,8 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       quoteAmount,
       forceRerender,
       action,
-      refundNow
+      refundNow,
+      setIsLoading
     );
   }
 
