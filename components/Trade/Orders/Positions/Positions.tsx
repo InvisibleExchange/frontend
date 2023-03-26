@@ -189,7 +189,6 @@ const CloseField = ({ user, pos }: any) => {
       <div className="flex items-center gap-1">
         <button
           onClick={async () => {
-            console.log("market");
             await onSumbitCloseOrder(true);
           }}
         >
@@ -198,7 +197,6 @@ const CloseField = ({ user, pos }: any) => {
         |{" "}
         <button
           onClick={async () => {
-            console.log("Limit");
             await onSumbitCloseOrder(false);
           }}
         >
