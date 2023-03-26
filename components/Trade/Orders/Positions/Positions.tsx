@@ -49,7 +49,7 @@ const Positions = () => {
         <tbody className="overflow-y-auto max-h-24">
           {/* */}
           {user && user.userId
-            ? positions.map((pos) => {
+            ? positions.map((pos, idx) => {
                 let markPrice = getMarkPrice(54321, true);
                 let entryPrice =
                   pos.entry_price /
@@ -71,7 +71,7 @@ const Positions = () => {
 
                 return (
                   <tr
-                    key={pos.position_address}
+                    key={idx}
                     className={classNames(
                       "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
                     )}

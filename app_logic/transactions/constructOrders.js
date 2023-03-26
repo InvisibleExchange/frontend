@@ -49,7 +49,6 @@ async function sendSpotOrder(
   price,
   feeLimit
 ) {
-
   if (
     !expirationTime ||
     !baseToken ||
@@ -130,6 +129,7 @@ async function sendSpotOrder(
   orderJson.is_market = !price;
 
   user.awaittingOrder = true;
+
   await axios
     .post(`${EXPRESS_APP_URL}/submit_limit_order`, orderJson)
     .then(async (res) => {
@@ -294,7 +294,6 @@ async function sendPerpOrder(
       let order_response = res.data.response;
 
       if (order_response.successful) {
-
         storeOrderId(user.userId, order_response.order_id, pfrKey, true);
 
         // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
@@ -428,18 +427,16 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
     is_perp: isPerp,
   };
 
-
   await axios
     .post(`${EXPRESS_APP_URL}/cancel_order`, cancelReq)
     .then((response) => {
       let order_response = response.data.response;
 
       if (order_response.successful) {
-
         if (isPerp) {
           for (let i = 0; i < user.perpetualOrders.length; i++) {
             let ord = user.perpetualOrders[i];
-            if (ord.order_id == orderId) {
+            if (ord.order_id == orderId.toString()) {
               let notes_in = ord.notes_in;
               if (notes_in.length > 0) {
                 for (let note of notes_in) {
@@ -455,7 +452,8 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
         } else {
           for (let i = 0; i < user.orders.length; i++) {
             let ord = user.orders[i];
-            if (ord.orderId == orderId) {
+
+            if (ord.order_id == orderId) {
               let notes_in = ord.notes_in;
               if (notes_in.length > 0) {
                 for (let note of notes_in) {
@@ -539,7 +537,6 @@ async function sendWithdrawal(user, amount, token, starkKey) {
       let withdrawal_response = res.data.response;
 
       if (withdrawal_response.successful) {
-
         for (let i = 0; i < withdrawal.notes_in.length; i++) {
           let note = withdrawal.notes_in[i];
           user.noteData[note.token] = user.noteData[note.token].filter(
@@ -580,7 +577,6 @@ async function sendSplitOrder(user, token, newAmounts) {
     .then((res) => {
       let split_response = res.data.response;
 
-
       if (split_response.successful) {
         let zero_idxs = split_response.zero_idxs;
 
@@ -591,7 +587,6 @@ async function sendSplitOrder(user, token, newAmounts) {
         console.log(msg);
       }
     });
-
 }
 
 // * ======================================================================

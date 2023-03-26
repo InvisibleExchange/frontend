@@ -12,8 +12,6 @@ const {
 export default function MarketStats({ token, perpType }: any) {
   let { user, getMarkPrice } = useContext(WalletContext);
 
-  console.log("MARKET STATS", token, perpType);
-
   return (
     <div
       className={classNames(

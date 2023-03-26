@@ -38,11 +38,16 @@ const _renderActionButtons = (
   forceRerender,
   action,
   refundNow,
+  isLoading,
   setIsLoading
 ) => {
   return (
     <>
-      {action === "none" ? (
+      {isLoading ? (
+        <div className="mt-14 ml-32 mr-32">
+          <LoadingSpinner />
+        </div>
+      ) : action === "none" ? (
         <div className="flex items-center gap-2 mt-14">
           {_renderBuyButton(
             user,
@@ -129,10 +134,10 @@ const _renderBuyButton = (
     <button
       onClick={async () => {
         setIsLoading(true);
-        console.log("buy button clicked");
 
-        if (!user || !baseAmount) {
+        if (!user || !baseAmount || !price) {
           alert("Choose an amount to trade");
+          setIsLoading(false);
           return;
         }
         if (perpType == "perpetual") {
@@ -245,6 +250,13 @@ const _renderAskButton = (
     <button
       onClick={async () => {
         setIsLoading(true);
+
+        if (!user || !baseAmount || !price) {
+          alert("Choose an amount to trade");
+          setIsLoading(false);
+          return;
+        }
+
         if (perpType == "perpetual") {
           try {
             if (positionData && positionData.order_side == "Short") {

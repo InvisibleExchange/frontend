@@ -71,7 +71,7 @@ const OpenOrders = () => {
         {/*  */}
 
         {user && user.userId
-          ? orders.map((order: any) => {
+          ? orders.map((order: any, idx) => {
               const isPerp = order.synthetic_token ? true : false;
 
               const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
@@ -82,7 +82,7 @@ const OpenOrders = () => {
                   ? "text-red"
                   : "text-green_lighter";
               return (
-                <tbody key={baseAsset} className="overflow-y-auto max-h-24">
+                <tbody key={idx} className="overflow-y-auto max-h-24">
                   <tr
                     className={classNames(
                       "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
@@ -201,103 +201,3 @@ function getPosEffectType(position_effect_type: number) {
   }
 }
 
-// {user && user.userId
-//   ? user.perpetualOrders.map((order: any) => {
-//       let posEffectType: string;
-//       switch (order.position_effect_type) {
-//         case 0:
-//           posEffectType = "Open Position";
-//           break;
-//         case 1:
-//           posEffectType = "Modify Position";
-//           break;
-//         case 2:
-//           posEffectType = "Close Position";
-//           break;
-//         case 3:
-//           posEffectType = "Liquidate Position";
-//           break;
-
-//         default:
-//           throw Error("invalid pos_effect_type");
-//       }
-
-//       const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
-
-//       return (
-//         <tbody key={order.order_id}>
-//           <tr
-//             className={classNames(
-//               "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
-//             )}
-//           >
-//             {/* SYMBOL */}
-//             <td className="gap-3 py-1 pl-5 font-medium">
-//               <p className="font-bold">
-//                 {IDS_TO_SYMBOLS[order.synthetic_token]}
-//               </p>
-//               {/* <p className="text-[12px]">(Perpetual)</p> */}
-//             </td>
-//             {/* Market type */}
-//             <td className="font-medium">PERPETUAL</td>
-//             {/* Buy sell */}
-//             <td className={classNames("pr-3 font-medium ")}>
-//               {order.order_side ? "Buy" : "Sell"}
-//             </td>
-//             {/* Price */}
-//             <td className={classNames("pr-3 font-medium ")}>
-//               {order.price.toFixed(2)} USD
-//             </td>
-//             {/* Amount */}
-//             <td className={classNames("pr-3 font-medium ")}>
-//               {(
-//                 order.qty_left /
-//                 10 ** DECIMALS_PER_ASSET[order.synthetic_token]
-//               ).toFixed(3)}{" "}
-//               {IDS_TO_SYMBOLS[order.synthetic_token]}
-//             </td>
-//             {/* Action */}
-//             <td className={classNames("pr-3 font-medium ")}>
-//               <div className="flex items-center gap-2">
-//                 <div>
-//                   <p className="text-sm">{posEffectType}</p>
-//                 </div>
-//               </div>
-//             </td>
-//             {/* Expiry */}
-//             <td className={classNames("pr-3 font-medium ")}>
-//               <p>{expiry.toLocaleDateString()}</p>
-//               <p className="text-[12px]">
-//                 {expiry.toLocaleTimeString()}
-//               </p>
-//             </td>
-//             {/* Fee Limit */}
-//             <td className={classNames("pr-3 font-medium ")}>
-//               {/* {order.fee_limit /
-//               10 ** DECIMALS_PER_ASSET[order.synthetic_token]}{" "}
-//             {IDS_TO_SYMBOLS[order.synthetic_token]} */}
-//             </td>
-//             <td className={classNames(" pl-3 font-medium ")}>
-//               {!cancelling ? (
-//                 <button
-//                   onClick={async () => {
-//                     await cancelOrder(
-//                       order.order_id,
-//                       order.order_side,
-//                       true,
-//                       order.synthetic_token
-//                     );
-//                     forceRerender();
-//                   }}
-//                 >
-//                   <FaTrashAlt color="#C83131" size={20} />
-//                 </button>
-//               ) : (
-//                 <LoadingSpinner />
-//               )}
-//             </td>
-//           </tr>
-//         </tbody>
-//       );
-//     })
-//   : null}
