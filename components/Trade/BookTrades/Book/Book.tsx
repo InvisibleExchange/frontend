@@ -30,10 +30,8 @@ export default function Book({
 }: Props) {
   const { userAddress } = useContext(WalletContext);
 
-
-  askQueue = askQueue.slice(0, 7).reverse();
+  askQueue = askQueue.slice(0, 7);
   bidQueue = bidQueue.slice(0, 7);
-
 
   let spread =
     !askQueue.length || !bidQueue.length

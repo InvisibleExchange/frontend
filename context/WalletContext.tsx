@@ -351,8 +351,6 @@ function WalletProvider({ children }: Props) {
 
     let topBidPrice = bidLiq[0]?.price;
     let topAskPrice = askLiq[0]?.price;
-    
-
 
     if (!topBidPrice || !topAskPrice) return 0;
 
@@ -430,6 +428,8 @@ function WalletProvider({ children }: Props) {
               timestamp: item[2],
             };
           });
+
+          console.log("askQueue", askQueue);
 
           let pairLiquidity = { bidQueue, askQueue };
 
