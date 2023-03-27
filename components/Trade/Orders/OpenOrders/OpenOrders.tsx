@@ -74,8 +74,11 @@ const OpenOrders = () => {
           ? orders.map((order: any, idx) => {
               const isPerp = order.synthetic_token ? true : false;
 
-              const expiry = new Date(order.expiration_timestamp * 3600 * 1000);
+              const expiry = new Date(
+                Number(order.expiration_timestamp) * 3600 * 1000
+              );
               let baseAsset = isPerp ? order.synthetic_token : order.base_asset;
+
 
               let color =
                 order.order_side === 1 || order.order_side === false
@@ -113,12 +116,12 @@ const OpenOrders = () => {
                     </td>
                     {/* Price */}
                     <td className={classNames("pr-3 font-medium")}>
-                      {order.price.toFixed(2)} USD
+                      {Number(order.price).toFixed(2)} USD
                     </td>
                     {/* Amount */}
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
-                        order.qty_left /
+                        Number(order.qty_left) /
                         10 ** DECIMALS_PER_ASSET[baseAsset]
                       ).toFixed(3)}{" "}
                       {IDS_TO_SYMBOLS[baseAsset]}
@@ -200,4 +203,3 @@ function getPosEffectType(position_effect_type: number) {
       throw Error("invalid pos_effect_type");
   }
 }
-
