@@ -286,7 +286,6 @@ export default class User {
     collateral_token,
     synthetic_amount,
     collateral_amount,
-    price,
     fee_limit,
     initial_margin
   ) {
@@ -386,6 +385,8 @@ export default class User {
       privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     }
 
+    console.log("Hello 1");
+
     let perpOrder = new PerpOrder(
       expiration_timestamp,
       perpPosition,
@@ -394,7 +395,6 @@ export default class User {
       synthetic_token,
       synthetic_amount,
       collateral_amount,
-      price,
       fee_limit,
       open_order_fields,
       close_order_fields
@@ -433,7 +433,6 @@ export default class User {
     token_received,
     amount_spent,
     amount_received,
-    price,
     fee_limit
   ) {
     // ? Get the notesIn and priv keys for these notes
@@ -462,7 +461,6 @@ export default class User {
       token_received,
       amount_spent,
       amount_received,
-      price,
       fee_limit,
       KoR,
       ytS,

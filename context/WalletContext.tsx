@@ -19,6 +19,7 @@ import tallyHoWalletModule from "@web3-onboard/tallyho";
 // import logo from "../public/img/zz.svg"
 
 const {
+  SERVER_URL,
   handleSwapResult,
   handlePerpSwapResult,
   SPOT_MARKET_IDS_2_TOKENS,
@@ -384,7 +385,7 @@ function WalletProvider({ children }: Props) {
 
   const listenToWebSocket = (user: any) => {
     let W3CWebSocket = require("websocket").w3cwebsocket;
-    let client = new W3CWebSocket("ws://54.212.28.196:50053");
+    let client = new W3CWebSocket(`ws://${SERVER_URL}:50053`);
 
     client.onopen = function () {
       client.send(trimHash(user.userId, 64));

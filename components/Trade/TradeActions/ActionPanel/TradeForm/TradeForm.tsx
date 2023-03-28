@@ -5,6 +5,7 @@ import { tradeTypeSelector } from "../../../../../lib/store/features/apiSlice";
 
 import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import TooltipSpotSlider from "../TooltipSpotSlider";
+import SettingsPopover from "./SettingsPopover";
 
 const {
   _renderActionButtons,
@@ -23,8 +24,6 @@ const {
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
-  checkViableSizeAfterIncrease,
-  checkViableSizeAfterFlip,
   calcAvgEntryInIncreaseSize,
   calulateLiqPriceInIncreaseSize,
   calulateLiqPriceInDecreaseSize,
@@ -68,13 +67,15 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
   function renderActionButtons() {
     return _renderActionButtons(
       user,
-      baseAmount,
-      price,
+      Number(baseAmount),
+      Number(price),
       perpType,
       positionData,
       token,
       type,
-      quoteAmount,
+      Number(quoteAmount),
+      Number(expirationTime),
+      Number(maxSlippage),
       forceRerender,
       action,
       refundNow,
@@ -214,6 +215,9 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
 
   const [refundNow, setRefundNow] = useState<boolean>(true);
 
+  const [expirationTime, setExpirationTime] = useState<number | null>(null);
+  const [maxSlippage, setMaxSlippage] = useState<number | null>(null);
+
   return (
     <div className="mt-2">
       {/* Price ====================================== */}
@@ -337,19 +341,33 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
         <p>{"0.00%-0.05%"}</p>
       </div>
 
+      <div className="mt-5">
+        <SettingsPopover
+          expirationTime={expirationTime}
+          setExpirationTime={setExpirationTime}
+          maxSlippage={maxSlippage}
+          setMaxSlippage={setMaxSlippage}
+          isMarket={type == "market"}
+        />
+      </div>
+
       {positionData ? (
         <div className="mt-5 pt-5 flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
           <p className="text-[13px]">
             <div>
               <div>
-                New Size:{" "}
+                <strong>New Size:</strong>{" "}
                 {baseAmount && price
-                  ? calculateNewSize(positionData, Number(baseAmount), true)
+                  ? calculateNewSize(
+                      positionData,
+                      Number(baseAmount),
+                      true
+                    ).toFixed(2)
                   : null}{" "}
                 {baseAmount && price ? token : null}
               </div>
               <div className="mt-1">
-                Average Entry Price:{" "}
+                <strong>Average Entry Price:</strong>{" "}
                 {baseAmount && price
                   ? calculateAvgEntryPrice(
                       positionData,
@@ -361,7 +379,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
                 {baseAmount && price ? "USD" : null}
               </div>
               <div className="mt-1">
-                Est. Liq. Price:{" "}
+                <strong> Est. Liq. Price:</strong>{" "}
                 {baseAmount && price
                   ? calculateNewLiqPrice(
                       positionData,
@@ -383,14 +401,18 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
           <p className="text-[13px]">
             <div>
               <div>
-                New Size:{" "}
+                <strong>New Size:</strong>{" "}
                 {baseAmount && price
-                  ? calculateNewSize(positionData, Number(baseAmount), false)
+                  ? calculateNewSize(
+                      positionData,
+                      Number(baseAmount),
+                      false
+                    ).toFixed(2)
                   : null}{" "}
                 {baseAmount && price ? token : null}
               </div>
               <div className="mt-1">
-                Average Entry Price:{" "}
+                <strong>Average Entry Price:</strong>{" "}
                 {baseAmount && price
                   ? calculateAvgEntryPrice(
                       positionData,
@@ -402,7 +424,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
                 {baseAmount && price ? "USD" : null}
               </div>
               <div className="mt-1">
-                Est. Liq. Price:{" "}
+                <strong> Est. Liq. Price:</strong>{" "}
                 {baseAmount && price
                   ? calculateNewLiqPrice(
                       positionData,

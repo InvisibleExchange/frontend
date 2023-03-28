@@ -11,6 +11,7 @@ const {
   DECIMALS_PER_ASSET,
   SPOT_MARKET_IDS,
   PERP_MARKET_IDS,
+  COLLATERAL_TOKEN,
 } = require("../../../../app_logic/helpers/utils");
 
 const {
@@ -79,6 +80,11 @@ const OpenOrders = () => {
               );
               let baseAsset = isPerp ? order.synthetic_token : order.base_asset;
 
+              let receivedToken = isPerp
+                ? null
+                : order.order_side === 1 || order.order_side === false
+                ? order.quote_asset
+                : order.base_asset;
 
               let color =
                 order.order_side === 1 || order.order_side === false
@@ -148,8 +154,12 @@ const OpenOrders = () => {
                     </td>
                     {/* Fee Limit */}
                     <td className={classNames("pr-3 font-medium ")}>
-                      {/* {order.fee_limit /
-                      10 ** DECIMALS_PER_ASSET[order.synthetic_token]} */}
+                      {order.fee_limit /
+                        10 **
+                          DECIMALS_PER_ASSET[
+                            isPerp ? COLLATERAL_TOKEN : receivedToken
+                          ]}{" "}
+                      {IDS_TO_SYMBOLS[receivedToken]}
                     </td>
                     {/* Cancel order */}
                     <td className={classNames("pl-3 font-medium ")}>
@@ -160,7 +170,7 @@ const OpenOrders = () => {
                               order.order_id,
                               order.order_side,
                               isPerp,
-                              isPerp ? order.synthetic_token : order.base_asset
+                              isPerp ? order.synthetic_token : baseAsset
                             );
                             forceRerender();
                           }}

@@ -35,6 +35,8 @@ const _renderActionButtons = (
   token,
   type,
   quoteAmount,
+  expirationTime,
+  maxSlippage,
   forceRerender,
   action,
   refundNow,
@@ -58,6 +60,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
             refundNow,
             setIsLoading
@@ -71,6 +75,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
             refundNow,
             setIsLoading
@@ -87,6 +93,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
             refundNow,
             setIsLoading
@@ -103,6 +111,8 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
             refundNow,
             setIsLoading
@@ -124,6 +134,8 @@ const _renderBuyButton = (
   token,
   type,
   quoteAmount,
+  expirationTime,
+  maxSlippage,
   forceRerender,
   refundNow,
   setIsLoading
@@ -172,7 +184,8 @@ const _renderBuyButton = (
 
             //
 
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -186,9 +199,11 @@ const _renderBuyButton = (
               positionData ? "Modify" : "Open",
               SYMBOLS_TO_IDS[token],
               baseAmount,
-              type == "market" ? null : price,
+              price,
               quoteAmount,
-              feeLimitPercent
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
@@ -196,7 +211,8 @@ const _renderBuyButton = (
           }
         } else {
           try {
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -211,8 +227,10 @@ const _renderBuyButton = (
               COLLATERAL_TOKEN,
               baseAmount,
               quoteAmount,
-              type == "market" ? null : price,
-              feeLimitPercent
+              price,
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
@@ -240,6 +258,8 @@ const _renderAskButton = (
   token,
   type,
   quoteAmount,
+  expirationTime,
+  maxSlippage,
   forceRerender,
   refundNow,
   setIsLoading
@@ -269,7 +289,8 @@ const _renderAskButton = (
               }
             }
 
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -283,9 +304,11 @@ const _renderAskButton = (
               positionData ? "Modify" : "Open",
               SYMBOLS_TO_IDS[token],
               baseAmount,
-              type == "market" ? null : price,
+              price,
               quoteAmount,
-              feeLimitPercent
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
@@ -293,7 +316,8 @@ const _renderAskButton = (
           }
         } else {
           try {
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -308,8 +332,10 @@ const _renderAskButton = (
               COLLATERAL_TOKEN,
               baseAmount,
               quoteAmount,
-              type == "market" ? null : price,
-              feeLimitPercent
+              price,
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {

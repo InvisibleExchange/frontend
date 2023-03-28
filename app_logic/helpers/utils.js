@@ -2,6 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note } = require("../users/Notes");
 
+const SERVER_URL = "localhost";
+
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
   ETH: 54321,
@@ -41,7 +43,7 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-const EXPRESS_APP_URL = "http://54.212.28.196:4000";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
 
 function get_max_leverage(token, amount) {
   let [min_bound, max_bound] = LEVERAGE_BOUNDS_PER_ASSET[token];
@@ -399,6 +401,7 @@ async function getActiveOrders(order_ids, perp_order_ids) {
 //
 
 module.exports = {
+  SERVER_URL,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   DUST_AMOUNT_PER_ASSET,
