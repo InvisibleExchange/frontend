@@ -29,16 +29,14 @@ const FillHistory = () => {
 
         <tbody className="overflow-y-auto max-h-24">
           {user && user.userId
-            ? user.fills.map((fill: any) => {
-                let id = fill.time + fill.base_token;
-
+            ? user.fills.map((fill: any, idx) => {
                 let color =
                   fill.side == "Buy" ? "text-green_lighter" : "text-red";
 
                 const timestamp = new Date(fill.time * 1000);
                 return (
                   <tr
-                    key={id}
+                    key={idx}
                     className={classNames(
                       "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
                     )}

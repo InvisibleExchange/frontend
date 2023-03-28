@@ -10,7 +10,6 @@ module.exports = class LimitOrder {
     token_received,
     amount_spent,
     amount_received,
-    price,
     fee_limit,
     dest_received_address,
     dest_spent_blinding,
@@ -23,7 +22,6 @@ module.exports = class LimitOrder {
     this.token_received = token_received;
     this.amount_spent = amount_spent;
     this.amount_received = amount_received;
-    this.price = price;
     this.fee_limit = fee_limit;
     this.dest_received_address = dest_received_address;
     this.dest_spent_blinding = dest_spent_blinding;

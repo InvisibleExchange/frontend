@@ -29,9 +29,6 @@ const PendingPanel = ({ type, user }: any) => {
             <button
               onClick={async () => {
                 if (type == "Deposit") {
-                  console.log("deposit", deposit);
-                  console.log("SYMBOLS_TO_IDS", SYMBOLS_TO_IDS[deposit.token]);
-
                   try {
                     await sendDeposit(
                       user,

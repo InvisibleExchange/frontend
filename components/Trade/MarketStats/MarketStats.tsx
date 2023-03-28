@@ -12,8 +12,6 @@ const {
 export default function MarketStats({ token, perpType }: any) {
   let { user, getMarkPrice } = useContext(WalletContext);
 
-  console.log("MARKET STATS", token, perpType);
-
   return (
     <div
       className={classNames(
@@ -23,7 +21,10 @@ export default function MarketStats({ token, perpType }: any) {
     >
       <div className={styles.price_container}>
         <div className={styles.price}>
-          ${getMarkPrice(SYMBOLS_TO_IDS[token], perpType == "perpetual")}
+          $
+          {getMarkPrice(SYMBOLS_TO_IDS[token], perpType == "perpetual").toFixed(
+            2
+          )}
         </div>
         {/* <div className={styles.price_usd}>$0.00</div> */}
       </div>

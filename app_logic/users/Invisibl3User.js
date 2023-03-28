@@ -180,9 +180,6 @@ export default class User {
   }
 
   async handleActiveOrders(badOrderIds, orders, badPerpOrderIds, perpOrders) {
-    console.log("badOrderIds", badOrderIds);
-    console.log("orders", orders);
-
     let activeOrderNoteIndexes = [];
 
     let pfrKeys = [];
@@ -193,7 +190,14 @@ export default class User {
       }
 
       for (let note of order.notes_in) {
-        activeOrderNoteIndexes.push(note.index);
+        // todo: only update if order was not partially filled
+        // let sum = order.notesIn.reduce((a, b) => a + b.amount, 0);
+        // if (
+        //   order.qty_left <
+        //   sum - DUST_AMOUNT_PER_ASSET[order.notesIn[0].token]
+        // ) {
+        activeOrderNoteIndexes.push(note.index.toString());
+        // }
       }
     }
 
@@ -203,17 +207,21 @@ export default class User {
       }
       if (order.position_effect_type == 0) {
         for (let note of order.notes_in) {
-          activeOrderNoteIndexes.push(note.index);
+          activeOrderNoteIndexes.push(note.index.toString());
         }
       }
     }
 
+    let frozenAddresses = [];
     let newNoteData = {};
     for (const [token, arr] of Object.entries(this.noteData)) {
       newNoteData[token] = [];
+
       for (const note of arr) {
         if (!activeOrderNoteIndexes.includes(note.index.toString())) {
           newNoteData[token].push(note);
+        } else {
+          frozenAddresses.push(note.address.getX().toString());
         }
       }
 
@@ -227,7 +235,7 @@ export default class User {
 
         let idx = newNoteData[token].findIndex((n) => n.index == maxIdx);
 
-        if (idx !== -1) {
+        if (idx !== -1 && !frozenAddresses.includes(addr.toString())) {
           newNoteData[token].splice(idx, 1);
         }
       }
@@ -278,7 +286,6 @@ export default class User {
     collateral_token,
     synthetic_amount,
     collateral_amount,
-    price,
     fee_limit,
     initial_margin
   ) {
@@ -378,6 +385,8 @@ export default class User {
       privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     }
 
+    console.log("Hello 1");
+
     let perpOrder = new PerpOrder(
       expiration_timestamp,
       perpPosition,
@@ -386,7 +395,6 @@ export default class User {
       synthetic_token,
       synthetic_amount,
       collateral_amount,
-      price,
       fee_limit,
       open_order_fields,
       close_order_fields
@@ -425,7 +433,6 @@ export default class User {
     token_received,
     amount_spent,
     amount_received,
-    price,
     fee_limit
   ) {
     // ? Get the notesIn and priv keys for these notes
@@ -454,7 +461,6 @@ export default class User {
       token_received,
       amount_spent,
       amount_received,
-      price,
       fee_limit,
       KoR,
       ytS,

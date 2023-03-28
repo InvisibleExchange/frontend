@@ -2,6 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note } = require("../users/Notes");
 
+const SERVER_URL = "localhost";
+
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
   ETH: 54321,
@@ -41,7 +43,7 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-const EXPRESS_APP_URL = "http://localhost:4000";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
 
 function get_max_leverage(token, amount) {
   let [min_bound, max_bound] = LEVERAGE_BOUNDS_PER_ASSET[token];
@@ -105,7 +107,10 @@ async function fetchLiquidity(token, isPerp) {
 
       if (liquidity_response.successful) {
         let bidQueue = liquidity_response.bid_queue;
-        let askQueue = liquidity_response.ask_queue;
+        let askQueue = [];
+        for (let i = liquidity_response.ask_queue.length - 1; i >= 0; i--) {
+          askQueue.push(liquidity_response.ask_queue[i]);
+        }
 
         return { bidQueue, askQueue };
       } else {
@@ -193,8 +198,6 @@ function handleSwapResult(user, orderId, swap_response) {
   let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
   if (order) {
-    console.log("order", order.qty_left, " - ", swap_response.swap_note.amount);
-
     order.qty_left =
       order.qty_left - swap_response.swap_note.amount - swap_response.fee_taken;
     // TODO: lest then 000
@@ -351,8 +354,6 @@ async function loginUser(signer) {
 
   let pk = keyDerivation.getPrivateKeyFromEthSignature(sig);
 
-  console.log(pk);
-
   let user = User.fromPrivKey(pk);
 
   await user.login();
@@ -400,6 +401,7 @@ async function getActiveOrders(order_ids, perp_order_ids) {
 //
 
 module.exports = {
+  SERVER_URL,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   DUST_AMOUNT_PER_ASSET,

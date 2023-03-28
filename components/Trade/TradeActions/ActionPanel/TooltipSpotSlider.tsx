@@ -98,8 +98,6 @@ const TooltipSpotSlider = ({
     );
   };
 
-  console.log(theme);
-
   return (
     <Slider
       {...props}

@@ -11,7 +11,6 @@ class PerpOrder {
     synthetic_token,
     synthetic_amount,
     collateral_amount,
-    price,
     fee_limit,
     open_order_fields,
     close_order_fields
@@ -23,7 +22,6 @@ class PerpOrder {
     this.synthetic_token = synthetic_token;
     this.synthetic_amount = synthetic_amount;
     this.collateral_amount = collateral_amount;
-    this.price = price;
     this.fee_limit = fee_limit;
     // -------------------
     this.open_order_fields = open_order_fields;

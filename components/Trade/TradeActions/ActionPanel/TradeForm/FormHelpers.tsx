@@ -1,3 +1,4 @@
+import { useState } from "react";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
 
 const {
@@ -34,13 +35,21 @@ const _renderActionButtons = (
   token,
   type,
   quoteAmount,
+  expirationTime,
+  maxSlippage,
   forceRerender,
   action,
-  refundNow
+  refundNow,
+  isLoading,
+  setIsLoading
 ) => {
   return (
     <>
-      {action === "none" ? (
+      {isLoading ? (
+        <div className="mt-14 ml-32 mr-32">
+          <LoadingSpinner />
+        </div>
+      ) : action === "none" ? (
         <div className="flex items-center gap-2 mt-14">
           {_renderBuyButton(
             user,
@@ -51,8 +60,11 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
-            refundNow
+            refundNow,
+            setIsLoading
           )}
           {_renderAskButton(
             user,
@@ -63,8 +75,11 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
-            refundNow
+            refundNow,
+            setIsLoading
           )}
         </div>
       ) : action === "buy" ? (
@@ -78,8 +93,11 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
-            refundNow
+            refundNow,
+            setIsLoading
           )}
         </div>
       ) : (
@@ -93,8 +111,11 @@ const _renderActionButtons = (
             token,
             type,
             quoteAmount,
+            expirationTime,
+            maxSlippage,
             forceRerender,
-            refundNow
+            refundNow,
+            setIsLoading
           )}
         </div>
       )}
@@ -113,16 +134,22 @@ const _renderBuyButton = (
   token,
   type,
   quoteAmount,
+  expirationTime,
+  maxSlippage,
   forceRerender,
-  refundNow
+  refundNow,
+  setIsLoading
 ) => {
   refundNow = type == "market" ? false : refundNow;
 
   return (
     <button
       onClick={async () => {
-        if (!user || !baseAmount) {
+        setIsLoading(true);
+
+        if (!user || !baseAmount || !price) {
           alert("Choose an amount to trade");
+          setIsLoading(false);
           return;
         }
         if (perpType == "perpetual") {
@@ -134,6 +161,7 @@ const _renderBuyButton = (
                 !checkViableSizeAfterIncrease(positionData, baseAmount, price)
               ) {
                 alert("Increase size too large for current margin");
+                setIsLoading(false);
                 return;
               }
             }
@@ -148,6 +176,7 @@ const _renderBuyButton = (
                   !checkViableSizeAfterFlip(positionData, baseAmount, price)
                 ) {
                   alert("Increase size too large for current margin");
+                  setIsLoading(false);
                   return;
                 }
               }
@@ -155,7 +184,8 @@ const _renderBuyButton = (
 
             //
 
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -169,9 +199,11 @@ const _renderBuyButton = (
               positionData ? "Modify" : "Open",
               SYMBOLS_TO_IDS[token],
               baseAmount,
-              type == "market" ? null : price,
+              price,
               quoteAmount,
-              feeLimitPercent
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
@@ -179,7 +211,8 @@ const _renderBuyButton = (
           }
         } else {
           try {
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -194,14 +227,18 @@ const _renderBuyButton = (
               COLLATERAL_TOKEN,
               baseAmount,
               quoteAmount,
-              type == "market" ? null : price,
-              feeLimitPercent
+              price,
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
             alert("Error: " + error);
           }
         }
+
+        setIsLoading(false);
 
         forceRerender();
       }}
@@ -221,14 +258,25 @@ const _renderAskButton = (
   token,
   type,
   quoteAmount,
+  expirationTime,
+  maxSlippage,
   forceRerender,
-  refundNow
+  refundNow,
+  setIsLoading
 ) => {
   refundNow = type == "market" ? false : refundNow;
 
   return (
     <button
       onClick={async () => {
+        setIsLoading(true);
+
+        if (!user || !baseAmount || !price) {
+          alert("Choose an amount to trade");
+          setIsLoading(false);
+          return;
+        }
+
         if (perpType == "perpetual") {
           try {
             if (positionData && positionData.order_side == "Short") {
@@ -236,11 +284,13 @@ const _renderAskButton = (
                 !checkViableSizeAfterIncrease(positionData, baseAmount, price)
               ) {
                 alert("Increase size too large for current margin");
+                setIsLoading(false);
                 return;
               }
             }
 
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -254,9 +304,11 @@ const _renderAskButton = (
               positionData ? "Modify" : "Open",
               SYMBOLS_TO_IDS[token],
               baseAmount,
-              type == "market" ? null : price,
+              price,
               quoteAmount,
-              feeLimitPercent
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
@@ -264,7 +316,8 @@ const _renderAskButton = (
           }
         } else {
           try {
-            let expirationTimesamp = 1000;
+            let slippage = maxSlippage ? Number(maxSlippage) : 5;
+            let expirationTimesamp = expirationTime ? expirationTime : 1000;
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -279,14 +332,18 @@ const _renderAskButton = (
               COLLATERAL_TOKEN,
               baseAmount,
               quoteAmount,
-              type == "market" ? null : price,
-              feeLimitPercent
+              price,
+              feeLimitPercent,
+              slippage,
+              type == "market"
             );
             alert("Success!");
           } catch (error) {
             alert("Error: " + error);
           }
         }
+
+        setIsLoading(false);
 
         forceRerender();
       }}
