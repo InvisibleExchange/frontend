@@ -70,13 +70,20 @@ export default function Trades({ token, type }: Props) {
                 fill.price /
                 10 ** PRICE_DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
 
+              let color = fill.is_buy ? "text-green_lighter" : "text-red";
+
               return (
                 <div className="flex" key={index}>
-                  <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                    {amount}
+                  <div
+                    className={classNames(
+                      "flex items-center justify-center flex-grow py-0.5 text-sm " +
+                        color
+                    )}
+                  >
+                    {amount.toFixed(3)}
                   </div>
                   <div className="flex items-center justify-center flex-grow py-0.5 text-sm ">
-                    {price}
+                    {price.toFixed(2)}
                   </div>
                   <div className="flex items-center justify-center flex-grow py-0.5 text-sm ">
                     {timestamp.toLocaleTimeString()}

@@ -430,8 +430,6 @@ function WalletProvider({ children }: Props) {
             };
           });
 
-          console.log("askQueue", askQueue);
-
           let pairLiquidity = { bidQueue, askQueue };
 
           if (msg.type === "perpetual") {
@@ -453,12 +451,10 @@ function WalletProvider({ children }: Props) {
           break;
 
         case "SWAP_RESULT":
-          console.log("msg", msg);
           handleSwapResult(user, msg.order_id, msg.swap_response);
           break;
 
         case "PERPETUAL_SWAP":
-          console.log("msg", msg);
           handlePerpSwapResult(user, msg.order_id, msg.swap_response);
           break;
 

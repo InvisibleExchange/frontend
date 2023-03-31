@@ -8,7 +8,6 @@ const {
   storePrivKey,
   removePrivKey,
   removeOrderId,
-  fetchStoredNotes,
   fetchUserFills,
 } = require("../helpers/firebase/firebaseConnection");
 
@@ -167,16 +166,29 @@ export default class User {
 
     // ? Get Order Data ============================================
 
+    let positionDataNew = {};
+    for (let [token, arr] of Object.entries(positionData)) {
+      let newArr = [];
+      for (let pos of arr) {
+        // Check if a position with the same index is already in the newArr
+        if (!newArr.find((p) => p.index == pos.index)) {
+          newArr.push(pos);
+        }
+      }
+
+      positionDataNew[token] = newArr;
+    }
+
     this.noteData = noteData;
     this.notePrivKeys = notePrivKeys;
     this.noteCounts = userData.noteCounts;
     this.positionCounts = userData.positionCounts;
-    this.positionData = positionData;
+    this.positionData = positionDataNew;
     this.positionPrivKeys = posPrivKeys;
-    this.orderIds = userData.orderIds;
-    this.perpetualOrderIds = userData.perpetualOrderIds;
+    this.orderIds = [...new Set(userData.orderIds)];
+    this.perpetualOrderIds = [...new Set(userData.perpetualOrderIds)];
     this.pfrKeys = userData.pfrKeys;
-    this.fills = fills;
+    this.fills = [...new Set(fills)];
   }
 
   async handleActiveOrders(badOrderIds, orders, badPerpOrderIds, perpOrders) {
@@ -243,8 +255,6 @@ export default class User {
 
     // If bad order Id and pfrAddress exists, add the note to the user's noteData
 
-    this.noteData = newNoteData;
-
     this.orders = orders;
     this.perpetualOrders = perpOrders;
 
@@ -252,11 +262,11 @@ export default class User {
       removeOrderId(this.userId, orderId, false);
 
       if (this.pfrKeys[orderId]) {
-        handlePfrNoteData(
+        await handlePfrNoteData(
           this.userId,
           this.pfrKeys[orderId],
           this.privateSeed,
-          this.noteData,
+          newNoteData,
           this.notePrivKeys
         );
       }
@@ -265,15 +275,30 @@ export default class User {
       removeOrderId(this.userId, orderId, true);
 
       if (this.pfrKeys[orderId]) {
-        handlePfrNoteData(
+        await handlePfrNoteData(
           this.userId,
           this.pfrKeys[orderId],
           this.privateSeed,
-          this.noteData,
+          newNoteData,
           this.notePrivKeys
         );
       }
     }
+
+    let noteDataNew = {};
+    for (let [token, arr] of Object.entries(newNoteData)) {
+      let newArr = [];
+      for (let pos of arr) {
+        // Check if a note with the same index is already in the newArr
+        if (!newArr.find((n) => n.index == pos.index)) {
+          newArr.push(pos);
+        }
+      }
+
+      noteDataNew[token] = newArr;
+    }
+
+    this.noteData = noteDataNew;
   }
 
   //* GENERATE ORDERS  ==========================================================
@@ -317,7 +342,7 @@ export default class User {
 
       // ? Generate the dest spent and dest received addresses and blindings
       privKeys = notesIn.map((x) => x.privKey);
-      let { __, _, ytS } = this.getDestSpentAddresses(privKeys);
+      let ytS = this.getDestSpentBlinding(privKeys);
       let { KoR, koR, ytR } = this.getDestReceivedAddresses(synthetic_token);
       this.notePrivKeys[KoR.getX().toString()] = koR;
 
@@ -385,8 +410,6 @@ export default class User {
       privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     }
 
-    console.log("Hello 1");
-
     let perpOrder = new PerpOrder(
       expiration_timestamp,
       perpPosition,
@@ -444,15 +467,21 @@ export default class User {
     // ? Generate the dest spent and dest received addresses and blindings
 
     let privKeys = notesIn.map((x) => x.privKey);
-    let { __, _, ytS } = this.getDestSpentAddresses(privKeys);
+    let ytS = this.getDestSpentBlinding(privKeys);
     let { KoR, koR, ytR } = this.getDestReceivedAddresses(token_received);
+    let {
+      KoR: KoR2,
+      koR: koR2,
+      ytR: ytR2,
+    } = this.getDestReceivedAddresses(token_spent);
     let privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     this.notePrivKeys[KoR.getX().toString()] = koR;
+    this.notePrivKeys[KoR2.getX().toString()] = koR2;
 
     // ? generate the refund note
     let refundNote =
       refundAmount > DUST_AMOUNT_PER_ASSET[token_spent]
-        ? new Note(KoR, token_spent, refundAmount, ytS, notesIn[0].note.index)
+        ? new Note(KoR2, token_spent, refundAmount, ytR2, notesIn[0].note.index)
         : null;
 
     let limitOrder = new LimitOrder(
@@ -474,6 +503,7 @@ export default class User {
     storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
     storePrivKey(this.userId, koR, false);
+    storePrivKey(this.userId, koR2, false);
 
     return { limitOrder, pfrKey: privKeySum };
   }
@@ -519,15 +549,15 @@ export default class User {
     // ? Generate the dest spent and dest received addresses and blindings
     let privKeys = notesIn.map((x) => x.privKey);
     notesIn = notesIn.map((x) => x.note);
-    let { KoS, koS, ytS } = this.getDestSpentAddresses(privKeys);
-    this.notePrivKeys[KoS.getX().toString()] = koS;
+    let { KoR, koR, ytR } = this.getDestReceivedAddresses(withdrawToken);
+    this.notePrivKeys[KoR.getX().toString()] = koR;
 
     // ? generate the refund note
     let refundNote = new Note(
-      KoS,
+      KoR,
       withdrawToken,
       refundAmount,
-      ytS,
+      ytR,
       notesIn[0].index
     );
 
@@ -549,47 +579,35 @@ export default class User {
 
     storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
-    storePrivKey(this.userId, koS, false);
+    storePrivKey(this.userId, koR, false);
 
     return withdrawal;
   }
 
-  restructureNotes(token, newAmounts) {
-    if (newAmounts.length == 0) throw Error("No new amounts provided");
+  restructureNotes(token, newAmount) {
+    if (!newAmount) throw Error("No new amount provided");
 
-    let sum = newAmounts.reduce((a, b) => a + b, 0);
+    let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
+      token,
+      newAmount
+    );
 
-    let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(token, sum);
+    if (!refundAmount || refundAmount <= 0) return null;
 
-    let addresses = notesIn.map((x) => x.note.address);
-    let blindings = notesIn.map((x) => x.note.blinding);
-    let l = addresses.length;
+    let address0 = notesIn[0].note.address;
+    let blinding0 = notesIn[0].note.blinding;
+    let address1 = notesIn[notesIn.length - 1].note.address;
+    let blinding1 = notesIn[notesIn.length - 1].note.blinding;
 
-    let newNoteData = [];
-    for (let i = 0; i < newAmounts.length; i++) {
-      let newNote = new Note(
-        addresses[i % l],
-        token,
-        newAmounts[i],
-        blindings[i % l]
-      );
-
-      newNoteData.push(newNote);
-    }
+    let newNote = new Note(address0, token, newAmount, blinding0);
 
     // ? generate the refund note
-    if (refundAmount > 0) {
-      let refundNote = new Note(
-        addresses[0],
-        token,
-        refundAmount,
-        blindings[0]
-      );
+    let refundNote = new Note(address1, token, refundAmount, blinding1);
 
-      newNoteData.push(refundNote);
-    }
-
-    return { notesIn: notesIn.map((n) => n.note), notesOut: newNoteData };
+    return {
+      notesIn: notesIn.map((n) => n.note),
+      notesOut: [newNote, refundNote],
+    };
   }
 
   changeMargin(positionAddress, token, direction, amount) {
@@ -695,7 +713,7 @@ export default class User {
     return { KoR, koR, ytR };
   }
 
-  getDestSpentAddresses(privKeys) {
+  getDestSpentBlinding(privKeys) {
     // & This returns the dest spent address and blinding
 
     let koS = privKeys.reduce((acc, x) => acc + x, 0n);
@@ -703,7 +721,7 @@ export default class User {
 
     let ytS = this.generateBlinding(KoS);
 
-    return { KoS, koS, ytS };
+    return ytS;
   }
 
   getNotesInAndRefundAmount(token, spendAmount) {
@@ -718,7 +736,7 @@ export default class User {
     }
 
     let notes = [...this.noteData[token]];
-    notes = notes.sort((a, b) => b.amount - a.amount);
+    notes = notes.sort((a, b) => a.amount - b.amount);
 
     for (let i = 0; i < notes.length; i++) {
       const note = notes[i];
@@ -841,13 +859,3 @@ export default class User {
 //
 //
 //
-
-// [
-//   2211411919301942657731630998350445843808234806160174661579418690076063567093,
-//   0,
-//   1685983422123097497281157618370252723447453365270455305846298801295002199516,
-//   3001028476740585972637873014693011062054526548221354862511109716958367581287,
-//   0,
-//   2638313622833074501499509633035413186253891944276070750918520372332659074136,
-//   984316734154372992214912798444594818695345158783169051620457028266056300953,
-// ];

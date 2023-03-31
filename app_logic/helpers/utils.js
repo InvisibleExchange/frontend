@@ -21,8 +21,8 @@ const LEVERAGE_BOUNDS_PER_ASSET = {
 };
 
 const DECIMALS_PER_ASSET = {
-  12345: 8, // BTC
-  54321: 8, // ETH
+  12345: 9, // BTC
+  54321: 9, // ETH
   55555: 6, // USDC
 };
 
@@ -32,9 +32,9 @@ const PRICE_DECIMALS_PER_ASSET = {
 };
 
 const DUST_AMOUNT_PER_ASSET = {
-  12345: 100, // BTC ~ 1c
-  54321: 1000, // ETH ~ 1c
-  55555: 1000, // USDC ~ 0.1c
+  12345: 2500, // BTC ~ 5c
+  54321: 25000, // ETH ~ 5c
+  55555: 50000, // USDC ~ 5c
 };
 
 const MAX_LEVERAGE = 15;

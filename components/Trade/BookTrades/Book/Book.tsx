@@ -70,7 +70,7 @@ export default function Book({
                       {order.price.toFixed(2)}
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
-                      {amount.toFixed(3)}
+                      {amount.toFixed(4)}
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
                       {(amount * order.price).toFixed(2)}
@@ -104,7 +104,7 @@ export default function Book({
                       {order.price.toFixed(2)}
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                      {amount.toFixed(3)}
+                      {amount.toFixed(4)}
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
                       {(amount * order.price).toFixed(2)}

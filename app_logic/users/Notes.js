@@ -10,11 +10,11 @@ const BN = require("bn.js");
 
 class Note {
   constructor(addr, token, amount, blinding_factor, idx = 0) {
-    this.index = idx;
+    this.index = Number.parseInt(idx);
     this.address = addr;
-    this.token = token;
-    this.amount = amount;
-    this.blinding = blinding_factor;
+    this.token = Number.parseInt(token);
+    this.amount = Number.parseInt(amount);
+    this.blinding = BigInt(blinding_factor);
     this.commitment = this.getCommitment();
     this.hash = this.hashNote();
   }

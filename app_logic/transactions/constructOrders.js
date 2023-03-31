@@ -120,6 +120,19 @@ async function sendSpotOrder(
     throw new Error("Insufficient balance");
   }
 
+  console.log("Sending order123");
+
+  console.log(
+    expirationTime,
+    spendToken,
+    receiveToken,
+    spendAmount,
+    receiveAmount,
+    feeLimit
+  );
+
+  console.log("user", user);
+
   let { limitOrder, pfrKey } = user.makeLimitOrder(
     expirationTimestamp,
     spendToken,
@@ -129,85 +142,85 @@ async function sendSpotOrder(
     feeLimit
   );
 
+  console.log("Order constructed");
+
   let orderJson = limitOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
 
   user.awaittingOrder = true;
 
-  console.log("Sending spot order: ", orderJson);
+  await axios
+    .post(`${EXPRESS_APP_URL}/submit_limit_order`, orderJson)
+    .then(async (res) => {
+      let order_response = res.data.response;
 
-  // await axios
-  //   .post(`${EXPRESS_APP_URL}/submit_limit_order`, orderJson)
-  //   .then(async (res) => {
-  //     let order_response = res.data.response;
+      if (order_response.successful) {
+        await storeOrderId(user.userId, order_response.order_id, pfrKey, false);
 
-  //     if (order_response.successful) {
-  //       await storeOrderId(user.userId, order_response.order_id, pfrKey, false);
+        // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
 
-  //       // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
+        // If this is a taker order it might have been filled fully/partially before the response was received (here)
+        let filledAmount = user.filledAmounts[order_response.order_id]
+          ? user.filledAmounts[order_response.order_id]
+          : 0;
 
-  //       // If this is a taker order it might have been filled fully/partially before the response was received (here)
-  //       let filledAmount = user.filledAmounts[order_response.order_id]
-  //         ? user.filledAmounts[order_response.order_id]
-  //         : 0;
+        order_side = order_side == "Buy" ? 0 : 1;
+        let orderData = {
+          base_asset: baseToken,
+          quote_asset: quoteToken,
+          expiration_timestamp: expirationTime,
+          fee_limit: feeLimit,
+          notes_in: limitOrder.notes_in,
+          order_id: order_response.order_id,
+          order_side,
+          price: price,
+          qty_left: receiveAmount - filledAmount,
+          refund_note: limitOrder.refund_note,
+        };
 
-  //       order_side = order_side == "Buy" ? 0 : 1;
-  //       let orderData = {
-  //         base_asset: baseToken,
-  //         quote_asset: quoteToken,
-  //         expiration_timestamp: expirationTime,
-  //         fee_limit: feeLimit,
-  //         notes_in: limitOrder.notes_in,
-  //         order_id: order_response.order_id,
-  //         order_side,
-  //         price: price,
-  //         qty_left: receiveAmount - filledAmount,
-  //         refund_note: limitOrder.refund_note,
-  //       };
+        if (orderData.notes_in.length > 0) {
+          for (let note of orderData.notes_in) {
+            user.noteData[note.token] = user.noteData[note.token].filter(
+              (n) => n.index != note.index
+            );
+          }
+        }
 
-  //       if (orderData.notes_in.length > 0) {
-  //         for (let note of orderData.notes_in) {
-  //           user.noteData[note.token] = user.noteData[note.token].filter(
-  //             (n) => n.index != note.index
-  //           );
-  //         }
-  //       }
+        // ? Add the refund note
+        if (orderData.refund_note) {
+          if (user.refundNotes[order_response.order_id]) {
+            // If this is a market order then we can add the refund note immediately
+            user.noteData[orderData.refund_note.token].push(
+              orderData.refund_note
+            );
+          } else {
+            // If this is a limit order then we need to wait for the order to be filled
+            // (untill we receive a response through the websocket)
+            user.refundNotes[order_response.order_id] = orderData.refund_note;
+          }
+        }
 
-  //       // ? Add the refund note
-  //       if (orderData.refund_note) {
-  //         if (user.refundNotes[order_response.order_id]) {
-  //           // If this is a market order then we can add the refund note immediately
-  //           user.noteData[orderData.refund_note.token].push(
-  //             orderData.refund_note
-  //           );
-  //         } else {
-  //           // If this is a limit order then we need to wait for the order to be filled
-  //           // (untill we receive a response through the websocket)
-  //           user.refundNotes[order_response.order_id] = orderData.refund_note;
-  //         }
-  //       }
+        if (
+          orderData.qty_left >=
+          DUST_AMOUNT_PER_ASSET[
+            orderData.order_side == 1 ? baseToken : quoteToken
+          ]
+        ) {
+          user.orders.push(orderData);
+        }
 
-  //       if (
-  //         orderData.qty_left >=
-  //         DUST_AMOUNT_PER_ASSET[
-  //           orderData.order_side == 1 ? baseToken : quoteToken
-  //         ]
-  //       ) {
-  //         user.orders.push(orderData);
-  //       }
+        user.awaittingOrder = false;
+      } else {
+        let msg =
+          "Failed to submit order with error: \n" +
+          order_response.error_message;
+        console.log(msg);
 
-  //       user.awaittingOrder = false;
-  //     } else {
-  //       let msg =
-  //         "Failed to submit order with error: \n" +
-  //         order_response.error_message;
-  //       console.log(msg);
-
-  //       user.awaittingOrder = false;
-  //       throw new Error(msg);
-  //     }
-  //   });
+        user.awaittingOrder = false;
+        throw new Error(msg);
+      }
+    });
 }
 
 // * =====================================================================================================================================
@@ -247,8 +260,6 @@ async function sendPerpOrder(
   let decimalMultiplier =
     syntheticDecimals + priceDecimals - COLLATERAL_TOKEN_DECIMALS;
 
-  console.log("Hello");
-
   syntheticAmount = syntheticAmount * 10 ** syntheticDecimals;
   let scaledPrice = price * 10 ** priceDecimals;
   scaledPrice = isMarket
@@ -274,8 +285,6 @@ async function sendPerpOrder(
 
   feeLimit = Number.parseInt(((feeLimit * collateralAmount) / 100).toString());
 
-  console.log("Hello 3");
-
   checkPerpOrderValidity(
     user,
     order_side,
@@ -289,8 +298,6 @@ async function sendPerpOrder(
     feeLimit
   );
 
-  console.log("Hello 4");
-
   let { perpOrder, pfrKey } = user.makePerpetualOrder(
     expirationTimestamp,
     position_effect_type,
@@ -303,93 +310,88 @@ async function sendPerpOrder(
     initial_margin
   );
 
-  console.log("Hello 5");
-
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
 
-  console.log("Sending perp order: ", orderJson);
+  await axios
+    .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
+    .then((res) => {
+      let order_response = res.data.response;
 
-  // await axios
-  //   .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
-  //   .then((res) => {
-  //     let order_response = res.data.response;
+      if (order_response.successful) {
+        storeOrderId(user.userId, order_response.order_id, pfrKey, true);
 
-  //     if (order_response.successful) {
-  //       storeOrderId(user.userId, order_response.order_id, pfrKey, true);
+        // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
 
-  //       // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
+        // If this is a taker order it might have been filled fully/partially before the response was received (here)
+        let filledAmount = user.filledAmounts[order_response.order_id]
+          ? user.filledAmounts[order_response.order_id]
+          : 0;
 
-  //       // If this is a taker order it might have been filled fully/partially before the response was received (here)
-  //       let filledAmount = user.filledAmounts[order_response.order_id]
-  //         ? user.filledAmounts[order_response.order_id]
-  //         : 0;
+        let orderData = {
+          synthetic_token: perpOrder.synthetic_token,
+          expiration_timestamp: perpOrder.expiration_timestamp,
+          fee_limit: feeLimit,
+          order_id: order_response.order_id,
+          position_effect_type: orderJson.position_effect_type,
+          order_side: perpOrder.order_side == "Long",
+          price: price,
+          position_address: perpOrder.position
+            ? perpOrder.position.position_address
+            : null,
+          qty_left: perpOrder.synthetic_amount - filledAmount,
+          notes_in:
+            orderJson.position_effect_type == 0
+              ? perpOrder.open_order_fields.notes_in
+              : [],
+          refund_note:
+            orderJson.position_effect_type == 0 &&
+            perpOrder.open_order_fields.refund_note
+              ? perpOrder.open_order_fields.refund_note
+              : null,
+          initial_margin:
+            orderJson.position_effect_type == 0
+              ? perpOrder.open_order_fields.initial_margin
+              : 0,
+        };
 
-  //       let orderData = {
-  //         synthetic_token: perpOrder.synthetic_token,
-  //         expiration_timestamp: perpOrder.expiration_timestamp,
-  //         fee_limit: feeLimit,
-  //         order_id: order_response.order_id,
-  //         position_effect_type: orderJson.position_effect_type,
-  //         order_side: perpOrder.order_side == "Long",
-  //         price: price,
-  //         position_address: perpOrder.position
-  //           ? perpOrder.position.position_address
-  //           : null,
-  //         qty_left: perpOrder.synthetic_amount - filledAmount,
-  //         notes_in:
-  //           orderJson.position_effect_type == 0
-  //             ? perpOrder.open_order_fields.notes_in
-  //             : [],
-  //         refund_note:
-  //           orderJson.position_effect_type == 0 &&
-  //           perpOrder.open_order_fields.refund_note
-  //             ? perpOrder.open_order_fields.refund_note
-  //             : null,
-  //         initial_margin:
-  //           orderJson.position_effect_type == 0
-  //             ? perpOrder.open_order_fields.initial_margin
-  //             : 0,
+        if (orderData.notes_in.length > 0) {
+          for (let note of orderData.notes_in) {
+            user.noteData[note.token] = user.noteData[note.token].filter(
+              (n) => n.index != note.index
+            );
+          }
+        }
 
-  //       };
+        // ? Add the refund note
+        if (orderData.refund_note) {
+          if (user.refundNotes[order_response.order_id]) {
+            // If this is a market order then we can add the refund note immediately
+            user.noteData[orderData.refund_note.token].push(
+              orderData.refund_note
+            );
+          } else {
+            // If this is a limit order then we need to wait for the order to be filled
+            // (untill we receive a response through the websocket)
 
-  //       if (orderData.notes_in.length > 0) {
-  //         for (let note of orderData.notes_in) {
-  //           user.noteData[note.token] = user.noteData[note.token].filter(
-  //             (n) => n.index != note.index
-  //           );
-  //         }
-  //       }
+            user.refundNotes[order_response.order_id] = orderData.refund_note;
+          }
+        }
 
-  //       // ? Add the refund note
-  //       if (orderData.refund_note) {
-  //         if (user.refundNotes[order_response.order_id]) {
-  //           // If this is a market order then we can add the refund note immediately
-  //           user.noteData[orderData.refund_note.token].push(
-  //             orderData.refund_note
-  //           );
-  //         } else {
-  //           // If this is a limit order then we need to wait for the order to be filled
-  //           // (untill we receive a response through the websocket)
-
-  //           user.refundNotes[order_response.order_id] = orderData.refund_note;
-  //         }
-  //       }
-
-  //       if (
-  //         orderData.qty_left >= DUST_AMOUNT_PER_ASSET[orderData.synthetic_token]
-  //       ) {
-  //         user.perpetualOrders.push(orderData);
-  //       }
-  //     } else {
-  //       let msg =
-  //         "Failed to submit order with error: \n" +
-  //         order_response.error_message;
-  //       console.log(msg);
-  //       throw new Error(msg);
-  //     }
-  //   });
+        if (
+          orderData.qty_left >= DUST_AMOUNT_PER_ASSET[orderData.synthetic_token]
+        ) {
+          user.perpetualOrders.push(orderData);
+        }
+      } else {
+        let msg =
+          "Failed to submit order with error: \n" +
+          order_response.error_message;
+        console.log(msg);
+        throw new Error(msg);
+      }
+    });
 }
 
 async function sendLiquidationOrder(user, expirationTime, position) {
@@ -457,43 +459,58 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
       let order_response = response.data.response;
 
       if (order_response.successful) {
-        if (isPerp) {
-          for (let i = 0; i < user.perpetualOrders.length; i++) {
-            let ord = user.perpetualOrders[i];
-            if (ord.order_id == orderId.toString()) {
-              let notes_in = ord.notes_in;
-              if (notes_in.length > 0) {
-                for (let note of notes_in) {
-                  user.noteData[note.token].push(note);
-                }
-              }
-            }
-          }
-
-          user.perpetualOrders = user.perpetualOrders.filter(
-            (o) => o.order_id != orderId
-          );
-        } else {
-          for (let i = 0; i < user.orders.length; i++) {
-            let ord = user.orders[i];
-
-            if (ord.order_id == orderId) {
-              let notes_in = ord.notes_in;
-              if (notes_in.length > 0) {
-                for (let note of notes_in) {
-                  user.noteData[note.token].push(note);
-                }
-              }
-            }
-          }
-
-          user.orders = user.orders.filter((o) => o.order_id != orderId);
-        }
-
         let pfrNote = order_response.pfr_note;
         if (pfrNote) {
+          // This means that the order has been filled partially
+          // so we need don't need to add the notesIn to the user's noteData
+          // instead we add the pfrNote to the user's noteData
+
           let note = Note.fromGrpcObject(pfrNote);
           user.noteData[pfrNote.token].push(note);
+        } else {
+          // This means that the order has not been filled partially yet
+          // so we need to add the notesIn to the user's noteData
+
+          if (isPerp) {
+            for (let i = 0; i < user.perpetualOrders.length; i++) {
+              // loop over the user's perpetual orders and find the order that has been cancelled
+              // if notesIn is not empty (open order) then add the notes to the user's noteData
+
+              let ord = user.perpetualOrders[i];
+              if (ord.order_id == orderId.toString()) {
+                let notes_in = ord.notes_in;
+                if (notes_in && notes_in.length > 0) {
+                  for (let note_ of notes_in) {
+                    let note = Note.fromGrpcObject(note_);
+                    user.noteData[note.token].push(note);
+                  }
+                }
+              }
+            }
+
+            user.perpetualOrders = user.perpetualOrders.filter(
+              (o) => o.order_id != orderId
+            );
+          } else {
+            // loop over the user's spot orders and find the order that has been cancelled
+            // if notesIn is not empty then add the notes to the user's noteData
+
+            for (let i = 0; i < user.orders.length; i++) {
+              let ord = user.orders[i];
+
+              if (ord.order_id == orderId) {
+                let notes_in = ord.notes_in;
+                if (notes_in.length > 0) {
+                  for (let note_ of notes_in) {
+                    let note = Note.fromGrpcObject(note_);
+                    user.noteData[note.token].push(note);
+                  }
+                }
+              }
+            }
+
+            user.orders = user.orders.filter((o) => o.order_id != orderId);
+          }
         }
       } else {
         console.log("error canceling order: ", order_response.error_message);
@@ -585,10 +602,12 @@ async function sendWithdrawal(user, amount, token, starkKey) {
  * @param token - token to restructure notes for
  * @param newAmounts - array of new amounts
  */
-async function sendSplitOrder(user, token, newAmounts) {
-  newAmounts = newAmounts.map((a) => a * 10 ** DECIMALS_PER_ASSET[token]);
+async function sendSplitOrder(user, token, newAmount) {
+  newAmount = newAmount * 10 ** DECIMALS_PER_ASSET[token];
 
-  let { notesIn, notesOut } = user.restructureNotes(token, newAmounts);
+  let res = user.restructureNotes(token, newAmount);
+  if (!res) return;
+  let { notesIn, notesOut } = res;
 
   let notes_in = notesIn.map((n) => n.toGrpcObject());
   let notes_out = notesOut.map((n) => n.toGrpcObject());

@@ -23,7 +23,9 @@ async function fetchNoteData(keyPairs, privateSeed) {
     let privKey = BigInt(keyPairs[i].getPrivate());
 
     let blinding = _generateNewBliding(addr.getX(), privateSeed);
+
     let notes_ = await fetchStoredNotes(addr.getX().toString(), blinding);
+
     if (!notes_ || notes_.length == 0) {
       emptyPrivKeys.push(privKey);
       continue;
@@ -184,7 +186,7 @@ function _checkOwnership(Ks, Kv, Ko, kv, token, count) {
   // Todo: finsih this function
 }
 
-function handlePfrNoteData(
+async function handlePfrNoteData(
   userId,
   pfrKey,
   privateSeed,
@@ -193,7 +195,7 @@ function handlePfrNoteData(
 ) {
   let pfrAddress = getKeyPair(pfrKey).getPublic().getX();
   let blinding = _generateNewBliding(pfrAddress, privateSeed);
-  fetchStoredNotes(pfrAddress, blinding).then((notes) => {
+  await fetchStoredNotes(pfrAddress, blinding).then((notes) => {
     if (notes && notes.length) {
       let token = notes[0].token;
       if (!noteData[token]) {
