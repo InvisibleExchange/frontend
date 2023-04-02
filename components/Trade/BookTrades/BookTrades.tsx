@@ -14,19 +14,25 @@ export type TradeType = {
   timestamp: number;
 };
 
-interface Props {
-  token: string;
-  type: "perpetual" | "spot";
-}
+export default function BookTrades() {
+  const {
+    liquidity,
+    perpLiquidity,
+    getMarkPrice,
+    selectedType,
+    selectedMarket,
+  } = useContext(WalletContext);
 
-export default function BookTrades({ token, type }: Props) {
-  const { liquidity, perpLiquidity, getMarkPrice } = useContext(WalletContext);
+  let token =
+    selectedType == "perpetual"
+      ? selectedMarket.perpetual.split("-")[0]
+      : selectedMarket.pairs.split("/")[0];
 
   const [initBq, setInitBq] = useState<any[]>([]);
   const [initAq, setInitAq] = useState<any[]>([]);
 
   let LIQ =
-    type == "spot"
+    selectedType == "spot"
       ? liquidity[SYMBOLS_TO_IDS[token]]
       : perpLiquidity[SYMBOLS_TO_IDS[token]];
 
@@ -37,7 +43,7 @@ export default function BookTrades({ token, type }: Props) {
     const getLiquidity = async () => {
       let { bidQueue: bq, askQueue: aq } = await fetchLiquidity(
         SYMBOLS_TO_IDS[token],
-        type == "spot" ? false : true
+        selectedType == "spot" ? false : true
       );
 
       setInitBq(bq);
@@ -45,7 +51,7 @@ export default function BookTrades({ token, type }: Props) {
     };
 
     getLiquidity();
-  }, [token, type]);
+  }, [token, selectedType]);
 
   return (
     <div className="w-full h-[70vh]">
@@ -55,7 +61,7 @@ export default function BookTrades({ token, type }: Props) {
         askQueue={askQueue && askQueue.length > 0 ? askQueue : initAq}
         getMarkPrice={getMarkPrice}
       />
-      <Trades token={token} type={type} />
+      <Trades token={token} type={selectedType} />
     </div>
   );
 }

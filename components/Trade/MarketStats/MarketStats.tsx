@@ -9,8 +9,14 @@ const {
   PRICE_DECIMALS_PER_ASSET,
 } = require("../../../app_logic/helpers/utils");
 
-export default function MarketStats({ token, perpType }: any) {
-  let { user, getMarkPrice } = useContext(WalletContext);
+export default function MarketStats() {
+  let { getMarkPrice, selectedMarket, selectedType } =
+    useContext(WalletContext);
+
+  let token =
+    selectedType == "perpetual"
+      ? selectedMarket.perpetual.split("-")[0]
+      : selectedMarket.pairs.split("/")[0];
 
   return (
     <div
@@ -22,9 +28,10 @@ export default function MarketStats({ token, perpType }: any) {
       <div className={styles.price_container}>
         <div className={styles.price}>
           $
-          {getMarkPrice(SYMBOLS_TO_IDS[token], perpType == "perpetual").toFixed(
-            2
-          )}
+          {getMarkPrice(
+            SYMBOLS_TO_IDS[token],
+            selectedType == "perpetual"
+          ).toFixed(2)}
         </div>
         {/* <div className={styles.price_usd}>$0.00</div> */}
       </div>

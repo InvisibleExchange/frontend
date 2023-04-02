@@ -1,4 +1,4 @@
-import { useState, Fragment } from "react";
+import { useState, Fragment, useContext, useEffect } from "react";
 import classNames from "classnames";
 import { Popover, Listbox, Transition } from "@headlessui/react";
 import { FaAngleDown } from "react-icons/fa";
@@ -13,30 +13,25 @@ import {
   tradeTypeSelector,
 } from "../../../../lib/store/features/apiSlice";
 import { marketList } from "../../../../data/markets";
+import { WalletContext } from "../../../../context/WalletContext";
 
 const types = [{ name: "Perpetual" }, { name: "Spot" }];
 
-export default function PairSelector({
-  currentMarketParent,
-  setCurrentMarketParent,
-  type,
-  setType,
-}) {
+export default function PairSelector() {
+  const { selectedType, setSelectedType, selectedMarket, setSelectedMarket } =
+    useContext(WalletContext);
+
+  useEffect(() => {}, [selectedMarket, selectedType]);
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [currentMarket, setCurrentMarket] = useState<any>(currentMarketParent);
 
   const dispatch = useDispatch();
 
-  const selectedType = useSelector(tradeTypeSelector);
-
-  const onSetCurrentMarket = (market: any) => {
-    setCurrentMarket(market);
-    setCurrentMarketParent(market);
-  };
+  // const selectedType = useSelector(tradeTypeSelector);
 
   const onSelectType = (type: any) => {
     dispatch(setSelectTradeType(type));
-    setType(type.name.toLowerCase());
+    setSelectedType(type.name.toLowerCase());
   };
 
   return (
@@ -46,9 +41,9 @@ export default function PairSelector({
           <div className="flex items-center justify-between w-full bg-fg_above_color">
             <Popover.Button className="flex items-center gap-1 px-4 py-3 outline-none bg-fg_above_color">
               <p className="font-semibold tracking-wider text-primary_color">
-                {selectedType.name === "Perpetual"
-                  ? currentMarket.perpetual
-                  : currentMarket.pairs}
+                {selectedType === "perpetual"
+                  ? selectedMarket.perpetual
+                  : selectedMarket.pairs}
               </p>
               <FaAngleDown
                 className={classNames(
@@ -60,7 +55,7 @@ export default function PairSelector({
             <Listbox value={selectedType} onChange={onSelectType}>
               <div className="mr-2">
                 <Listbox.Button className="relative py-1 pl-3 pr-8 text-sm text-left text-white shadow-md cursor-default rounded-2xl bg-blue ">
-                  <span className="block truncate">{selectedType?.name}</span>
+                  <span className="block truncate">{selectedType}</span>
                   <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                     <HiChevronUpDown
                       className="w-4 h-4 text-gray-400"
@@ -117,8 +112,8 @@ export default function PairSelector({
               <MarketsList
                 close={() => setIsOpen(false)}
                 marketList={marketList}
-                setCurrentMarket={onSetCurrentMarket}
-                isCurrentMarket={currentMarket}
+                setCurrentMarket={setSelectedMarket}
+                isCurrentMarket={selectedMarket}
               />
             </Popover.Panel>{" "}
           </Transition>

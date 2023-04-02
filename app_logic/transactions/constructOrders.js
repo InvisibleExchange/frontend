@@ -120,19 +120,6 @@ async function sendSpotOrder(
     throw new Error("Insufficient balance");
   }
 
-  console.log("Sending order123");
-
-  console.log(
-    expirationTime,
-    spendToken,
-    receiveToken,
-    spendAmount,
-    receiveAmount,
-    feeLimit
-  );
-
-  console.log("user", user);
-
   let { limitOrder, pfrKey } = user.makeLimitOrder(
     expirationTimestamp,
     spendToken,
@@ -141,8 +128,6 @@ async function sendSpotOrder(
     receiveAmount,
     feeLimit
   );
-
-  console.log("Order constructed");
 
   let orderJson = limitOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
@@ -233,6 +218,7 @@ async function sendSpotOrder(
  * @param  order_side "Long"/"Short"
  * @param  expirationTime expiration time in hours
  * @param  position_effect_type "Open"/"Modify"/"Close"
+ * @param  positionAddress the address of the position to be modified/closed (null if open)
  * @param  syntheticToken the token of the position to be opened
  * @param  syntheticAmount the amount of synthetic tokens to be bought/sold
  * @param  price (null if market order)
@@ -246,6 +232,7 @@ async function sendPerpOrder(
   order_side,
   expirationTime,
   position_effect_type,
+  positionAddress,
   syntheticToken,
   syntheticAmount,
   price,
@@ -278,6 +265,8 @@ async function sendPerpOrder(
     initial_margin = Number.parseInt(
       initial_margin * 10 ** COLLATERAL_TOKEN_DECIMALS
     );
+  } else {
+    if (!positionAddress) throw "Choose a position to modify/close";
   }
 
   let ts = new Date().getTime() / 3600_000; // number of hours since epoch
@@ -301,6 +290,7 @@ async function sendPerpOrder(
   let { perpOrder, pfrKey } = user.makePerpetualOrder(
     expirationTimestamp,
     position_effect_type,
+    positionAddress,
     order_side,
     syntheticToken,
     COLLATERAL_TOKEN,
@@ -309,6 +299,8 @@ async function sendPerpOrder(
     feeLimit,
     initial_margin
   );
+
+  user.awaittingOrder = true;
 
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
@@ -384,11 +376,13 @@ async function sendPerpOrder(
         ) {
           user.perpetualOrders.push(orderData);
         }
+        user.awaittingOrder = false;
       } else {
         let msg =
           "Failed to submit order with error: \n" +
           order_response.error_message;
         console.log(msg);
+        user.awaittingOrder = false;
         throw new Error(msg);
       }
     });
@@ -770,4 +764,3 @@ module.exports = {
 };
 
 // // ========================
-

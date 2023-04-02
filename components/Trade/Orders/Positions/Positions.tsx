@@ -1,4 +1,4 @@
-import React, { useContext, useReducer, useState } from "react";
+import React, { useContext, useState } from "react";
 import classNames from "classnames";
 import AdjustMarginModal from "./AdjustMarginModal";
 
@@ -17,7 +17,8 @@ const {
 } = require("../../../../app_logic/transactions/constructOrders");
 
 const Positions = () => {
-  let { user, getMarkPrice } = useContext(WalletContext);
+  let { user, getMarkPrice, setSelectedPosition, forceRerender } =
+    useContext(WalletContext);
 
   let positions: any[] = [];
   if (user && user.userId) {
@@ -34,7 +35,7 @@ const Positions = () => {
           <tr>
             <th className="py-2 pl-5 text-left font-overpass">Symbol</th>
             <th className="">Size</th>
-            <th className="pr-3 ">Entry Price</th>
+            <th className="pr-3 ">Avg. Entry Price</th>
             <th className="pr-3 ">Mark Price</th>
             <th className="pr-3 ">Liq.Price</th>
             <th className="pr-3 ">Leverage</th>
@@ -50,7 +51,7 @@ const Positions = () => {
           {/* */}
           {user && user.userId
             ? positions.map((pos, idx) => {
-                let markPrice = getMarkPrice(54321, true);
+                let markPrice = getMarkPrice(pos.synthetic_token, true);
                 let entryPrice =
                   pos.entry_price /
                   10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token];
@@ -75,6 +76,12 @@ const Positions = () => {
                     className={classNames(
                       "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
                     )}
+                    onClick={() => {
+                      setSelectedPosition(pos);
+                      // setSelectedType("perpetual");
+                      // setSelectedMarket(token2Market[pos.synthetic_token]);
+                      // console.log("pos", pos);
+                    }}
                   >
                     <td className={classNames("gap-3 py-1 pl-5 font-medium")}>
                       <p
@@ -131,7 +138,12 @@ const Positions = () => {
                       <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                     </td>
                     {/*  */}
-                    <CloseField user={user} pos={pos} />
+                    <CloseField
+                      user={user}
+                      marketPrice={getMarkPrice(pos.synthetic_token, true)}
+                      pos={pos}
+                      forceRerender={forceRerender}
+                    />
                     {/*  */}
                   </tr>
                 );
@@ -145,7 +157,7 @@ const Positions = () => {
 
 export default Positions;
 
-const CloseField = ({ user, pos }: any) => {
+const CloseField = ({ user, marketPrice, pos, forceRerender }: any) => {
   const [closeQty, setCloseQty] = useState<number | null>(null);
   const [closePrice, setClosePrice] = useState<number | null>(null);
 
@@ -168,16 +180,22 @@ const CloseField = ({ user, pos }: any) => {
 
   const onSumbitCloseOrder = async (isMarket: boolean) => {
     try {
+      console.log("pos.order_side", pos.order_side);
+
       await sendPerpOrder(
         user,
         pos.order_side == "Long" ? "Short" : "Long",
-        1000,
+        1000, // expiration time in hours
         "Close",
-        pos.synthetic_token,
-        closeQty,
-        isMarket ? null : closePrice,
-        0,
-        0.07
+        pos.position_address, // position address
+        pos.synthetic_token, //token
+        closeQty, //amount
+        // Todo: isMarket ? marketPrice : closePrice,
+        isMarket ? 1000 : closePrice, // close price
+        0, // initial margin
+        0.07, // fee_limit %
+        3, // slippage %
+        isMarket
       );
     } catch (error) {
       alert(error);
@@ -190,6 +208,7 @@ const CloseField = ({ user, pos }: any) => {
         <button
           onClick={async () => {
             await onSumbitCloseOrder(true);
+            forceRerender();
           }}
         >
           Market
@@ -198,6 +217,7 @@ const CloseField = ({ user, pos }: any) => {
         <button
           onClick={async () => {
             await onSumbitCloseOrder(false);
+            forceRerender();
           }}
         >
           Limit

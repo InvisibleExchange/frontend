@@ -2,8 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note } = require("../users/Notes");
 
-// const SERVER_URL = "localhost";
-const SERVER_URL = "54.212.28.196";
+const SERVER_URL = "localhost";
+// const SERVER_URL = "54.212.28.196";
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -234,7 +234,22 @@ function handlePerpSwapResult(user, orderId, swap_response) {
   // ? Save position data (if not null)
   let position = swap_response.position;
   if (position) {
-    user.positionData[position.synthetic_token] = [position];
+    if (
+      !user.positionData[position.synthetic_token] ||
+      user.positionData[position.synthetic_token].length == 0
+    ) {
+      user.positionData[position.synthetic_token] = [position];
+    } else {
+      // check if positions with this address and index already exist
+      let idx = user.positionData[position.synthetic_token].findIndex(
+        (p) => p.address == position.address && p.index == position.index
+      );
+      if (idx >= 0) {
+        user.positionData[position.synthetic_token][idx] = position;
+      } else {
+        user.positionData[position.synthetic_token].push(position);
+      }
+    }
   }
 
   // // ? Save partiall fill note (if not null)
@@ -259,7 +274,16 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     }
 
     if (!position) {
-      user.positionData[swap_response.synthetic_token] = [];
+      // filter out the position that has synthetic_amount == qty
+      let idx = user.positionData[swap_response.synthetic_token].findIndex(
+        (p) =>
+          Math.abs(p.synthetic_amount == swap_response.qty) <
+          DUST_AMOUNT_PER_ASSET[p.synthetic_token]
+      );
+
+      if (idx >= 0) {
+        user.positionData[swap_response.synthetic_token].splice(idx, 1);
+      }
     }
   }
 

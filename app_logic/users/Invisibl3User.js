@@ -110,6 +110,7 @@ export default class User {
     //
     this.refundNotes = {}; // {orderId: refundNote}
     this.filledAmounts = {}; // {orderId: filledAmount}
+    this.closingPositions = {}; // {orderId: position}
     this.awaittingOrder = false; // set to true when an order is created and to false when it's accepted (filled if market)
     //
     this.pfrKeys = {}; // Maps {orderId: pfrPrivKey}
@@ -306,6 +307,7 @@ export default class User {
   makePerpetualOrder(
     expiration_timestamp,
     position_effect_type,
+    positionAddress,
     order_side,
     synthetic_token,
     collateral_token,
@@ -320,6 +322,7 @@ export default class User {
       );
       throw "Invalid position effect type (liquidation orders created seperately)";
     }
+
     if (!["Long", "Short"].includes(order_side)) {
       alert("Invalid order side");
       throw "Invalid order side";
@@ -388,20 +391,32 @@ export default class User {
 
       // ? Get the position priv Key for this position
       if (this.positionData[synthetic_token].length > 0) {
-        perpPosition = this.positionData[synthetic_token][0];
-        positionPrivKey = this.positionPrivKeys[perpPosition.position_address];
+        for (let pos of this.positionData[synthetic_token]) {
+          if (pos.position_address == positionAddress) {
+            perpPosition = pos;
+            break;
+          }
+        }
+        positionPrivKey = this.positionPrivKeys[positionAddress];
 
-        if (this.positionData[synthetic_token][0].order_side == "Long") {
+        if (perpPosition.order_side == "Long") {
           order_side = "Short";
         } else {
           order_side = "Long";
         }
+      } else {
+        throw "No open position to close";
       }
     } else {
       // ? Get the position priv Key for this position
       if (this.positionData[synthetic_token].length > 0) {
-        perpPosition = this.positionData[synthetic_token][0];
-        positionPrivKey = this.positionPrivKeys[perpPosition.position_address];
+        for (let pos of this.positionData[synthetic_token]) {
+          if (pos.position_address == positionAddress) {
+            perpPosition = pos;
+            break;
+          }
+        }
+        positionPrivKey = this.positionPrivKeys[positionAddress];
       }
     }
 

@@ -89,11 +89,15 @@ function checkPerpOrderValidity(
     !expirationTime ||
     !syntheticToken ||
     !syntheticAmount ||
-    feeLimit == null ||
-    !orderSide
+    feeLimit == null
   ) {
     console.log("Please fill in all fields");
     throw "Unfilled fields";
+  }
+
+  if (orderSide != "Long" && orderSide != "Short") {
+    console.log("Order side must be either Long or Short");
+    throw "Order side invalid";
   }
 
   if (posEffectType == "Open") {

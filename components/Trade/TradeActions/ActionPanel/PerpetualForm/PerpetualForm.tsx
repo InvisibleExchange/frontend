@@ -5,7 +5,7 @@ import classNames from "classnames";
 import LimitTabPanel from "../LimitTabPanel";
 import MarketTabPanel from "../MarketTabPanel";
 
-const PerpetualForm = ({ perpType, token }: any) => {
+const PerpetualForm = ({ token }: any) => {
   let [categories] = useState(["Limit", "Market"]);
 
   return (
@@ -27,8 +27,8 @@ const PerpetualForm = ({ perpType, token }: any) => {
           ))}
         </Tab.List>
         <Tab.Panels className="mt-2">
-          <LimitTabPanel perpType={perpType} token={token} action="none" />
-          <MarketTabPanel perpType={perpType} token={token} action="none" />
+          <LimitTabPanel perpType={"perpetual"} token={token} action="none" />
+          <MarketTabPanel perpType={"perpetual"} token={token} action="none" />
         </Tab.Panels>
       </Tab.Group>
     </div>

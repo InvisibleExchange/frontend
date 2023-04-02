@@ -14,7 +14,7 @@ const plans = [
   },
 ];
 
-const SpotForm = ({ perpType, token }: any) => {
+const SpotForm = ({ token }: any) => {
   let [categories] = useState(["Limit", "Market"]);
   const [selected, setSelected] = useState<any>(plans[0]);
 
@@ -76,12 +76,12 @@ const SpotForm = ({ perpType, token }: any) => {
         </Tab.List>
         <Tab.Panels className="mt-2">
           <LimitTabPanel
-            perpType={perpType}
+            perpType={"spot"}
             token={token}
             action={selected.name}
           />
           <MarketTabPanel
-            perpType={perpType}
+            perpType={"spot"}
             token={token}
             action={selected.name}
           />

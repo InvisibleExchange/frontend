@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { WalletContext } from "../../../../../context/WalletContext";
 import { tradeTypeSelector } from "../../../../../lib/store/features/apiSlice";
@@ -37,17 +37,38 @@ type props = {
   action: string;
 };
 
+// TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// TODO If there is already an open order modifying the position, then cancel that order and apply a new one
+
 const TradeForm = ({ type, perpType, token, action }: props) => {
-  let { user, userAddress, login, connect, forceRerender } =
-    useContext(WalletContext);
+  let {
+    user,
+    userAddress,
+    login,
+    connect,
+    forceRerender,
+    getSelectedPosition,
+  } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  let positionData =
-    user && user.userId && perpType == "perpetual"
-      ? user.positionData[SYMBOLS_TO_IDS[token]]
-      : null;
-  positionData = positionData ? positionData[0] : null;
+  useEffect(() => {}, [user]);
+
+  let selectedPosition = getSelectedPosition();
+  let positionData;
+  if (selectedPosition) {
+    positionData = selectedPosition;
+  } else if (user && user.userId && perpType == "perpetual") {
+    let posData = user.positionData[SYMBOLS_TO_IDS[token]];
+    if (posData && posData.length > 0) {
+      positionData = posData[0];
+    }
+  } else {
+    positionData = null;
+  }
+
+  console.log(positionData);
 
   const maxBase = user
     ? user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
@@ -343,51 +364,60 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
 
       {positionData ? (
         <div className="mt-5 pt-5 flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
-          <p className="text-[13px]">
+          <p className="text-[15px]">
             <div>
               <div>
-                <strong>New Size:</strong>{" "}
-                {baseAmount && price
-                  ? formatInputNum(
-                      calculateNewSize(
-                        positionData,
-                        Number(baseAmount),
-                        true
-                      ).toString(),
-                      2
-                    )
-                  : null}{" "}
-                {baseAmount && price ? token : null}
+                New Size:{" "}
+                <strong>
+                  {" "}
+                  {baseAmount && price
+                    ? formatInputNum(
+                        calculateNewSize(
+                          positionData,
+                          Number(baseAmount),
+                          true
+                        ).toString(),
+                        2
+                      )
+                    : null}{" "}
+                  {baseAmount && price ? token : null}
+                </strong>
               </div>
               <div className="mt-1">
-                <strong>Average Entry Price:</strong>{" "}
-                {baseAmount && price
-                  ? formatInputNum(
-                      calculateAvgEntryPrice(
-                        positionData,
-                        Number(baseAmount),
-                        Number(price),
-                        true
-                      ).toString(),
-                      2
-                    )
-                  : ""}
-                {baseAmount && price ? "USD" : null}
+                Average Entry Price:{" "}
+                <strong>
+                  {" "}
+                  {baseAmount && price
+                    ? formatInputNum(
+                        calculateAvgEntryPrice(
+                          positionData,
+                          Number(baseAmount),
+                          Number(price),
+                          true
+                        ).toString(),
+                        2
+                      )
+                    : ""}{" "}
+                  {baseAmount && price ? "USD" : null}
+                </strong>
               </div>
               <div className="mt-1">
-                <strong> Est. Liq. Price:</strong>{" "}
-                {baseAmount && price
-                  ? formatInputNum(
-                      calculateNewLiqPrice(
-                        positionData,
-                        Number(baseAmount),
-                        Number(price),
-                        true
-                      ).toString(),
-                      2
-                    )
-                  : ""}{" "}
-                {baseAmount && price ? "USD" : null}
+                Est. Liq. Price:{" "}
+                <strong>
+                  {" "}
+                  {baseAmount && price
+                    ? formatInputNum(
+                        calculateNewLiqPrice(
+                          positionData,
+                          Number(baseAmount),
+                          Number(price),
+                          true
+                        ).toString(),
+                        2
+                      )
+                    : ""}{" "}
+                  {baseAmount && price ? "USD" : null}
+                </strong>
               </div>
             </div>
           </p>
@@ -397,51 +427,59 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
             <div>|</div>
           </div>
 
-          <p className="text-[13px]">
+          <p className="text-[15px]">
             <div>
               <div>
-                <strong>New Size:</strong>{" "}
-                {baseAmount && price
-                  ? formatInputNum(
-                      calculateNewSize(
-                        positionData,
-                        Number(baseAmount),
-                        false
-                      ).toString(),
-                      2
-                    )
-                  : null}{" "}
-                {baseAmount && price ? token : null}
+                New Size:{" "}
+                <strong>
+                  {" "}
+                  {baseAmount && price
+                    ? formatInputNum(
+                        calculateNewSize(
+                          positionData,
+                          Number(baseAmount),
+                          false
+                        ).toString(),
+                        2
+                      )
+                    : null}
+                  {baseAmount && price ? token : null}
+                </strong>
               </div>
               <div className="mt-1">
-                <strong>Average Entry Price:</strong>{" "}
-                {baseAmount && price
-                  ? formatInputNum(
-                      calculateAvgEntryPrice(
-                        positionData,
-                        Number(baseAmount),
-                        Number(price),
-                        false
-                      ).toString(),
-                      2
-                    )
-                  : ""}{" "}
-                {baseAmount && price ? "USD" : null}
+                Average Entry Price:{" "}
+                <strong>
+                  {baseAmount && price
+                    ? formatInputNum(
+                        calculateAvgEntryPrice(
+                          positionData,
+                          Number(baseAmount),
+                          Number(price),
+                          false
+                        ).toString(),
+                        2
+                      )
+                    : ""}{" "}
+                  {baseAmount && price ? "USD" : null}
+                </strong>
               </div>
               <div className="mt-1">
-                <strong> Est. Liq. Price:</strong>{" "}
-                {baseAmount && price
-                  ? formatInputNum(
-                      calculateNewLiqPrice(
-                        positionData,
-                        Number(baseAmount),
-                        Number(price),
-                        false
-                      ).toString(),
-                      2
-                    )
-                  : ""}{" "}
-                {baseAmount && price ? "USD" : null}
+                Est. Liq. Price:{" "}
+                <strong>
+                  {" "}
+                  {baseAmount && price
+                    ? formatInputNum(
+                        calculateNewLiqPrice(
+                          positionData,
+                          Number(baseAmount),
+                          Number(price),
+                          false
+                        ).toString(),
+                        2
+                      )
+                    : ""}{" "}
+                  {baseAmount && price ? "USD" : null}
+                </strong>
               </div>
             </div>
           </p>

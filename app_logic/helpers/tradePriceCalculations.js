@@ -20,11 +20,14 @@ function _getBankruptcyPrice(
   const multiplier1 = 10 ** decConversion1;
 
   if (orderSide == "Long" || orderSide == 0) {
-    return Math.floor(entryPrice) - Math.floor((margin * multiplier1) / size);
+    const bp =
+      Math.floor(entryPrice) - Math.floor((margin * multiplier1) / size);
+
+    return Math.max(0, bp);
   } else {
     const bp =
       Math.floor(entryPrice) + Math.floor((margin * multiplier1) / size);
-    return bp;
+    return Math.max(0, bp);
   }
 }
 

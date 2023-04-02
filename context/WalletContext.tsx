@@ -40,7 +40,7 @@ import {
 } from "../data/networks";
 import { ZZToken } from "../data/zzTypes";
 import { TradeType } from "../components/Trade/BookTrades/BookTrades";
-import { marketList } from "../data/markets";
+import { marketList, token2Market } from "../data/markets";
 
 interface Props {
   children: React.ReactNode;
@@ -55,6 +55,9 @@ export type WalletContextType = {
   network: NetworkType | null;
   isLoading: boolean;
   forceRerender: () => void;
+
+  getSelectedPosition: any;
+  setSelectedPosition: any;
 
   selectedMarket: any;
   setSelectedMarket: any;
@@ -91,6 +94,9 @@ export const WalletContext = createContext<WalletContextType>({
   network: _getDefaultNetwork(),
   isLoading: false,
   forceRerender: () => {},
+
+  getSelectedPosition: null,
+  setSelectedPosition: () => {},
 
   selectedMarket: null,
   setSelectedMarket: () => {},
@@ -168,6 +174,7 @@ function WalletProvider({ children }: Props) {
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
 
   function forceRerender() {
+    console.log("force rerender");
     forceUpdate();
   }
 
@@ -186,6 +193,29 @@ function WalletProvider({ children }: Props) {
   const [selectedType, setSelectedType] = useState<"spot" | "perpetual">(
     "perpetual"
   );
+  const [selectedPosition, _setSelectedPosition] = useState<any>(null);
+  function setSelectedPosition(pos: any) {
+    _setSelectedPosition(pos);
+    setSelectedType("perpetual");
+    setSelectedMarket(token2Market[pos.synthetic_token]);
+    forceRerender();
+  }
+  function getSelectedPosition() {
+    if (!user || !selectedPosition) return null;
+
+    // check that a position with the same index and position_address exists in the user's positionData
+    const position = user.positionData[selectedPosition.synthetic_token].find(
+      (pos) =>
+        pos.index === selectedPosition.index &&
+        pos.position_address === selectedPosition.position_address
+    );
+    if (!position) {
+      _setSelectedPosition(null);
+      return null;
+    }
+
+    return position;
+  }
 
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
@@ -485,6 +515,9 @@ function WalletProvider({ children }: Props) {
         setSelectedType: setSelectedType,
         selectedMarket: selectedMarket,
         setSelectedMarket: setSelectedMarket,
+
+        getSelectedPosition,
+        setSelectedPosition,
 
         connect: connectWallet,
         disconnect: disconnectWallet,

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 // import useFavoriteMarkets from "../../../../../hooks/useFavoriteMarkets/useFavoriteMarkets";
 
 import classNames from "classnames";
@@ -57,6 +57,8 @@ export default function MarketsList({
             .replace(/\s+/g, "")
             .includes(query.toLowerCase().replace(/\s+/g, ""))
         );
+
+  useEffect(() => {}, [isCurrentMarket]);
 
   return (
     <div className="top-12 bg-bg_color rounded-2xl">
