@@ -744,6 +744,7 @@ export default class User {
     let notesIn = [];
     let amount = 0;
 
+    if (!this.noteData[token]) throw new Error("Insufficient funds");
     let noteIn = this.noteData[token].find((n) => n.amount == spendAmount);
     if (noteIn) {
       const privKey = this.notePrivKeys[BigInt(noteIn.address.getX())];
