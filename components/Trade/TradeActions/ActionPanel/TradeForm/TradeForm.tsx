@@ -68,8 +68,6 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
     positionData = null;
   }
 
-  console.log(positionData);
-
   const maxBase = user
     ? user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
       10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]

@@ -141,7 +141,13 @@ async function sendSpotOrder(
       let order_response = res.data.response;
 
       if (order_response.successful) {
-        await storeOrderId(user.userId, order_response.order_id, pfrKey, false);
+        await storeOrderId(
+          user.userId,
+          order_response.order_id,
+          pfrKey,
+          false,
+          user.privateSeed
+        );
 
         // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
 
@@ -312,7 +318,13 @@ async function sendPerpOrder(
       let order_response = res.data.response;
 
       if (order_response.successful) {
-        storeOrderId(user.userId, order_response.order_id, pfrKey, true);
+        storeOrderId(
+          user.userId,
+          order_response.order_id,
+          pfrKey,
+          true,
+          user.privateSeed
+        );
 
         // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
 

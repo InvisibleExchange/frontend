@@ -26,55 +26,7 @@ const BN = require("bn.js");
 
 /* global BigInt */
 
-const COMMITMENT_MASK = 112233445566778899n;
-const AMOUNT_MASK = 998877665544332112n;
-
 // ---- NOTES ---- //
-
-async function storeNewNote(note) {
-  //
-  let hash8 = trimHash(note.blinding, 64);
-  let hiddenAmount = bigInt(note.amount).xor(hash8).value;
-
-  let addr = note.address.getX().toString();
-
-  // TODO let dbDocId = addr + "-" + note.index.toString();
-
-  let noteAddressDoc = doc(db, `notes/${addr}/indexes`, note.index.toString());
-  let noteAddressData = await getDoc(noteAddressDoc);
-
-  if (noteAddressData.exists()) {
-    await updateDoc(noteAddressDoc, {
-      index: note.index.toString(),
-      token: note.token.toString(),
-      commitment: note.commitment.toString(),
-      address: [addr, note.address.getY().toString()],
-      hidden_amount: hiddenAmount.toString(),
-    });
-  } else {
-    await setDoc(noteAddressDoc, {
-      index: note.index.toString(),
-      token: note.token.toString(),
-      commitment: note.commitment.toString(),
-      address: [addr, note.address.getY().toString()],
-      hidden_amount: hiddenAmount.toString(),
-    });
-  }
-}
-
-async function removeNoteFromDb(note) {
-  //
-
-  let addr = note.address.getX().toString();
-
-  let noteAddressDoc = doc(db, `notes/${addr}/indexes`, note.index.toString());
-  let noteAddressData = await getDoc(noteAddressDoc);
-
-  if (noteAddressData.exists()) {
-    await deleteDoc(noteAddressDoc);
-  }
-}
-
 async function fetchStoredNotes(address, blinding) {
   // Address should be the x coordinate of the address in decimal format
 
@@ -122,65 +74,6 @@ async function fetchStoredNotes(address, blinding) {
 }
 
 // ---- POSITIONS ---- //
-
-async function storeNewPosition(positionObject) {
-  let addr = positionObject.position_address;
-
-  let positionAddressDoc = doc(
-    db,
-    `positions/${addr}/indexes`,
-    positionObject.index.toString()
-  );
-  let positionAddressData = await getDoc(positionAddressDoc);
-
-  if (positionAddressData.exists()) {
-    await updateDoc(positionAddressDoc, {
-      order_side: positionObject.order_side.toString(),
-      synthetic_token: positionObject.synthetic_token.toString(),
-      collateral_token: positionObject.collateral_token.toString(),
-      position_size: positionObject.position_size.toString(),
-      margin: positionObject.margin.toString(),
-      entry_price: positionObject.entry_price.toString(),
-      liquidation_price: positionObject.liquidation_price.toString(),
-      bankruptcy_price: positionObject.bankruptcy_price.toString(),
-      position_address: positionObject.position_address,
-      last_funding_idx: positionObject.last_funding_idx.toString(),
-      hash: positionObject.hash.toString(),
-      index: positionObject.index,
-    });
-  } else {
-    await setDoc(positionAddressDoc, {
-      order_side: positionObject.order_side.toString(), //
-      synthetic_token: positionObject.synthetic_token.toString(),
-      collateral_token: positionObject.collateral_token.toString(), //
-      position_size: positionObject.position_size.toString(),
-      margin: positionObject.margin.toString(), //
-      entry_price: positionObject.entry_price.toString(), //
-      liquidation_price: positionObject.liquidation_price.toString(), //
-      bankruptcy_price: positionObject.bankruptcy_price.toString(), //
-      position_address: positionObject.position_address, //
-      last_funding_idx: positionObject.last_funding_idx.toString(), //
-      hash: positionObject.hash.toString(), //
-      index: positionObject.index, //
-    });
-  }
-}
-
-async function removePositionFromDb(positionAddressX, index) {
-  //
-
-  let positionAddressDoc = doc(
-    db,
-    `positions/${positionAddressX}/indexes`,
-    index.toString()
-  );
-  let positionAddressData = await getDoc(positionAddressDoc);
-
-  if (positionAddressData.exists()) {
-    await deleteDoc(positionAddressDoc);
-  }
-}
-
 async function fetchStoredPosition(address) {
   // returns the position at this address from the db
 
@@ -202,42 +95,7 @@ async function fetchStoredPosition(address) {
   return positions;
 }
 
-async function fetchLiquidatablePositions(index_price) {
-  const querySnapshot = await getDocs(collection(db, `positions`));
-
-  if (querySnapshot.empty) {
-    return [];
-  }
-
-  let liquidablePositions = [];
-  querySnapshot.forEach(async (doc) => {
-    let positionAddr = doc.id;
-
-    const querySnapshot = await getDocs(
-      collection(db, `positions/${positionAddr}/indexes`)
-    );
-
-    if (querySnapshot.empty) {
-      return;
-    }
-
-    querySnapshot.forEach(async (doc) => {
-      let positionData = doc.data();
-
-      if (
-        (positionData == "Long" &&
-          index_price <= positionData.liquidation_price) ||
-        (positionData == "Short" &&
-          index_price >= positionData.liquidation_price)
-      ) {
-        liquidablePositions.push(positionData);
-      }
-    });
-  });
-}
-
 // ---- USER INFO ---- //
-
 async function registerUser(userId) {
   let userAddressesDoc = doc(db, "users", userId.toString());
   let userAddressData = await getDoc(userAddressesDoc);
@@ -273,61 +131,85 @@ async function storeUserData(userId, noteCounts, positionCounts) {
   });
 }
 
-async function storePrivKey(userId, privKey, isPosition) {
+async function storePrivKey(userId, privKey, isPosition, privateSeed) {
   let docRef;
+
+  if (!privKey || !privateSeed) {
+    return;
+  }
+
+  let encryptedPk = bigInt(privKey).xor(privateSeed).toString();
+
   if (isPosition) {
-    docRef = doc(
-      db,
-      `users/${userId}/positionPrivKeys`,
-      BigInt(privKey).toString()
-    );
+    docRef = doc(db, `users/${userId}/positionPrivKeys`, encryptedPk);
   } else {
-    docRef = doc(db, `users/${userId}/privKeys`, BigInt(privKey).toString());
+    docRef = doc(db, `users/${userId}/privKeys`, encryptedPk);
   }
 
   await setDoc(docRef, {});
 }
 
-async function removePrivKey(userId, privKey, isPosition) {
+async function removePrivKey(userId, privKey, isPosition, privateSeed) {
   let docRef;
+
+  let encryptedPk = bigInt(privKey).xor(privateSeed).toString();
+
   if (isPosition) {
-    docRef = doc(db, `users/${userId}/positionPrivKeys`, privKey.toString());
+    docRef = doc(db, `users/${userId}/positionPrivKeys`, encryptedPk);
   } else {
-    docRef = doc(db, `users/${userId}/privKeys`, privKey.toString());
+    docRef = doc(db, `users/${userId}/privKeys`, encryptedPk);
   }
 
   await deleteDoc(docRef);
 }
 
-async function storeOrderId(userId, orderId, pfrNotePrivKey, isPerp) {
+async function storeOrderId(
+  userId,
+  orderId,
+  pfrNotePrivKey,
+  isPerp,
+  privateSeed
+) {
   if (!orderId) {
     return;
   }
 
+  let privSeedSquare = bigInt(privateSeed).pow(2).value;
+  let mask = trimHash(privSeedSquare, 32);
+  let encryptedOrderId = bigInt(orderId).xor(mask).toString();
+
+  let encryptedNotePk = pfrNotePrivKey
+    ? bigInt(pfrNotePrivKey).xor(privateSeed).toString()
+    : null;
+
   let docRef;
   if (isPerp) {
-    docRef = doc(db, `users/${userId}/perpetualOrderIds`, orderId);
+    docRef = doc(db, `users/${userId}/perpetualOrderIds`, encryptedOrderId);
   } else {
-    docRef = doc(db, `users/${userId}/orderIds`, orderId);
+    docRef = doc(db, `users/${userId}/orderIds`, encryptedOrderId);
   }
 
   await setDoc(docRef, {
-    pfrPrivKey: pfrNotePrivKey ? pfrNotePrivKey.toString() : null,
+    pfrPrivKey: encryptedNotePk,
   });
 }
 
-async function removeOrderId(userId, orderId, isPerp) {
+async function removeOrderId(userId, orderId, isPerp, privateSeed) {
+  let privSeedSquare = bigInt(privateSeed).pow(2).value;
+  let mask = trimHash(privSeedSquare, 32);
+  let encryptedOrderId = bigInt(orderId).xor(mask).toString();
+
   let docRef;
   if (isPerp) {
-    docRef = doc(db, `users/${userId}/perpetualOrderIds`, orderId);
+    docRef = doc(db, `users/${userId}/perpetualOrderIds`, encryptedOrderId);
   } else {
-    docRef = doc(db, `users/${userId}/orderIds`, orderId);
+    docRef = doc(db, `users/${userId}/orderIds`, encryptedOrderId);
   }
 
   await deleteDoc(docRef);
 }
 
-async function fetchUserData(userId) {
+async function fetchUserData(userId, privateSeed) {
   //& stores privKey : [address.x, address.y]
 
   let userDoc = doc(db, "users", userId.toString());
@@ -355,7 +237,9 @@ async function fetchUserData(userId) {
   let privKeys = [];
   if (!querySnapshot.empty) {
     querySnapshot.forEach((doc) => {
-      privKeys.push(doc.id);
+      let decyrptedPk = bigInt(doc.id).xor(privateSeed).value;
+
+      privKeys.push(BigInt(decyrptedPk));
     });
   }
 
@@ -366,7 +250,9 @@ async function fetchUserData(userId) {
   let positionPrivKeys = [];
   if (!querySnapshot.empty) {
     querySnapshot.forEach((doc) => {
-      positionPrivKeys.push(doc.id);
+      let decyrptedPk = bigInt(doc.id).xor(privateSeed).value;
+
+      positionPrivKeys.push(decyrptedPk);
     });
   }
 
@@ -375,8 +261,18 @@ async function fetchUserData(userId) {
   let orderIds = [];
   if (!querySnapshot.empty) {
     querySnapshot.forEach((doc) => {
-      orderIds.push(Number.parseInt(doc.id));
-      pfrKeys[doc.id] = doc.data().pfrPrivKey;
+      let privSeedSquare = bigInt(privateSeed).pow(2).value;
+      let mask = trimHash(privSeedSquare, 32);
+      let decyrptedPk = bigInt(doc.id).xor(mask).value;
+
+      let decryptedNotePk = doc.data().pfrPrivKey
+        ? bigInt(doc.data().pfrPrivKey).xor(privateSeed).toString()
+        : null;
+
+      orderIds.push(Number.parseInt(decyrptedPk));
+      if (decryptedNotePk) {
+        pfrKeys[decyrptedPk] = decryptedNotePk;
+      }
     });
   }
 
@@ -387,9 +283,17 @@ async function fetchUserData(userId) {
   let perpetualOrderIds = [];
   if (!querySnapshot.empty) {
     querySnapshot.forEach((doc) => {
-      perpetualOrderIds.push(Number.parseInt(doc.id));
-      if (doc.data().pfrPrivKey) {
-        pfrKeys[doc.id] = doc.data().pfrPrivKey;
+      let privSeedSquare = bigInt(privateSeed).pow(2).value;
+      let mask = trimHash(privSeedSquare, 32);
+      let decyrptedPk = bigInt(doc.id).xor(mask).value;
+
+      let decryptedNotePk = doc.data().pfrPrivKey
+        ? bigInt(doc.data().pfrPrivKey).xor(privateSeed).toString()
+        : null;
+
+      perpetualOrderIds.push(Number.parseInt(decyrptedPk));
+      if (decryptedNotePk) {
+        pfrKeys[decyrptedPk] = decryptedNotePk;
       }
     });
   }
@@ -429,16 +333,19 @@ async function storeOnchainDeposit(deposit) {
   }
 }
 
-async function storeDepositId(userId, depositId) {
+async function storeDepositId(userId, depositId, privateSeed) {
   if (!depositId) return;
   // ? Stores the depositId of the user
 
   let userDataDoc = doc(db, "users", userId.toString());
   let userDataData = await getDoc(userDataDoc);
 
+  let mask = trimHash(privateSeed, 64);
+  let encryptedDepositId = bigInt(depositId).xor(mask).toString();
+
   let depositIdData = userDataData.data().depositIds;
-  if (!depositIdData.includes(depositId.toString())) {
-    depositIdData.push(depositId.toString());
+  if (!depositIdData.includes(encryptedDepositId.toString())) {
+    depositIdData.push(encryptedDepositId.toString());
   }
 
   await updateDoc(userDataDoc, {
@@ -458,7 +365,7 @@ async function removeDepositFromDb(depositId) {
   }
 }
 
-async function fetchOnchainDeposits(userId) {
+async function fetchOnchainDeposits(userId, privateSeed) {
   if (!userId) {
     return [];
   }
@@ -468,10 +375,19 @@ async function fetchOnchainDeposits(userId) {
 
   let depositIds = userDataData.data().depositIds;
 
+  let badDepositIds = [];
   let deposits = [];
   for (const depositId of depositIds) {
-    let depositDoc = doc(db, "deposits", depositId);
+    let mask = trimHash(privateSeed, 64);
+    let decryptedDepositId = bigInt(depositId).xor(mask).toString();
+
+    let depositDoc = doc(db, "deposits", decryptedDepositId);
     let depositData = await getDoc(depositDoc);
+
+    if (!depositData.exists()) {
+      badDepositIds.push(depositId);
+      continue;
+    }
 
     deposits.push({
       depositId: depositData.data().depositId,
@@ -482,6 +398,7 @@ async function fetchOnchainDeposits(userId) {
     });
   }
 
+  // return badDepositIds;
   return deposits;
 }
 

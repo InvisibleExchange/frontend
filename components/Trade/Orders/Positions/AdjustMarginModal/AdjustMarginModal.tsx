@@ -250,7 +250,10 @@ const AdjustMarginModal = ({ position }: any) => {
                       </p>
                     </div>
                     <div className="flex justify-between mt-3 text-sm dark:text-gray_lighter">
-                      <p>Est.Liq.Price after increase</p>
+                      <p>
+                        Est.Liq.Price after
+                        {selected.name == "Add" ? " increase: " : " decrease: "}
+                      </p>
                       <p className="font-bold dark:text-white">
                         {(
                           calulateLiqPriceInMarginChangeModal(

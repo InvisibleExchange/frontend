@@ -78,9 +78,6 @@ const Positions = () => {
                     )}
                     onClick={() => {
                       setSelectedPosition(pos);
-                      // setSelectedType("perpetual");
-                      // setSelectedMarket(token2Market[pos.synthetic_token]);
-                      // console.log("pos", pos);
                     }}
                   >
                     <td className={classNames("gap-3 py-1 pl-5 font-medium")}>
@@ -180,7 +177,6 @@ const CloseField = ({ user, marketPrice, pos, forceRerender }: any) => {
 
   const onSumbitCloseOrder = async (isMarket: boolean) => {
     try {
-      console.log("pos.order_side", pos.order_side);
 
       await sendPerpOrder(
         user,
