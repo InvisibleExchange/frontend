@@ -46,13 +46,8 @@ export default function BookTrades() {
         selectedType == "spot" ? false : true
       );
 
-      let revAq: any[] = [];
-      for (let i = aq.length - 1; i >= 0; i--) {
-        revAq.push(aq[i]);
-      }
-
       setInitBq(bq);
-      setInitAq(revAq);
+      setInitAq(aq);
     };
 
     getLiquidity();

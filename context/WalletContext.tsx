@@ -400,23 +400,13 @@ function WalletProvider({ children }: Props) {
     for (const [token, _] of Object.entries(SPOT_MARKET_IDS)) {
       let { bidQueue, askQueue } = await fetchLiquidity(token, false);
 
-      let revAq: any[] = [];
-      for (let i = askQueue.length - 1; i >= 0; i--) {
-        revAq.push(askQueue[i]);
-      }
-
-      liquidity_[token] = { bidQueue, askQueue: revAq };
+      liquidity_[token] = { bidQueue, askQueue };
     }
 
     for (const [token, _] of Object.entries(PERP_MARKET_IDS)) {
       let { bidQueue, askQueue } = await fetchLiquidity(token, true);
 
-      let revAq: any[] = [];
-      for (let i = askQueue.length - 1; i >= 0; i--) {
-        revAq.push(askQueue[i]);
-      }
-
-      perpLiquidity_[token] = { bidQueue, askQueue: revAq };
+      perpLiquidity_[token] = { bidQueue, askQueue };
     }
 
     setLiquidity(liquidity_);
@@ -464,6 +454,11 @@ function WalletProvider({ children }: Props) {
               timestamp: item[2],
             };
           });
+          let revAq: any[] = [];
+          for (let i = askQueue.length - 1; i >= 0; i--) {
+            revAq.push(askQueue[i]);
+          }
+
           let bidQueue = msg.bid_liquidity.map((item: any) => {
             return {
               price: item[0],
@@ -472,7 +467,7 @@ function WalletProvider({ children }: Props) {
             };
           });
 
-          let pairLiquidity = { bidQueue, askQueue };
+          let pairLiquidity = { bidQueue, askQueue: revAq };
 
           if (msg.type === "perpetual") {
             let token = PERP_MARKET_IDS_2_TOKENS[msg.market];

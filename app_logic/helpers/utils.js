@@ -108,10 +108,7 @@ async function fetchLiquidity(token, isPerp) {
 
       if (liquidity_response.successful) {
         let bidQueue = liquidity_response.bid_queue;
-        let askQueue = [];
-        for (let i = liquidity_response.ask_queue.length - 1; i >= 0; i--) {
-          askQueue.push(liquidity_response.ask_queue[i]);
-        }
+        let askQueue = liquidity_response.ask_queue;
 
         return { bidQueue, askQueue };
       } else {
