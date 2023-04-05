@@ -399,14 +399,22 @@ function WalletProvider({ children }: Props) {
 
     for (const [token, _] of Object.entries(SPOT_MARKET_IDS)) {
       let { bidQueue, askQueue } = await fetchLiquidity(token, false);
+      let revAq: any[] = [];
+      for (let i = askQueue.length - 1; i >= 0; i--) {
+        revAq.push(askQueue[i]);
+      }
 
-      liquidity_[token] = { bidQueue, askQueue };
+      liquidity_[token] = { bidQueue, askQueue: revAq };
     }
 
     for (const [token, _] of Object.entries(PERP_MARKET_IDS)) {
       let { bidQueue, askQueue } = await fetchLiquidity(token, true);
+      let revAq: any[] = [];
+      for (let i = askQueue.length - 1; i >= 0; i--) {
+        revAq.push(askQueue[i]);
+      }
 
-      perpLiquidity_[token] = { bidQueue, askQueue };
+      perpLiquidity_[token] = { bidQueue, askQueue: revAq };
     }
 
     setLiquidity(liquidity_);

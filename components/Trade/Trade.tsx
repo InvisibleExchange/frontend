@@ -12,9 +12,9 @@ const DynamicHomeWithNoSSR = dynamic(() => import("./Chart"), { ssr: false });
 const Chart = DynamicHomeWithNoSSR;
 
 export default function Trade() {
-  // const { initialize } = useContext(WalletContext);
+  const { initialize } = useContext(WalletContext);
 
-  // initialize();
+  initialize();
 
   return (
     <>
