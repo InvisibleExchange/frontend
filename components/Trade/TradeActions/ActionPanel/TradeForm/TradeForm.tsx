@@ -49,6 +49,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
     connect,
     forceRerender,
     getSelectedPosition,
+    getMarkPrice,
   } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -117,7 +118,11 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
   const [maxLeverage, setMaxLeverage] = useState(MAX_LEVERAGE);
 
   const [price, setPrice] = useState<string | null>(
-    type == "market" ? "1000" : null
+    type == "market"
+      ? getMarkPrice(SYMBOLS_TO_IDS[token], perpType == "perpetual").toFixed(
+          2
+        ) ?? "0.00"
+      : null
   );
   const [baseAmount, setBaseAmount] = useState<string | null>(null);
   const [quoteAmount, setQuoteAmount] = useState<string | null>(null);
