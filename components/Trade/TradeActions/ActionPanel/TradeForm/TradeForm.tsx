@@ -365,7 +365,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
         />
       </div>
 
-      {positionData ? (
+      {positionData && perpType == "perpetual" ? (
         <div className="mt-5 pt-5 flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
           <p className="text-[15px]">
             <div>
