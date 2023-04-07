@@ -1,6 +1,3 @@
-import { useState } from "react";
-import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
-
 const {
   get_max_leverage,
   COLLATERAL_TOKEN_DECIMALS,
@@ -26,377 +23,263 @@ const {
   sendSplitOrder,
 } = require("../../../../../app_logic/transactions/constructOrders");
 
-const _renderActionButtons = (
+function checkValidSizeIncrease(
   user,
-  baseAmount,
-  price,
-  perpType,
+  order_side,
   positionData,
   token,
-  type,
-  quoteAmount,
-  expirationTime,
-  maxSlippage,
-  forceRerender,
-  action,
-  refundNow,
-  isLoading,
-  setIsLoading
-) => {
-  return (
-    <>
-      {isLoading ? (
-        <div className="mt-14 ml-32 mr-32">
-          <LoadingSpinner />
-        </div>
-      ) : action === "none" ? (
-        <div className="flex items-center gap-2 mt-14">
-          {_renderBuyButton(
-            user,
-            baseAmount,
-            price,
-            perpType,
-            positionData,
-            token,
-            type,
-            quoteAmount,
-            expirationTime,
-            maxSlippage,
-            forceRerender,
-            refundNow,
-            setIsLoading
-          )}
-          {_renderAskButton(
-            user,
-            baseAmount,
-            price,
-            perpType,
-            positionData,
-            token,
-            type,
-            quoteAmount,
-            expirationTime,
-            maxSlippage,
-            forceRerender,
-            refundNow,
-            setIsLoading
-          )}
-        </div>
-      ) : action === "buy" ? (
-        <div className="flex items-center gap-2 mt-14">
-          {_renderBuyButton(
-            user,
-            baseAmount,
-            price,
-            perpType,
-            positionData,
-            token,
-            type,
-            quoteAmount,
-            expirationTime,
-            maxSlippage,
-            forceRerender,
-            refundNow,
-            setIsLoading
-          )}
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 mt-14">
-          {_renderAskButton(
-            user,
-            baseAmount,
-            price,
-            perpType,
-            positionData,
-            token,
-            type,
-            quoteAmount,
-            expirationTime,
-            maxSlippage,
-            forceRerender,
-            refundNow,
-            setIsLoading
-          )}
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 mt-14"></div>
-    </>
-  );
-};
-
-const _renderBuyButton = (
-  user,
   baseAmount,
-  price,
-  perpType,
+  price
+) {
+  // TODO: TEST THIS =================================================
+  // Find other orders trying to increase this position
+  let activeModifyOrders = user.perpetualOrders.filter((order) => {
+    return (
+      order.position_effect_type == 1 &&
+      order.order_side == order_side &&
+      order.position_address == positionData.position_address
+    );
+  });
+
+  // sum up the total amount of base tokens being added to the position
+  let totalBaseAmount = activeModifyOrders.reduce((acc, order) => {
+    return acc + Number(order.qty_left);
+  }, 0);
+
+  totalBaseAmount =
+    totalBaseAmount / 10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]] +
+    baseAmount;
+
+  let totalNominal = activeModifyOrders.reduce((acc, order) => {
+    return (
+      acc +
+      (Number(order.qty_left) /
+        10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]) *
+        Number(order.price)
+    );
+  }, 0);
+  totalNominal = totalNominal + baseAmount * price;
+  let avgPrice = totalNominal / totalBaseAmount;
+
+  // TODO: TEST THIS =================================================
+
+  if (
+    // TODO: This should account for active orders as well
+
+    !checkViableSizeAfterIncrease(positionData, totalBaseAmount, avgPrice)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+function checkValidSizeFlip(
+  user,
+  order_side,
   positionData,
   token,
-  type,
-  quoteAmount,
-  expirationTime,
-  maxSlippage,
-  forceRerender,
-  refundNow,
-  setIsLoading
-) => {
-  refundNow = type == "market" ? false : refundNow;
-
-  return (
-    <button
-      onClick={async () => {
-        setIsLoading(true);
-
-        if (!user || !baseAmount || !price) {
-          alert("Choose an amount to trade");
-          setIsLoading(false);
-          return;
-        }
-        if (perpType == "perpetual") {
-          try {
-            //
-            if (positionData && positionData.order_side == "Long") {
-              if (
-                // TODO: This should account for active orders as well
-                !checkViableSizeAfterIncrease(positionData, baseAmount, price)
-              ) {
-                alert("Increase size too large for current margin");
-                setIsLoading(false);
-                return;
-              }
-            }
-
-            if (positionData && positionData.order_side == "Short") {
-              if (
-                baseAmount * 10 ** DECIMALS_PER_ASSET[token] >
-                positionData.position_size
-              ) {
-                if (
-                  // TODO: This should account for active orders as well
-                  !checkViableSizeAfterFlip(positionData, baseAmount, price)
-                ) {
-                  alert("Increase size too large for current margin");
-                  setIsLoading(false);
-                  return;
-                }
-              }
-            }
-
-            //
-
-            let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
-            let feeLimitPercent = 0.07;
-
-            if (!positionData && refundNow) {
-              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
-            }
-
-            await sendPerpOrder(
-              user,
-              "Long",
-              expirationTimesamp,
-              positionData ? "Modify" : "Open",
-              positionData ? positionData.position_address : null,
-              SYMBOLS_TO_IDS[token],
-              baseAmount,
-              price,
-              quoteAmount,
-              feeLimitPercent,
-              slippage,
-              type == "market"
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        } else {
-          try {
-            let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
-            let feeLimitPercent = 0.07;
-
-            if (refundNow) {
-              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
-            }
-
-            await sendSpotOrder(
-              user,
-              "Buy",
-              expirationTimesamp,
-              SYMBOLS_TO_IDS[token],
-              COLLATERAL_TOKEN,
-              baseAmount,
-              quoteAmount,
-              price,
-              feeLimitPercent,
-              slippage,
-              type == "market"
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        }
-
-        setIsLoading(false);
-
-        forceRerender();
-      }}
-      className="w-full py-2 uppercase rounded-md bg-green_lighter shadow-green font-overpass hover:shadow-green_dark hover:opacity-90"
-    >
-      BUY
-    </button>
-  );
-};
-
-const _renderAskButton = (
-  user,
   baseAmount,
-  price,
-  perpType,
-  positionData,
-  token,
-  type,
-  quoteAmount,
-  expirationTime,
-  maxSlippage,
-  forceRerender,
-  refundNow,
-  setIsLoading
-) => {
-  refundNow = type == "market" ? false : refundNow;
+  price
+) {
+  // Find other orders trying to decrease(flip) this position
+  let activeModifyOrders = user.perpetualOrders.filter((order) => {
+    return (
+      order.position_effect_type == 1 &&
+      order.order_side != order_side &&
+      order.position_address == positionData.position_address
+    );
+  });
 
-  return (
-    <button
-      onClick={async () => {
-        setIsLoading(true);
+  // sum up the total amount of base tokens being added to the position
+  let totalBaseAmount = activeModifyOrders.reduce((acc, order) => {
+    return acc + Number(order.qty_left);
+  }, 0);
 
-        if (!user || !baseAmount || !price) {
-          alert("Choose an amount to trade");
-          setIsLoading(false);
-          return;
-        }
+  totalBaseAmount =
+    totalBaseAmount / 10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]] +
+    baseAmount;
 
-        if (perpType == "perpetual") {
-          try {
-            if (positionData && positionData.order_side == "Short") {
-              if (
-                !checkViableSizeAfterIncrease(positionData, baseAmount, price)
-              ) {
-                alert("Increase size too large for current margin");
-                setIsLoading(false);
-                return;
-              }
-            }
+  let totalNominal = activeModifyOrders.reduce((acc, order) => {
+    return (
+      acc +
+      (Number(order.qty_left) /
+        10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]) *
+        Number(order.price)
+    );
+  }, 0);
+  totalNominal = totalNominal + baseAmount * price;
+  let avgPrice = totalNominal / totalBaseAmount;
 
-            let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
-            let feeLimitPercent = 0.07;
+  if (
+    totalBaseAmount * 10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]] >
+    positionData.position_size
+  ) {
+    if (!checkViableSizeAfterFlip(positionData, totalBaseAmount, avgPrice)) {
+      return false;
+    }
+  }
 
-            if (!positionData && refundNow) {
-              await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
-            }
+  return true;
+}
 
-            await sendPerpOrder(
-              user,
-              "Short",
-              expirationTimesamp,
-              positionData ? "Modify" : "Open",
-              positionData ? positionData.position_address : null,
-              SYMBOLS_TO_IDS[token],
-              baseAmount,
-              price,
-              quoteAmount,
-              feeLimitPercent,
-              slippage,
-              type == "market"
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        } else {
-          try {
-            let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
-            let feeLimitPercent = 0.07;
+// HELPERS ================================================================================================
 
-            if (refundNow) {
-              await sendSplitOrder(user, SYMBOLS_TO_IDS[token], [baseAmount]);
-            }
+function calculateNewSize(
+  position: any,
+  increaseSize: number,
+  isBuy: boolean
+): number {
+  let size =
+    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
 
-            await sendSpotOrder(
-              user,
-              "Sell",
-              expirationTimesamp,
-              SYMBOLS_TO_IDS[token],
-              COLLATERAL_TOKEN,
-              baseAmount,
-              quoteAmount,
-              price,
-              feeLimitPercent,
-              slippage,
-              type == "market"
-            );
-            alert("Success!");
-          } catch (error) {
-            alert("Error: " + error);
-          }
-        }
+  if (isBuy) {
+    if (position.order_side == "Long") {
+      return size + increaseSize;
+    } else {
+      if (increaseSize > size) {
+        return increaseSize - size;
+      } else {
+        return size - increaseSize;
+      }
+    }
+  } else {
+    if (position.order_side == "Short") {
+      return size + increaseSize;
+    } else {
+      if (increaseSize > size) {
+        return increaseSize - size;
+      } else {
+        return size - increaseSize;
+      }
+    }
+  }
+}
 
-        setIsLoading(false);
+function calculateAvgEntryPrice(
+  position: any,
+  increaseSize: number,
+  price: number,
+  isBuy: boolean
+): number {
+  if (isBuy) {
+    if (position.order_side == "Long") {
+      return calcAvgEntryInIncreaseSize(position, increaseSize, price);
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return price;
+      } else {
+        return (
+          position.entry_price /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  } else {
+    if (position.order_side == "Short") {
+      return calcAvgEntryInIncreaseSize(position, increaseSize, price);
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return price;
+      } else {
+        return (
+          position.entry_price /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  }
+}
 
-        forceRerender();
-      }}
-      className="w-full py-2 uppercase rounded-md bg-red_lighter shadow-red font-overpass hover:shadow-red_dark hover:opacity-90"
-    >
-      SELL
-    </button>
-  );
-};
+function calculateNewLiqPrice(
+  position: any,
+  increaseSize: number,
+  price: number,
+  isBuy: boolean
+): number {
+  if (isBuy) {
+    if (position.order_side == "Long") {
+      return (
+        calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
+        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+      );
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return (
+          calulateLiqPriceInFlipSide(position, increaseSize, price) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      } else {
+        return (
+          calulateLiqPriceInDecreaseSize(position, increaseSize) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  } else {
+    if (position.order_side == "Short") {
+      return (
+        calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
+        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+      );
+    } else {
+      if (
+        increaseSize >
+        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+      ) {
+        return (
+          calulateLiqPriceInFlipSide(position, increaseSize, price) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      } else {
+        return (
+          calulateLiqPriceInDecreaseSize(position, increaseSize) /
+          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        );
+      }
+    }
+  }
+}
 
-const _renderConnectButton = (connect) => {
-  return (
-    <button
-      className="w-full px-8 py-2 font-medium text-center text-white rounded-md mt-14 bg-blue hover:opacity-75"
-      onClick={() => connect()}
-    >
-      Connect Wallet
-    </button>
-  );
-};
+function formatInputNum(val: any, decimals: number) {
+  if (!val) {
+    return null;
+  }
 
-const _renderLoginButton = (isLoading, setIsLoading, login, forceRerender) => {
-  return (
-    <div>
-      {isLoading ? (
-        <div className="mt-14 ml-32 mr-32">
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <button
-          className="w-full px-8 py-2 font-medium text-center text-white rounded-md mt-14 bg-blue hover:opacity-75"
-          onClick={async () => {
-            try {
-              setIsLoading(true);
-              await login();
-              setIsLoading(false);
-              forceRerender();
-            } catch (error) {
-              console.log(error);
-            }
-          }}
-        >
-          Login
-        </button>
-      )}
-    </div>
-  );
-};
+  let decimalPointIndex = val.indexOf(".");
+  if (decimalPointIndex == 0) {
+    return "0" + val;
+  }
+
+  if (decimalPointIndex > -1) {
+    let numDigitsAfterDecimalPoint = val.length - decimalPointIndex - 1;
+    if (numDigitsAfterDecimalPoint > decimals) {
+      let valArr = val.split("");
+      let end = Math.min(decimalPointIndex + decimals + 1, valArr.length - 1);
+      valArr = valArr.slice(0, end);
+      return valArr.join("");
+    } else {
+      return val;
+    }
+  } else {
+    return val;
+  }
+}
 
 module.exports = {
-  _renderActionButtons,
-  _renderConnectButton,
-  _renderLoginButton,
+  calculateNewSize,
+  calculateAvgEntryPrice,
+  calculateNewLiqPrice,
+  formatInputNum,
+  checkValidSizeIncrease,
+  checkValidSizeFlip,
 };

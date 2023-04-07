@@ -15,7 +15,7 @@ import {
 import { marketList } from "../../../../data/markets";
 import { WalletContext } from "../../../../context/WalletContext";
 
-const types = [{ name: "Perpetual" }, { name: "Spot" }];
+const types = [{ name: "PERPETUAL" }, { name: "SPOT" }];
 
 export default function PairSelector() {
   const { selectedType, setSelectedType, selectedMarket, setSelectedMarket } =
@@ -55,7 +55,9 @@ export default function PairSelector() {
             <Listbox value={selectedType} onChange={onSelectType}>
               <div className="mr-2">
                 <Listbox.Button className="relative py-1 pl-3 pr-8 text-sm text-left text-white shadow-md cursor-default rounded-2xl bg-blue ">
-                  <span className="block truncate">{selectedType}</span>
+                  <span className="block truncate">
+                    <em>{selectedType.toUpperCase()}</em>
+                  </span>
                   <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                     <HiChevronUpDown
                       className="w-4 h-4 text-gray-400"
@@ -69,7 +71,7 @@ export default function PairSelector() {
                   leaveFrom="opacity-100"
                   leaveTo="opacity-0"
                 >
-                  <Listbox.Options className="absolute w-24 py-1 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color">
+                  <Listbox.Options className="absolute w-32 py-1 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color">
                     {types.map((type, index) => (
                       <Listbox.Option
                         key={index}

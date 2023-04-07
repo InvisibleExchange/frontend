@@ -16,6 +16,10 @@ const {
   sendPerpOrder,
 } = require("../../../../app_logic/transactions/constructOrders");
 
+const {
+  getCurrentLeverage,
+} = require("../../../../app_logic/helpers/tradePriceCalculations");
+
 const Positions = () => {
   let { user, getMarkPrice, setSelectedPosition, forceRerender } =
     useContext(WalletContext);
@@ -119,7 +123,7 @@ const Positions = () => {
                       USD
                     </td>
                     <td className={classNames("pr-3 font-medium ")}>
-                      Leverage
+                      {getCurrentLeverage(markPrice, size, margin).toFixed(2)}
                     </td>
                     <td className={classNames("pr-3 font-medium ")}>
                       <div className="flex items-center gap-2">
@@ -177,7 +181,6 @@ const CloseField = ({ user, marketPrice, pos, forceRerender }: any) => {
 
   const onSumbitCloseOrder = async (isMarket: boolean) => {
     try {
-
       await sendPerpOrder(
         user,
         pos.order_side == "Long" ? "Short" : "Long",

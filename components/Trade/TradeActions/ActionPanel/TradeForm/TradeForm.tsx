@@ -11,7 +11,7 @@ const {
   _renderActionButtons,
   _renderConnectButton,
   _renderLoginButton,
-} = require("./FormHelpers");
+} = require("./FormButtons");
 
 const {
   get_max_leverage,
@@ -24,11 +24,11 @@ const {
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
-  calcAvgEntryInIncreaseSize,
-  calulateLiqPriceInIncreaseSize,
-  calulateLiqPriceInDecreaseSize,
-  calulateLiqPriceInFlipSide,
-} = require("../../../../../app_logic/helpers/tradePriceCalculations");
+  formatInputNum,
+  calculateNewSize,
+  calculateAvgEntryPrice,
+  calculateNewLiqPrice,
+} = require("./FormHelpers");
 
 type props = {
   type: string;
@@ -36,10 +36,6 @@ type props = {
   token: string;
   action: string;
 };
-
-// TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// TODO If there is already an open order modifying the position, then cancel that order and apply a new one
 
 const TradeForm = ({ type, perpType, token, action }: props) => {
   let {
@@ -493,155 +489,3 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
 };
 
 export default TradeForm;
-
-// HELPERS ================================================================================================
-
-function calculateNewSize(
-  position: any,
-  increaseSize: number,
-  isBuy: boolean
-): number {
-  let size =
-    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
-
-  if (isBuy) {
-    if (position.order_side == "Long") {
-      return size + increaseSize;
-    } else {
-      if (increaseSize > size) {
-        return increaseSize - size;
-      } else {
-        return size - increaseSize;
-      }
-    }
-  } else {
-    if (position.order_side == "Short") {
-      return size + increaseSize;
-    } else {
-      if (increaseSize > size) {
-        return increaseSize - size;
-      } else {
-        return size - increaseSize;
-      }
-    }
-  }
-}
-
-function calculateAvgEntryPrice(
-  position: any,
-  increaseSize: number,
-  price: number,
-  isBuy: boolean
-): number {
-  if (isBuy) {
-    if (position.order_side == "Long") {
-      return calcAvgEntryInIncreaseSize(position, increaseSize, price);
-    } else {
-      if (
-        increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
-      ) {
-        return price;
-      } else {
-        return (
-          position.entry_price /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-        );
-      }
-    }
-  } else {
-    if (position.order_side == "Short") {
-      return calcAvgEntryInIncreaseSize(position, increaseSize, price);
-    } else {
-      if (
-        increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
-      ) {
-        return price;
-      } else {
-        return (
-          position.entry_price /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-        );
-      }
-    }
-  }
-}
-
-function calculateNewLiqPrice(
-  position: any,
-  increaseSize: number,
-  price: number,
-  isBuy: boolean
-): number {
-  if (isBuy) {
-    if (position.order_side == "Long") {
-      return (
-        calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
-        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-      );
-    } else {
-      if (
-        increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
-      ) {
-        return (
-          calulateLiqPriceInFlipSide(position, increaseSize, price) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-        );
-      } else {
-        return (
-          calulateLiqPriceInDecreaseSize(position, increaseSize) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-        );
-      }
-    }
-  } else {
-    if (position.order_side == "Short") {
-      return (
-        calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
-        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-      );
-    } else {
-      if (
-        increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
-      ) {
-        return (
-          calulateLiqPriceInFlipSide(position, increaseSize, price) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-        );
-      } else {
-        return (
-          calulateLiqPriceInDecreaseSize(position, increaseSize) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
-        );
-      }
-    }
-  }
-}
-
-function formatInputNum(val: any, decimals: number) {
-  if (!val) {
-    return null;
-  }
-
-  let decimalPointIndex = val.indexOf(".");
-  if (decimalPointIndex == 0) {
-    return "0" + val;
-  }
-
-  if (decimalPointIndex > -1) {
-    let numDigitsAfterDecimalPoint = val.length - decimalPointIndex - 1;
-    if (numDigitsAfterDecimalPoint > decimals) {
-      let valArr = val.split("");
-      let end = Math.min(decimalPointIndex + decimals + 1, valArr.length - 1);
-      valArr = valArr.slice(0, end);
-      return valArr.join("");
-    } else {
-      return val;
-    }
-  } else {
-    return val;
-  }
-}
