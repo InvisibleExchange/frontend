@@ -7,10 +7,10 @@ const {
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   SYMBOLS_TO_IDS,
+  DUST_AMOUNT_PER_ASSET,
   MAX_LEVERAGE,
   COLLATERAL_TOKEN,
 } = require("../../../../../app_logic/helpers/utils");
-
 
 const {
   sendSpotOrder,
@@ -201,11 +201,23 @@ const _renderBuyButton = (
               await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
             }
 
+            let posEffectType = positionData ? "Modify" : "Open";
+            if (positionData && positionData.order_side == "Short") {
+              if (
+                Math.abs(
+                  positionData.position_size -
+                    baseAmount * 10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+                ) <= DUST_AMOUNT_PER_ASSET[SYMBOLS_TO_IDS[token]]
+              ) {
+                posEffectType = "Close";
+              }
+            }
+
             await sendPerpOrder(
               user,
               "Long",
               expirationTimesamp,
-              positionData ? "Modify" : "Open",
+              posEffectType,
               positionData ? positionData.position_address : null,
               SYMBOLS_TO_IDS[token],
               baseAmount,
@@ -342,11 +354,23 @@ const _renderAskButton = (
               await sendSplitOrder(user, COLLATERAL_TOKEN, [quoteAmount]);
             }
 
+            let posEffectType = positionData ? "Modify" : "Open";
+            if (positionData && positionData.order_side == "Long") {
+              if (
+                Math.abs(
+                  positionData.position_size -
+                    baseAmount * 10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+                ) <= DUST_AMOUNT_PER_ASSET[SYMBOLS_TO_IDS[token]]
+              ) {
+                posEffectType = "Close";
+              }
+            }
+
             await sendPerpOrder(
               user,
               "Short",
               expirationTimesamp,
-              positionData ? "Modify" : "Open",
+              posEffectType,
               positionData ? positionData.position_address : null,
               SYMBOLS_TO_IDS[token],
               baseAmount,

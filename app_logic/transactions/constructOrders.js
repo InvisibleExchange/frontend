@@ -312,7 +312,6 @@ async function sendPerpOrder(
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
 
-
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
     .then((res) => {
@@ -538,6 +537,10 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
   amount = amount * 10 ** tokenDecimals;
 
   let deposit = user.makeDepositOrder(depositId, amount, token, pubKey);
+
+  console.log("sending deposit");
+
+  console.log(deposit.toGrpcObject());
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_deposit`, deposit.toGrpcObject())

@@ -189,9 +189,8 @@ const CloseField = ({ user, marketPrice, pos, forceRerender }: any) => {
         pos.position_address, // position address
         pos.synthetic_token, //token
         closeQty, //amount
-        // Todo: isMarket ? marketPrice : closePrice,
-        isMarket ? 1000 : closePrice, // close price
-        0, // initial margin
+        isMarket ? marketPrice : closePrice, // price
+        null, // initial margin
         0.07, // fee_limit %
         3, // slippage %
         isMarket
