@@ -50,7 +50,17 @@ export default function BookTrades() {
       setInitAq(aq);
     };
 
-    getLiquidity();
+    let LIQ =
+      selectedType == "spot"
+        ? liquidity[SYMBOLS_TO_IDS[token]]
+        : perpLiquidity[SYMBOLS_TO_IDS[token]];
+
+    if (LIQ) {
+      setInitBq(LIQ.bidQueue);
+      setInitAq(LIQ.askQueue);
+    } else {
+      getLiquidity();
+    }
   }, [token, selectedType]);
 
   return (

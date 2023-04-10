@@ -379,7 +379,7 @@ async function loginUser(signer) {
 
   let user = User.fromPrivKey(pk);
 
-  await user.login();
+  let { emptyPrivKeys, emptyPositionPrivKeys } = await user.login();
 
   let { badOrderIds, orders, badPerpOrderIds, perpOrders, pfrNotes } =
     await getActiveOrders(user.orderIds, user.perpetualOrderIds);
@@ -388,7 +388,10 @@ async function loginUser(signer) {
     badOrderIds,
     orders,
     badPerpOrderIds,
-    perpOrders
+    perpOrders,
+    pfrNotes,
+    emptyPrivKeys,
+    emptyPositionPrivKeys
   );
 
   return user;
@@ -404,7 +407,9 @@ async function getActiveOrders(order_ids, perp_order_ids) {
       let orders = order_response.orders;
       let badPerpOrderIds = order_response.bad_perp_order_ids;
       let perpOrders = order_response.perp_orders;
-      let pfrNotes = order_response.pfr_notes;
+      let pfrNotes = order_response.pfr_notes
+        ? order_response.pfr_notes.map((n) => Note.fromGrpcObject(n))
+        : [];
 
       return { badOrderIds, orders, badPerpOrderIds, perpOrders, pfrNotes };
     })

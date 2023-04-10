@@ -51,7 +51,7 @@ const SettingsPopover = ({
             ref={setPopperElement}
             style={styles.popper}
             {...attributes.popper}
-            className="popover w-60 mt-16 mr-2 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color"
+            className="popover w-60 mt-10 mr-2 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color"
           >
             <div className="px-4 py-2">
               <div className="relative mt-1 ">

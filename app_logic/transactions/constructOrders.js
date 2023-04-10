@@ -473,6 +473,16 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
 
           let note = Note.fromGrpcObject(pfrNote);
           user.noteData[pfrNote.token].push(note);
+
+          if (isPerp) {
+            // loop over the user's perpetual orders and find the order that has been cancelledž
+            user.perpetualOrders = user.perpetualOrders.filter(
+              (o) => o.order_id != orderId
+            );
+          } else {
+            // loop over the user's spot orders and find the order that has been cancelled
+            user.orders = user.orders.filter((o) => o.order_id != orderId);
+          }
         } else {
           // This means that the order has not been filled partially yet
           // so we need to add the notesIn to the user's noteData
@@ -537,10 +547,6 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
   amount = amount * 10 ** tokenDecimals;
 
   let deposit = user.makeDepositOrder(depositId, amount, token, pubKey);
-
-  console.log("sending deposit");
-
-  console.log(deposit.toGrpcObject());
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_deposit`, deposit.toGrpcObject())

@@ -125,7 +125,7 @@ async function storeUserData(userId, noteCounts, positionCounts) {
     throw "Register user first";
   }
 
-  await updateDoc(userDataDoc, {
+  updateDoc(userDataDoc, {
     noteCounts,
     positionCounts,
   });
@@ -146,7 +146,7 @@ async function storePrivKey(userId, privKey, isPosition, privateSeed) {
     docRef = doc(db, `users/${userId}/privKeys`, encryptedPk);
   }
 
-  await setDoc(docRef, {});
+  setDoc(docRef, {});
 }
 
 async function removePrivKey(userId, privKey, isPosition, privateSeed) {
@@ -160,7 +160,10 @@ async function removePrivKey(userId, privKey, isPosition, privateSeed) {
     docRef = doc(db, `users/${userId}/privKeys`, encryptedPk);
   }
 
-  await deleteDoc(docRef);
+  deleteDoc(docRef);
+
+  let docRef2 = doc(db, `users/${userId}/deprecatedKeys`, encryptedPk);
+  setDoc(docRef2, {});
 }
 
 async function storeOrderId(
@@ -206,7 +209,10 @@ async function removeOrderId(userId, orderId, isPerp, privateSeed) {
     docRef = doc(db, `users/${userId}/orderIds`, encryptedOrderId);
   }
 
-  await deleteDoc(docRef);
+  deleteDoc(docRef);
+
+  let docRef2 = doc(db, `users/${userId}/deprecatedOrderIds`, encryptedOrderId);
+  setDoc(docRef2, {});
 }
 
 async function fetchUserData(userId, privateSeed) {
@@ -363,6 +369,9 @@ async function removeDepositFromDb(depositId) {
   if (depositData.exists()) {
     await deleteDoc(depositDoc);
   }
+
+  let docRef2 = doc(db, `users/${userId}/deprecatedDeposits`, depositId);
+  setDoc(docRef2, {});
 }
 
 async function fetchOnchainDeposits(userId, privateSeed) {

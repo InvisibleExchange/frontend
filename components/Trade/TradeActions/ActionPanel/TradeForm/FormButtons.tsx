@@ -44,7 +44,7 @@ const _renderActionButtons = (
           <LoadingSpinner />
         </div>
       ) : action === "none" ? (
-        <div className="flex items-center gap-2 mt-14">
+        <div className="flex items-center  gap-2 mt-14">
           {_renderBuyButton(
             user,
             baseAmount,
@@ -113,8 +113,6 @@ const _renderActionButtons = (
           )}
         </div>
       )}
-
-      <div className="flex items-center gap-2 mt-14"></div>
     </>
   );
 };

@@ -6,6 +6,7 @@ import { tradeTypeSelector } from "../../../../../lib/store/features/apiSlice";
 import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import TooltipSpotSlider from "../TooltipSpotSlider";
 import SettingsPopover from "./SettingsPopover";
+import UpdatedPositionInfo from "./UpdatedPositionInfo";
 
 const {
   _renderActionButtons,
@@ -23,12 +24,7 @@ const {
   COLLATERAL_TOKEN,
 } = require("../../../../../app_logic/helpers/utils");
 
-const {
-  formatInputNum,
-  calculateNewSize,
-  calculateAvgEntryPrice,
-  calculateNewLiqPrice,
-} = require("./FormHelpers");
+const { formatInputNum } = require("./FormHelpers");
 
 type props = {
   type: string;
@@ -75,8 +71,6 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
     : 0;
 
   const tradeType = useSelector(tradeTypeSelector);
-
-  // console.log(user ? user.noteData : null);
 
   function percentFormatter(v: any) {
     return `${v}`;
@@ -346,10 +340,22 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
           : renderLoginButton()
         : renderConnectButton()}
       {/* Fee ====================================== */}
-      <div className="flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
+      <div className="flex items-center justify-between mt-5 text-sm font-overpass text-fg_below_color dark:text-white">
         <p className="font-light text-[12px]">Protocol fee</p>
         <p>{"0.00%-0.05%"}</p>
       </div>
+
+      {positionData && perpType == "perpetual" ? (
+        <div className="mt-5 pt-5 p-0 m-0">
+          <div>{/* <em>New values after update:</em> */}</div>
+          <UpdatedPositionInfo
+            baseAmount={baseAmount}
+            price={price}
+            positionData={positionData}
+            token={token}
+          />
+        </div>
+      ) : null}
 
       <div className="mt-5">
         <SettingsPopover
@@ -360,130 +366,6 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
           isMarket={type == "market"}
         />
       </div>
-
-      {positionData && perpType == "perpetual" ? (
-        <div className="mt-5 pt-5 flex items-center justify-between mt-4 text-sm font-overpass text-fg_below_color dark:text-white">
-          <p className="text-[15px]">
-            <div>
-              <div>
-                New Size:{" "}
-                <strong>
-                  {" "}
-                  {baseAmount && price
-                    ? formatInputNum(
-                        calculateNewSize(
-                          positionData,
-                          Number(baseAmount),
-                          true
-                        ).toString(),
-                        2
-                      )
-                    : null}{" "}
-                  {baseAmount && price ? token : null}
-                </strong>
-              </div>
-              <div className="mt-1">
-                Average Entry Price:{" "}
-                <strong>
-                  {" "}
-                  {baseAmount && price
-                    ? formatInputNum(
-                        calculateAvgEntryPrice(
-                          positionData,
-                          Number(baseAmount),
-                          Number(price),
-                          true
-                        ).toString(),
-                        2
-                      )
-                    : ""}{" "}
-                  {baseAmount && price ? "USD" : null}
-                </strong>
-              </div>
-              <div className="mt-1">
-                Est. Liq. Price:{" "}
-                <strong>
-                  {" "}
-                  {baseAmount && price
-                    ? formatInputNum(
-                        calculateNewLiqPrice(
-                          positionData,
-                          Number(baseAmount),
-                          Number(price),
-                          true
-                        ).toString(),
-                        2
-                      )
-                    : ""}{" "}
-                  {baseAmount && price ? "USD" : null}
-                </strong>
-              </div>
-            </div>
-          </p>
-          <div>
-            <div>|</div>
-            <div>|</div>
-            <div>|</div>
-          </div>
-
-          <p className="text-[15px]">
-            <div>
-              <div>
-                New Size:{" "}
-                <strong>
-                  {" "}
-                  {baseAmount && price
-                    ? formatInputNum(
-                        calculateNewSize(
-                          positionData,
-                          Number(baseAmount),
-                          false
-                        ).toString(),
-                        2
-                      )
-                    : null}
-                  {baseAmount && price ? token : null}
-                </strong>
-              </div>
-              <div className="mt-1">
-                Average Entry Price:{" "}
-                <strong>
-                  {baseAmount && price
-                    ? formatInputNum(
-                        calculateAvgEntryPrice(
-                          positionData,
-                          Number(baseAmount),
-                          Number(price),
-                          false
-                        ).toString(),
-                        2
-                      )
-                    : ""}{" "}
-                  {baseAmount && price ? "USD" : null}
-                </strong>
-              </div>
-              <div className="mt-1">
-                Est. Liq. Price:{" "}
-                <strong>
-                  {" "}
-                  {baseAmount && price
-                    ? formatInputNum(
-                        calculateNewLiqPrice(
-                          positionData,
-                          Number(baseAmount),
-                          Number(price),
-                          false
-                        ).toString(),
-                        2
-                      )
-                    : ""}{" "}
-                  {baseAmount && price ? "USD" : null}
-                </strong>
-              </div>
-            </div>
-          </p>
-        </div>
-      ) : null}
     </div>
   );
 };

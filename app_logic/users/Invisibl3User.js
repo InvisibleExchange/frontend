@@ -161,7 +161,7 @@ export default class User {
         : [];
 
     let { emptyPositionPrivKeys, positionData, posPrivKeys } =
-      await fetchPositionData(addressData);  
+      await fetchPositionData(addressData);
 
     // ? Get Fill Data ============================================
 
@@ -192,43 +192,84 @@ export default class User {
     this.perpetualOrderIds = [...new Set(userData.perpetualOrderIds)];
     this.pfrKeys = userData.pfrKeys;
     this.fills = [...new Set(fills)];
+
+    return { emptyPrivKeys, emptyPositionPrivKeys };
   }
 
-  async handleActiveOrders(badOrderIds, orders, badPerpOrderIds, perpOrders) {
+  async handleActiveOrders(
+    badOrderIds,
+    orders,
+    badPerpOrderIds,
+    perpOrders,
+    pfrNotes,
+    emptyPrivKeys,
+    emptyPositionPrivKeys
+  ) {
+    // ? Get the indexes of notes that are used in active orders (not partially filled)
     let activeOrderNoteIndexes = [];
-
-    let pfrKeys = [];
-
     for (let order of orders) {
-      if (this.pfrKeys[order.order_id]) {
-        pfrKeys.push(this.pfrKeys[order.order_id]);
-      }
+      let refund_amount = order.refund_note
+        ? Number(order.refund_note.amount)
+        : 0;
+      let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
+      // only update if order was not partially filled
 
-      for (let note of order.notes_in) {
-        // todo: only update if order was not partially filled
-        // let sum = order.notesIn.reduce((a, b) => a + b.amount, 0);
-        // if (
-        //   order.qty_left <
-        //   sum - DUST_AMOUNT_PER_ASSET[order.notesIn[0].token]
-        // ) {
-        activeOrderNoteIndexes.push(note.index.toString());
-        // }
-      }
-    }
-
-    for (let order of perpOrders) {
-      if (this.pfrKeys[order.order_id]) {
-        pfrKeys.push(this.pfrKeys[order.order_id]);
-      }
-      if (order.position_effect_type == 0) {
+      if (
+        Number(order.qty_left) >=
+        sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
+      ) {
         for (let note of order.notes_in) {
           activeOrderNoteIndexes.push(note.index.toString());
         }
       }
     }
+    for (let order of perpOrders) {
+      // if (this.pfrKeys[order.order_id]) {
+      //   pfrKeys.push(this.pfrKeys[order.order_id]);
+      // }
 
+      //
+      if (order.position_effect_type == 0) {
+        let refund_amount = order.refund_note
+          ? Number(order.refund_note.amount)
+          : 0;
+        let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
+        // only update if order was not partially filled
+        if (
+          Number(order.qty_left) >=
+          sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
+        ) {
+          for (let note of order.notes_in) {
+            activeOrderNoteIndexes.push(note.index.toString());
+          }
+        }
+      }
+    }
+
+    // ? if there are no spot orders and no open/close orders than get rid of emptyPrivKeys
+    let noActiveOrders = orders.length == 0;
+    for (let order of perpOrders) {
+      noActiveOrders =
+        noActiveOrders &&
+        order.position_effect_type != 0 &&
+        order.position_effect_type != 2;
+    }
+    if (noActiveOrders) {
+      for (let privKey of emptyPrivKeys) {
+        removePrivKey(this.userId, privKey, false, this.privateSeed);
+      }
+    }
+    // ? If there are no perp orders than get rid of emptyPositionPrivKeys
+    if (perpOrders.length == 0) {
+      for (let privKey of emptyPositionPrivKeys) {
+        removePrivKey(this.userId, privKey, true, this.privateSeed);
+      }
+    }
+
+    // ? Get the notes that aren't currently used in active orders and save the addresses of those that are
     let frozenAddresses = [];
     let newNoteData = {};
+
     for (const [token, arr] of Object.entries(this.noteData)) {
       newNoteData[token] = [];
 
@@ -240,19 +281,37 @@ export default class User {
         }
       }
 
-      for (const pfrKey of pfrKeys) {
-        let addr = getKeyPair(pfrKey).getPublic().getX();
+      // for (const pfrKey of pfrKeys) {
+      //   let addr = getKeyPair(pfrKey).getPublic().getX();
 
-        let idxs = newNoteData[token]
-          .filter((n) => n.address.getX().toString() == addr.toString())
-          .map((n) => Number.parseInt(n.index));
-        let maxIdx = Math.max(...idxs);
+      //   let idxs = newNoteData[token]
+      //     .filter((n) => n.address.getX().toString() == addr.toString())
+      //     .map((n) => Number.parseInt(n.index));
+      //   let maxIdx = Math.max(...idxs);
 
-        let idx = newNoteData[token].findIndex((n) => n.index == maxIdx);
+      //   let idx = newNoteData[token].findIndex((n) => n.index == maxIdx);
 
-        if (idx !== -1 && !frozenAddresses.includes(addr.toString())) {
-          newNoteData[token].splice(idx, 1);
-        }
+      //   if (idx !== -1 && !frozenAddresses.includes(addr.toString())) {
+      //     newNoteData[token].splice(idx, 1);
+      //   }
+      // }
+    }
+    // ? Remove pfr notes from noteData
+    for (const note of pfrNotes) {
+      let token = note.token;
+      let addr = note.address.getX().toString();
+
+      if (!newNoteData[token]) {
+        newNoteData[token] = [];
+      }
+
+      if (!frozenAddresses.includes(addr)) {
+        // Find the index of the note with the same hash
+        let idx = newNoteData[token].findIndex(
+          (n) => n.hash == note.hash && n.index == note.index
+        );
+
+        newNoteData[token].splice(idx, 1);
       }
     }
 
