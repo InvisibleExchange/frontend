@@ -1,3 +1,5 @@
+import { DECIMALS_PER_ASSET } from "../helpers/utils";
+
 const bigInt = require("big-integer");
 const { pedersen, computeHashOnElements } = require("../helpers/pedersen");
 const { ec, getKeyPair } = require("starknet").ec;
@@ -208,20 +210,22 @@ export default class User {
     // ? Get the indexes of notes that are used in active orders (not partially filled)
     let activeOrderNoteIndexes = [];
     for (let order of orders) {
-      let refund_amount = order.refund_note
-        ? Number(order.refund_note.amount)
-        : 0;
-      let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
-      // only update if order was not partially filled
+      // TODO: this should be different for bid and ask orders
+      // let refund_amount = order.refund_note
+      //   ? Number(order.refund_note.amount)
+      //   : 0;
+      // let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
+      // // only update if order was not partially filled
 
-      if (
-        Number(order.qty_left) >=
-        sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
-      ) {
-        for (let note of order.notes_in) {
-          activeOrderNoteIndexes.push(note.index.toString());
-        }
+      // if (
+      //   Number(order.qty_left)/10**DECIMALS_PER_ASSET >=
+      //   sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
+      // ) {
+      for (let note of order.notes_in) {
+        console.log("note", note.index);
+        activeOrderNoteIndexes.push(note.index.toString());
       }
+      // }
     }
     for (let order of perpOrders) {
       // if (this.pfrKeys[order.order_id]) {
@@ -230,19 +234,19 @@ export default class User {
 
       //
       if (order.position_effect_type == 0) {
-        let refund_amount = order.refund_note
-          ? Number(order.refund_note.amount)
-          : 0;
-        let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
-        // only update if order was not partially filled
-        if (
-          Number(order.qty_left) >=
-          sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
-        ) {
-          for (let note of order.notes_in) {
-            activeOrderNoteIndexes.push(note.index.toString());
-          }
+        // let refund_amount = order.refund_note
+        //   ? Number(order.refund_note.amount)
+        //   : 0;
+        // let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
+        // // only update if order was not partially filled
+        // if (
+        //   Number(order.qty_left) >=
+        //   sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
+        // ) {
+        for (let note of order.notes_in) {
+          activeOrderNoteIndexes.push(note.index.toString());
         }
+        // }
       }
     }
 
@@ -360,6 +364,7 @@ export default class User {
       noteDataNew[token] = newArr;
     }
 
+    console.log("noteDataNew", noteDataNew);
     this.noteData = noteDataNew;
   }
 

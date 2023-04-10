@@ -70,7 +70,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       10 ** COLLATERAL_TOKEN_DECIMALS
     : 0;
 
-  const tradeType = useSelector(tradeTypeSelector);
+  // const tradeType = useSelector(tradeTypeSelector);
 
   function percentFormatter(v: any) {
     return `${v}`;
@@ -203,6 +203,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       setLeverage(leverage_);
 
       if (price && baseAmount) {
+
         let nominalValue = Number(baseAmount) * Number(price);
         let initMargin = nominalValue / leverage;
 
@@ -305,7 +306,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       {/* Slider ====================================== */}
       {perpType == "perpetual" && !!positionData ? null : (
         <div className="mx-2 mt-12">
-          {tradeType.name === "Perpetual" ? (
+          {perpType == "perpetual" ? (
             <TooltipPerpetualSlider
               tipFormatter={percentFormatter}
               tipProps={{ overlayClassName: "foo" }}

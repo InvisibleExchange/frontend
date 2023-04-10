@@ -103,7 +103,10 @@ const OpenOrders = () => {
                         "gap-3 py-1 pl-5 font-medium " + color
                       )}
                     >
-                      <p className="font-bold">{IDS_TO_SYMBOLS[baseAsset]}</p>
+                      <p className="font-bold">
+                        {IDS_TO_SYMBOLS[baseAsset]}
+                        {isPerp ? "-PERP" : "/USDC"}
+                      </p>
                       {/* <p className="text-[12px]">(Perpetual)</p> */}
                     </td>
                     {/* Market type */}
@@ -159,7 +162,11 @@ const OpenOrders = () => {
                           DECIMALS_PER_ASSET[
                             isPerp ? COLLATERAL_TOKEN : receivedToken
                           ]}{" "}
-                      {IDS_TO_SYMBOLS[receivedToken]}
+                      {
+                        IDS_TO_SYMBOLS[
+                          isPerp ? COLLATERAL_TOKEN : receivedToken
+                        ]
+                      }
                     </td>
                     {/* Cancel order */}
                     <td className={classNames("pl-3 font-medium ")}>
