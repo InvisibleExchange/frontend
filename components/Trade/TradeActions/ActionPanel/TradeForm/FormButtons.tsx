@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
+import { checkValidSizeIncrease, checkValidSizeFlip } from "./FormHelpers";
 
 const {
   get_max_leverage,
@@ -17,8 +18,6 @@ const {
   sendPerpOrder,
   sendSplitOrder,
 } = require("../../../../../app_logic/transactions/constructOrders");
-
-const { checkValidSizeIncrease, checkValidSizeFlip } = require("./FormHelpers");
 
 const _renderActionButtons = (
   user,

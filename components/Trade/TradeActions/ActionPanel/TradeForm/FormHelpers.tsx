@@ -275,7 +275,7 @@ function formatInputNum(val: any, decimals: number) {
   }
 }
 
-module.exports = {
+export {
   calculateNewSize,
   calculateAvgEntryPrice,
   calculateNewLiqPrice,

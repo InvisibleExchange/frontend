@@ -8,6 +8,8 @@ import TooltipSpotSlider from "../TooltipSpotSlider";
 import SettingsPopover from "./SettingsPopover";
 import UpdatedPositionInfo from "./UpdatedPositionInfo";
 
+import { formatInputNum } from "./FormHelpers";
+
 const {
   _renderActionButtons,
   _renderConnectButton,
@@ -23,8 +25,6 @@ const {
   MAX_LEVERAGE,
   COLLATERAL_TOKEN,
 } = require("../../../../../app_logic/helpers/utils");
-
-const { formatInputNum } = require("./FormHelpers");
 
 type props = {
   type: string;
@@ -203,7 +203,6 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       setLeverage(leverage_);
 
       if (price && baseAmount) {
-
         let nominalValue = Number(baseAmount) * Number(price);
         let initMargin = nominalValue / leverage;
 
