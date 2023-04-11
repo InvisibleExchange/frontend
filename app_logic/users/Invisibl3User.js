@@ -249,25 +249,25 @@ export default class User {
       }
     }
 
-    console.log("orders:", orders);
-
     // ? if there are no spot orders and no open/close orders than get rid of emptyPrivKeys
     let noActiveOrders = orders.length == 0;
     for (let order of perpOrders) {
       noActiveOrders =
         noActiveOrders &&
-        order.position_effect_type != 0 &&
-        order.position_effect_type != 2;
+        (order.position_effect_type != 0 ||
+          order.position_effect_type != "Open") &&
+        (order.position_effect_type != 2 ||
+          order.position_effect_type != "Close");
     }
     if (noActiveOrders) {
       for (let privKey of emptyPrivKeys) {
-        removePrivKey(this.userId, privKey, false, this.privateSeed);
+        await removePrivKey(this.userId, privKey, false, this.privateSeed);
       }
     }
     // ? If there are no perp orders than get rid of emptyPositionPrivKeys
     if (perpOrders.length == 0) {
       for (let privKey of emptyPositionPrivKeys) {
-        removePrivKey(this.userId, privKey, true, this.privateSeed);
+        await removePrivKey(this.userId, privKey, true, this.privateSeed);
       }
     }
 
@@ -303,9 +303,6 @@ export default class User {
     }
     // ? Remove pfr notes from noteData
 
-    console.log("pfrNotes", pfrNotes);
-    console.log("activeOrderNoteIndexes");
-    console.log(" this.noteData ", this.noteData);
     for (const note of pfrNotes) {
       let token = note.token;
       let addr = note.address.getX().toString();
@@ -369,7 +366,6 @@ export default class User {
       noteDataNew[token] = newArr;
     }
 
-    console.log("noteDataNew", noteDataNew);
     this.noteData = noteDataNew;
   }
 

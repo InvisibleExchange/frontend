@@ -174,7 +174,6 @@ function WalletProvider({ children }: Props) {
   const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
 
   function forceRerender() {
-    console.log("force rerender");
     forceUpdate();
   }
 

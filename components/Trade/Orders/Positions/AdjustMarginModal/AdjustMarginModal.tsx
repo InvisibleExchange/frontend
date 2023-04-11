@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Dialog, Transition, Listbox } from "@headlessui/react";
 import { Fragment, useState, useContext } from "react";
@@ -32,6 +32,8 @@ const types = [{ name: "Add" }, { name: "Remove" }];
 const AdjustMarginModal = ({ position }: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, forceRerender } = useContext(WalletContext);
+
+  useEffect(() => {}, [position, user]);
 
   const minViableMargin = getMinViableMargin(position);
 
