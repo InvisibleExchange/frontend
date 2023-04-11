@@ -222,7 +222,6 @@ export default class User {
       //   sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
       // ) {
       for (let note of order.notes_in) {
-        console.log("note", note.index);
         activeOrderNoteIndexes.push(note.index.toString());
       }
       // }
@@ -249,6 +248,8 @@ export default class User {
         // }
       }
     }
+
+    console.log("orders:", orders);
 
     // ? if there are no spot orders and no open/close orders than get rid of emptyPrivKeys
     let noActiveOrders = orders.length == 0;
@@ -301,6 +302,10 @@ export default class User {
       // }
     }
     // ? Remove pfr notes from noteData
+
+    console.log("pfrNotes", pfrNotes);
+    console.log("activeOrderNoteIndexes");
+    console.log(" this.noteData ", this.noteData);
     for (const note of pfrNotes) {
       let token = note.token;
       let addr = note.address.getX().toString();

@@ -155,6 +155,7 @@ async function sendSpotOrder(
         let filledAmount = user.filledAmounts[order_response.order_id]
           ? user.filledAmounts[order_response.order_id]
           : 0;
+        let baseAmount = order_side == "Buy" ? receiveAmount : spendAmount;
 
         order_side = order_side == "Buy" ? 0 : 1;
         let orderData = {
@@ -166,7 +167,7 @@ async function sendSpotOrder(
           order_id: order_response.order_id,
           order_side,
           price: price,
-          qty_left: receiveAmount - filledAmount,
+          qty_left: baseAmount - filledAmount,
           refund_note: limitOrder.refund_note,
         };
 

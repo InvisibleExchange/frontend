@@ -61,7 +61,7 @@ export default function BookTrades() {
     } else {
       getLiquidity();
     }
-  }, [token, selectedType]);
+  }, [token, selectedType, liquidity, perpLiquidity]);
 
   return (
     <div className="w-full h-[70vh]">
