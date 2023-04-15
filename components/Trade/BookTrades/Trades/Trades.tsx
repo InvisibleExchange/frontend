@@ -33,13 +33,13 @@ export default function Trades({ token, type }: Props) {
       setFills(fills_);
     };
 
-    const interval = setInterval(() => {
-      fetchFills();
-    }, 10000);
+    // const interval = setInterval(() => {
+    //   fetchFills();
+    // }, 10000);
 
     fetchFills();
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [token, type]);
 
   return (

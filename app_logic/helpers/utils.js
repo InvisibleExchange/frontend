@@ -181,34 +181,35 @@ function handleSwapResult(user, orderId, swap_response) {
   // }
 
   if (user.refundNotes[orderId]) {
-    let refund_note = user.refundNotes[orderId];
+    if (
+      swap_response.swap_note.amount ==
+      swap_response.new_amount_filled - swap_response.fee_taken
+    ) {
+      // This is a limit first fill order and the refun note has been stored, then we can
+      // add the refund note to the noteData
+      let refund_note = user.refundNotes[orderId];
 
-    if (user.noteData[refund_note.token]) {
-      user.noteData[refund_note.token].push(refund_note);
-    } else {
-      user.noteData[refund_note.token] = [refund_note];
+      if (user.noteData[refund_note.token]) {
+        user.noteData[refund_note.token].push(refund_note);
+      } else {
+        user.noteData[refund_note.token] = [refund_note];
+      }
     }
-    user.refundNotes[orderId] = null;
-  } else {
-    user.refundNotes[orderId] = true;
   }
 
   let idx = user.orders.findIndex((o) => o.order_id == orderId);
   let order = user.orders[idx];
 
   if (order) {
-    order.qty_left =
-      order.qty_left - swap_response.swap_note.amount - swap_response.fee_taken;
-    // TODO: lest then 000
-    if (order.qty_left <= 0) {
+    order.qty_left -= swap_response.swap_note.amount;
+
+    if (!swap_response.new_pfr_note) {
       user.orders.splice(idx, 1);
     } else {
       user.orders[idx] = order;
     }
-  } else {
-    user.filledAmounts[orderId] =
-      swap_response.swap_note.amount + swap_response.fee_taken;
   }
+  user.filledAmounts[orderId] = swap_response.new_amount_filled;
 }
 
 /**
@@ -219,7 +220,7 @@ function handleSwapResult(user, orderId, swap_response) {
  *
  *   {
  *       position: PerpPosition/null,
- *       new_pfr_info: [Note, u64,u64]>/null,
+ *       new_pfr_info: [Note/null, u64,u64]>,
  *       return_collateral_note: Note/null,
  *       synthetic_token: u64,
  *       qty: u64,
@@ -231,6 +232,7 @@ function handlePerpSwapResult(user, orderId, swap_response) {
 
   // ? Save position data (if not null)
   let position = swap_response.position;
+
   if (position) {
     if (
       !user.positionData[position.synthetic_token] ||
@@ -240,8 +242,11 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     } else {
       // check if positions with this address and index already exist
       let idx = user.positionData[position.synthetic_token].findIndex(
-        (p) => p.address == position.address && p.index == position.index
+        (p) =>
+          p.position_address == position.position_address &&
+          p.index == position.index
       );
+
       if (idx >= 0) {
         user.positionData[position.synthetic_token][idx] = position;
       } else {
@@ -275,7 +280,7 @@ function handlePerpSwapResult(user, orderId, swap_response) {
       // filter out the position that has synthetic_amount == qty
       let idx = user.positionData[swap_response.synthetic_token].findIndex(
         (p) =>
-          Math.abs(p.synthetic_amount == swap_response.qty) <
+          Math.abs(p.position_size - swap_response.qty) <
           DUST_AMOUNT_PER_ASSET[p.synthetic_token]
       );
 
@@ -286,17 +291,20 @@ function handlePerpSwapResult(user, orderId, swap_response) {
   }
 
   if (user.refundNotes[orderId]) {
-    let refund_note = user.refundNotes[orderId];
+    if (
+      swap_response.new_pfr_info[1] ==
+      swap_response.qty - swap_response.fee_taken
+    ) {
+      // this is a limit order and the refun note has been stored, then we can
+      // add the refund note to the noteData
+      let refund_note = user.refundNotes[orderId];
 
-    if (user.noteData[refund_note.token]) {
-      user.noteData[refund_note.token].push(refund_note);
-    } else {
-      user.noteData[refund_note.token] = [refund_note];
+      if (user.noteData[refund_note.token]) {
+        user.noteData[refund_note.token].push(refund_note);
+      } else {
+        user.noteData[refund_note.token] = [refund_note];
+      }
     }
-
-    user.refundNotes[orderId] = null;
-  } else {
-    user.refundNotes[orderId] = true;
   }
 
   let idx = user.perpetualOrders.findIndex((o) => o.order_id == orderId);
@@ -306,15 +314,14 @@ function handlePerpSwapResult(user, orderId, swap_response) {
     order.qty_left =
       order.qty_left - swap_response.qty - swap_response.fee_taken;
 
-    // TODO: lest then 000
-    if (order.qty_left <= 0) {
+    if (order.qty_left < DUST_AMOUNT_PER_ASSET[swap_response.synthetic_token]) {
       user.perpetualOrders.splice(idx, 1);
     } else {
       user.perpetualOrders[idx] = order;
     }
-  } else {
-    user.filledAmounts[orderId] = swap_response.qty + swap_response.fee_taken;
   }
+
+  user.filledAmounts[orderId] = swap_response.new_pfr_info[1];
 }
 
 /**
@@ -331,28 +338,11 @@ function handleNoteSplit(user, zero_idxs, notesIn, notesOut) {
     );
   }
 
-  if (notesIn.length > notesOut.length) {
-    for (let i = notesOut.length; i < notesIn.length; i++) {
-      let note = notesIn[i];
-      // removeNoteFromDb(note);
-      user.noteData[note.token] = user.noteData[note.token].filter(
-        (n) => n.index != note.index
-      );
-    }
-
-    for (let i = 0; i < zero_idxs.length; i++) {
-      let note = notesOut[i];
-      note.index = zero_idxs[i];
-      // storeNewNote(note);
-      user.noteData[note.token].push(note);
-    }
-  } else {
-    for (let i = 0; i < zero_idxs.length; i++) {
-      let note = notesOut[i];
-      note.index = zero_idxs[i];
-      // storeNewNote(note);
-      user.noteData[note.token].push(note);
-    }
+  for (let i = 0; i < zero_idxs.length; i++) {
+    let note = notesOut[i];
+    note.index = zero_idxs[i];
+    // storeNewNote(note);
+    user.noteData[note.token].push(note);
   }
 }
 
@@ -451,3 +441,13 @@ module.exports = {
   SPOT_MARKET_IDS_2_TOKENS,
   PERP_MARKET_IDS_2_TOKENS,
 };
+
+//
+
+//
+
+//
+
+//
+
+//

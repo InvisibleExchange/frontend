@@ -31,7 +31,7 @@ const Chart = () => {
 
   return (
     <div style={divStyle} ref={parentRef}>
-      {parentHeight && <ChartInner token={token} height={parentHeight} />}
+      {/* {parentHeight && <ChartInner token={token} height={parentHeight} />} */}
     </div>
   );
 };

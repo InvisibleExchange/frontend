@@ -33,7 +33,9 @@ const AdjustMarginModal = ({ position }: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, forceRerender } = useContext(WalletContext);
 
-  useEffect(() => {}, [position, user]);
+  useEffect(() => {
+    setSelected(types[0]);
+  }, [position, user]);
 
   const minViableMargin = getMinViableMargin(position);
 

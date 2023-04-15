@@ -81,7 +81,7 @@ const OpenOrders = () => {
               let baseAsset = isPerp ? order.synthetic_token : order.base_asset;
 
               let receivedToken = isPerp
-                ? null
+                ? order.synthetic_token
                 : order.order_side === 1 || order.order_side === false
                 ? order.quote_asset
                 : order.base_asset;
@@ -131,9 +131,9 @@ const OpenOrders = () => {
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
                         Number(order.qty_left) /
-                        10 ** DECIMALS_PER_ASSET[baseAsset]
+                        10 ** DECIMALS_PER_ASSET[receivedToken]
                       ).toFixed(3)}{" "}
-                      {IDS_TO_SYMBOLS[baseAsset]}
+                      {IDS_TO_SYMBOLS[receivedToken]}
                     </td>
 
                     {/* Action */}

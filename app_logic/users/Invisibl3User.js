@@ -210,42 +210,27 @@ export default class User {
     // ? Get the indexes of notes that are used in active orders (not partially filled)
     let activeOrderNoteIndexes = [];
     for (let order of orders) {
-      // TODO: this should be different for bid and ask orders
-      // let refund_amount = order.refund_note
-      //   ? Number(order.refund_note.amount)
-      //   : 0;
-      // let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
-      // // only update if order was not partially filled
-
-      // if (
-      //   Number(order.qty_left)/10**DECIMALS_PER_ASSET >=
-      //   sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
-      // ) {
       for (let note of order.notes_in) {
         activeOrderNoteIndexes.push(note.index.toString());
       }
-      // }
+
+      if (order.refund_note) {
+        this.refundNotes[order.order_id] = Note.fromGrpcObject(
+          order.refund_note
+        );
+      }
     }
     for (let order of perpOrders) {
-      // if (this.pfrKeys[order.order_id]) {
-      //   pfrKeys.push(this.pfrKeys[order.order_id]);
-      // }
-
-      //
       if (order.position_effect_type == 0) {
-        // let refund_amount = order.refund_note
-        //   ? Number(order.refund_note.amount)
-        //   : 0;
-        // let sum = order.notes_in.reduce((a, b) => a + Number(b.amount), 0);
-        // // only update if order was not partially filled
-        // if (
-        //   Number(order.qty_left) >=
-        //   sum - refund_amount - DUST_AMOUNT_PER_ASSET[order.notes_in[0].token]
-        // ) {
         for (let note of order.notes_in) {
           activeOrderNoteIndexes.push(note.index.toString());
         }
-        // }
+
+        if (order.refund_note) {
+          this.refundNotes[order.order_id] = Note.fromGrpcObject(
+            order.refund_note
+          );
+        }
       }
     }
 
