@@ -25,8 +25,10 @@ const {
   SPOT_MARKET_IDS_2_TOKENS,
   PERP_MARKET_IDS_2_TOKENS,
   SYMBOLS_TO_IDS,
+  IDS_TO_SYMBOLS,
   SPOT_MARKET_IDS,
   PERP_MARKET_IDS,
+  DECIMALS_PER_ASSET,
   fetchLiquidity,
 } = require("../app_logic/helpers/utils");
 const User = require("../app_logic/users/Invisibl3User").default;
@@ -81,6 +83,9 @@ export type WalletContextType = {
   };
   getMarkPrice: (token: number, isPerp: boolean) => any;
 
+  toastMessage: string | null;
+  setToastMessage: any;
+
   setBalances: Dispatch<SetStateAction<TokenBalanceObject>>;
   setAllowances: Dispatch<SetStateAction<TokenAllowanceObject>>;
 };
@@ -117,6 +122,9 @@ export const WalletContext = createContext<WalletContextType>({
   liquidity: {},
   perpLiquidity: {},
   getMarkPrice: (token: number, isPerp: boolean) => 0,
+
+  toastMessage: null,
+  setToastMessage: null,
 
   setBalances: () => {},
   setAllowances: () => {},
@@ -422,6 +430,8 @@ function WalletProvider({ children }: Props) {
     // forceRerender();
   };
 
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const listenToWebSocket = (user: any) => {
     let W3CWebSocket = require("websocket").w3cwebsocket;
     let client = new W3CWebSocket(`ws://${SERVER_URL}:50053`);
@@ -496,10 +506,30 @@ function WalletProvider({ children }: Props) {
 
         case "SWAP_RESULT":
           handleSwapResult(user, msg.order_id, msg.swap_response);
+
+          setToastMessage(
+            "Swap executed successfully: " +
+              (
+                msg.swap_response.swap_note.amount /
+                10 ** DECIMALS_PER_ASSET[msg.swap_response.swap_note.token]
+              ).toFixed(3) +
+              " " +
+              IDS_TO_SYMBOLS[msg.swap_response.swap_note.token]
+          );
+
           break;
 
         case "PERPETUAL_SWAP":
           handlePerpSwapResult(user, msg.order_id, msg.swap_response);
+          setToastMessage(
+            "Perpetual swap executed successfully: " +
+              (
+                msg.swap_response.qty /
+                10 ** DECIMALS_PER_ASSET[msg.swap_response.synthetic_token]
+              ).toFixed(3) +
+              " " +
+              IDS_TO_SYMBOLS[msg.swap_response.synthetic_token]
+          );
           break;
 
         default:
@@ -546,6 +576,9 @@ function WalletProvider({ children }: Props) {
         liquidity: liquidity,
         perpLiquidity: perpLiquidity,
         getMarkPrice: getMarkPrice,
+
+        toastMessage,
+        setToastMessage,
 
         setBalances,
         setAllowances,

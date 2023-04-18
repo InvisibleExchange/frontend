@@ -12,26 +12,23 @@ const Chart = () => {
       ? selectedMarket.perpetual.split("-")[0]
       : selectedMarket.pairs.split("/")[0];
 
-  useEffect(() => {}, [token]);
-
   const divStyle: React.CSSProperties = {
     height: "100%",
   };
 
   const [parentHeight, setParentHeight] = useState<number | undefined>();
+  const parentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (parentRef.current) {
       const height = parentRef.current.offsetHeight; // get height in pixels
       setParentHeight(height);
     }
-  }, []);
-
-  const parentRef = useRef<HTMLDivElement>(null);
+  }, [selectedType, selectedMarket]);
 
   return (
     <div style={divStyle} ref={parentRef}>
-      {/* {parentHeight && <ChartInner token={token} height={parentHeight} />} */}
+      {parentHeight && <ChartInner token={token} height={parentHeight} />}
     </div>
   );
 };

@@ -8,11 +8,36 @@ import { useContext, useEffect, useReducer, useState } from "react";
 import { WalletContext } from "../../context/WalletContext";
 
 import dynamic from "next/dynamic";
+import Toast from "../Layout/Toast/Toast";
 const DynamicHomeWithNoSSR = dynamic(() => import("./Chart"), { ssr: false });
 const Chart = DynamicHomeWithNoSSR;
 
 export default function Trade() {
-  const { initialize } = useContext(WalletContext);
+  const { initialize, toastMessage, setToastMessage } =
+    useContext(WalletContext);
+
+  let [toasts, setToasts] = useState<any>([]);
+  const showToast = (message) => {
+    console.log("showToast", message);
+    if (!message) return;
+
+    const id = new Date().getTime();
+
+    setToasts([...toasts, { id, message }]);
+    setToastMessage(null);
+  };
+  const onToastDismiss = (id) => {
+    setToasts(toasts.filter((toast) => toast.id !== id));
+  };
+
+  useEffect(() => {
+    console.log(toastMessage);
+
+    // Make sure you have a valid message to display
+    if (toastMessage) {
+      showToast(toastMessage);
+    }
+  }, [toastMessage]);
 
   initialize();
 
@@ -33,6 +58,17 @@ export default function Trade() {
         <div className="col-span-4 2xl:col-span-5">
           <Orders />
         </div>
+        {/* TOASTS */}
+        <div className="toast-container">
+          {toasts.map((toast) => (
+            <Toast
+              key={toast.id}
+              message={toast.message}
+              onDismiss={() => onToastDismiss(toast.id)}
+            />
+          ))}
+        </div>
+        {/*  */}
       </div>
     </>
   );

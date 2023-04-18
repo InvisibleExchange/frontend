@@ -213,7 +213,7 @@ thead {
 
 
 
-
+/* ======================= */
 
 @keyframes spinner {
   0% {
@@ -231,4 +231,63 @@ thead {
   border-top: 10px solid #000000; /* Black */
   border-radius: 50%;
   animation: spinner 1s linear infinite;
+}
+
+
+/* ======================= */
+
+
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+/* ================================ */
+
+.toast-container {
+  position: fixed;
+  bottom: 10%;
+  right: 3%;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  background-color: var(--turquoise_lighter);
+  color: black;
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  font-size: large;
+  font-style: italic;
+  opacity: 0;
+  right: -100%;
+  position: relative;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+}
+
+.toast.show {
+  opacity: 1;
+  right: 0;
+}
+
+.dismiss-btn {
+  background-color: transparent;
+  border: none;
+  color: black;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 12px;
+  outline: none;
+}
+
+.dismiss-btn:hover {
+  color: #dddddd;
 }

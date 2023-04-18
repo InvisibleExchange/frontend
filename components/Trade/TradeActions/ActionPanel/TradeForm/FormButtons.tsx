@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
 import { checkValidSizeIncrease, checkValidSizeFlip } from "./FormHelpers";
+import { WalletContext } from "../../../../../context/WalletContext";
 
 const {
   get_max_leverage,
@@ -34,7 +35,8 @@ const _renderActionButtons = (
   action,
   refundNow,
   isLoading,
-  setIsLoading
+  setIsLoading,
+  setToastMessage
 ) => {
   return (
     <>
@@ -57,7 +59,8 @@ const _renderActionButtons = (
             maxSlippage,
             forceRerender,
             refundNow,
-            setIsLoading
+            setIsLoading,
+            setToastMessage
           )}
           {_renderAskButton(
             user,
@@ -72,7 +75,8 @@ const _renderActionButtons = (
             maxSlippage,
             forceRerender,
             refundNow,
-            setIsLoading
+            setIsLoading,
+            setToastMessage
           )}
         </div>
       ) : action === "buy" ? (
@@ -90,7 +94,8 @@ const _renderActionButtons = (
             maxSlippage,
             forceRerender,
             refundNow,
-            setIsLoading
+            setIsLoading,
+            setToastMessage
           )}
         </div>
       ) : (
@@ -108,7 +113,8 @@ const _renderActionButtons = (
             maxSlippage,
             forceRerender,
             refundNow,
-            setIsLoading
+            setIsLoading,
+            setToastMessage
           )}
         </div>
       )}
@@ -129,7 +135,8 @@ const _renderBuyButton = (
   maxSlippage,
   forceRerender,
   refundNow,
-  setIsLoading
+  setIsLoading,
+  setToastMessage
 ) => {
   refundNow = type == "market" ? false : refundNow;
 
@@ -224,7 +231,10 @@ const _renderBuyButton = (
               slippage,
               type == "market"
             );
-            alert("Success!");
+
+            if (type != "market") {
+              setToastMessage("Buy Order was placed successfuly!");
+            }
           } catch (error) {
             alert("Error: " + error);
           }
@@ -251,7 +261,10 @@ const _renderBuyButton = (
               slippage,
               type == "market"
             );
-            alert("Success!");
+
+            if (type != "market") {
+              setToastMessage("Buy Order was placed sucessfuly!");
+            }
           } catch (error) {
             alert("Error: " + error);
           }
@@ -281,7 +294,8 @@ const _renderAskButton = (
   maxSlippage,
   forceRerender,
   refundNow,
-  setIsLoading
+  setIsLoading,
+  setToastMessage
 ) => {
   refundNow = type == "market" ? false : refundNow;
 
@@ -377,7 +391,9 @@ const _renderAskButton = (
               slippage,
               type == "market"
             );
-            alert("Success!");
+            if (type != "market") {
+              setToastMessage("Sell Order was placed successfuly!");
+            }
           } catch (error) {
             alert("Error: " + error);
           }
@@ -404,7 +420,9 @@ const _renderAskButton = (
               slippage,
               type == "market"
             );
-            alert("Success!");
+            if (type != "market") {
+              setToastMessage("Sell Order was placed successfuly!");
+            }
           } catch (error) {
             alert("Error: " + error);
           }

@@ -257,7 +257,7 @@ async function sendPerpOrder(
   let scaledPrice = price * 10 ** priceDecimals;
   scaledPrice = isMarket
     ? order_side == "Long"
-      ? scaledPrice * (100 + slippage)
+      ? (scaledPrice * (100 + slippage)) / 100
       : (scaledPrice * (100 - slippage)) / 100
     : scaledPrice;
   scaledPrice = Number.parseInt(scaledPrice);
@@ -293,6 +293,8 @@ async function sendPerpOrder(
     feeLimit
   );
 
+  console.log("before");
+
   let { perpOrder, pfrKey } = user.makePerpetualOrder(
     expirationTimestamp,
     position_effect_type,
@@ -306,17 +308,22 @@ async function sendPerpOrder(
     initial_margin
   );
 
+  console.log("perpOrder");
+
   user.awaittingOrder = true;
 
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
 
+  console.log("orderJson: ", orderJson);
 
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
     .then((res) => {
       let order_response = res.data.response;
+
+      console.log(order_response);
 
       if (order_response.successful) {
         storeOrderId(

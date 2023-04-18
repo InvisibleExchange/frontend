@@ -2,8 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note } = require("../users/Notes");
 
-// const SERVER_URL = "localhost";
-const SERVER_URL = "54.212.28.196";
+const SERVER_URL = "localhost";
+// const SERVER_URL = "54.212.28.196";
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -229,6 +229,8 @@ function handleSwapResult(user, orderId, swap_response) {
  */
 function handlePerpSwapResult(user, orderId, swap_response) {
   //
+
+  console.log(swap_response);
 
   // ? Save position data (if not null)
   let position = swap_response.position;

@@ -7,6 +7,7 @@ import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import TooltipSpotSlider from "../TooltipSpotSlider";
 import SettingsPopover from "./SettingsPopover";
 import UpdatedPositionInfo from "./UpdatedPositionInfo";
+import classNames from "classnames";
 
 import { formatInputNum } from "./FormHelpers";
 
@@ -42,6 +43,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
     forceRerender,
     getSelectedPosition,
     getMarkPrice,
+    setToastMessage,
   } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -92,7 +94,8 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       action,
       refundNow,
       isLoading,
-      setIsLoading
+      setIsLoading,
+      setToastMessage
     );
   }
 
@@ -234,13 +237,17 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
   const [expirationTime, setExpirationTime] = useState<number | null>(null);
   const [maxSlippage, setMaxSlippage] = useState<number | null>(null);
 
+  const lastPriceStyle = type == "market" ? "opacity-60" : "hover:opacity-75";
+
   return (
     <div className="mt-2">
       {/* Price ====================================== */}
       <div className="relative">
         <input
           name="price"
-          className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color disabled:opacity-40"
+          className={classNames(
+            "w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color disabled:opacity-40 no-arrows"
+          )}
           readOnly={type === "market"}
           type="number"
           step={0.01}
@@ -248,7 +255,18 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
           onChange={handlePriceChange}
           placeholder="Price"
         />
-        <button className="absolute top-0 py-2 text-sm right-3 dark:text-yellow text-blue hover:opacity-75">
+        <button
+          className={
+            "absolute top-0 py-2 text-sm right-3 dark:text-yellow text-blue " +
+            lastPriceStyle
+          }
+          disabled={type === "market"}
+          onClick={() => {
+            setPrice(
+              getMarkPrice(SYMBOLS_TO_IDS[token], perpType == "perpetual")
+            );
+          }}
+        >
           Last Price
         </button>
       </div>
@@ -256,7 +274,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
       <div className="relative mt-6">
         <input
           name="amount"
-          className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
+          className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
           type="number"
           step={0.001}
           value={baseAmount?.toString()}
@@ -281,7 +299,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
         <div className="relative mt-5">
           <input
             name="quote"
-            className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
+            className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
             placeholder={perpType != "perpetual" ? "Total" : "Initial Margin"}
             type="number"
             step={0.001}

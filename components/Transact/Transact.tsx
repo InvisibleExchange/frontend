@@ -5,9 +5,11 @@ import { Tab } from "@headlessui/react";
 
 import DepositPanel from "./DepositPanel";
 import WithdrawPanel from "./WithdrawPanel";
+import Toast from "../Layout/Toast/Toast";
 
 const Transact = () => {
   let [categories] = useState(["Deposit", "Withdraw"]);
+
   return (
     <div className="flex justify-center w-full">
       <div className="w-[500px] mt-10  rounded-lg">

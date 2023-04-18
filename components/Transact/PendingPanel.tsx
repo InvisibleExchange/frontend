@@ -7,7 +7,7 @@ const {
 
 const { SYMBOLS_TO_IDS } = require("../../app_logic/helpers/utils");
 
-const PendingPanel = ({ type, user }: any) => {
+const PendingPanel = ({ type, user, setToastMessage }: any) => {
   const deposits = [
     { depositId: 1, amount: 3, token: "ETH", pubKey: 1234 },
     { depositId: 2, amount: 3000, token: "USDC", pubKey: 1234 },
@@ -38,7 +38,7 @@ const PendingPanel = ({ type, user }: any) => {
                       deposit.pubKey
                     );
 
-                    alert("Deposit sucessful");
+                    alert("Deposit successful");
                   } catch (error) {
                     alert(error);
                   }

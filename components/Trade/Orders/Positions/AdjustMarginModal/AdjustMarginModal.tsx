@@ -31,7 +31,7 @@ const types = [{ name: "Add" }, { name: "Remove" }];
 
 const AdjustMarginModal = ({ position }: any) => {
   const { theme } = useContext(ThemeContext);
-  const { user, forceRerender } = useContext(WalletContext);
+  const { user, forceRerender, setToastMessage } = useContext(WalletContext);
 
   useEffect(() => {
     setSelected(types[0]);
@@ -81,6 +81,8 @@ const AdjustMarginModal = ({ position }: any) => {
       marginChange,
       selected.name
     );
+
+    setToastMessage("Updated margin sucessfuly");
 
     forceRerender();
 
