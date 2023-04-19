@@ -16,8 +16,8 @@ const tokens = [
   { id: 2, name: "BTC" },
 ];
 
-const DepositPanel = () => {
-  let { user, userAddress, login, connect, forceRerender,  } =
+const DepositPanel = ({ showToast }: any) => {
+  let { user, userAddress, login, connect, forceRerender } =
     useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -55,10 +55,7 @@ const DepositPanel = () => {
       )}
 
       <div className="w-full h-[2px] my-5 bg-border_color"></div>
-      <PendingPanel
-        user={user}
-        type="Deposit"
-      />
+      <PendingPanel user={user} type="Deposit" showToast={showToast} />
     </div>
   );
 };

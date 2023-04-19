@@ -28,6 +28,7 @@ export default function Trade() {
   };
   const onToastDismiss = (id) => {
     setToasts(toasts.filter((toast) => toast.id !== id));
+    setToastMessage(null);
   };
 
   useEffect(() => {

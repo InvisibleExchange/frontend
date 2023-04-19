@@ -233,7 +233,15 @@ const _renderBuyButton = (
             );
 
             if (type != "market") {
-              setToastMessage("Buy Order was placed successfuly!");
+              setToastMessage(
+                "Long Order was placed successfuly: " +
+                  baseAmount.toFixed(2) +
+                  " " +
+                  token +
+                  " at price: " +
+                  price.toFixed(2) +
+                  " USD"
+              );
             }
           } catch (error) {
             alert("Error: " + error);
@@ -263,7 +271,14 @@ const _renderBuyButton = (
             );
 
             if (type != "market") {
-              setToastMessage("Buy Order was placed sucessfuly!");
+              setToastMessage(
+                "Buy Order was placed successfuly: " +
+                  quoteAmount.toFixed(2) +
+                  " USDC for " +
+                  baseAmount.toFixed(2) +
+                  " " +
+                  token
+              );
             }
           } catch (error) {
             alert("Error: " + error);
@@ -392,7 +407,15 @@ const _renderAskButton = (
               type == "market"
             );
             if (type != "market") {
-              setToastMessage("Sell Order was placed successfuly!");
+              setToastMessage(
+                "Short Order was placed successfuly: " +
+                  baseAmount.toFixed(2) +
+                  " " +
+                  token +
+                  " at " +
+                  price.toFixed(2) +
+                  " USD"
+              );
             }
           } catch (error) {
             alert("Error: " + error);
@@ -421,7 +444,15 @@ const _renderAskButton = (
               type == "market"
             );
             if (type != "market") {
-              setToastMessage("Sell Order was placed successfuly!");
+              setToastMessage(
+                "Sell Order was placed successfuly: " +
+                  baseAmount.toFixed(2) +
+                  " " +
+                  token +
+                  " for " +
+                  quoteAmount.toFixed(2) +
+                  " USDC"
+              );
             }
           } catch (error) {
             alert("Error: " + error);

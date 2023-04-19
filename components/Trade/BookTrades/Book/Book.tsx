@@ -67,13 +67,13 @@ export default function Book({
                 return (
                   <div className="flex" key={index}>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
-                      {order.price.toFixed(2)}
+                      <strong>{order.price.toFixed(2)}</strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
-                      {amount.toFixed(4)}
+                      <strong>{amount.toFixed(4)}</strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
-                      {(amount * order.price).toFixed(2)}
+                      <strong>{(amount * order.price).toFixed(2)}</strong>
                     </div>
                   </div>
                 );
@@ -101,13 +101,13 @@ export default function Book({
                 return (
                   <div className="flex" key={index}>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                      {order.price.toFixed(2)}
+                      <strong>{order.price.toFixed(2)}</strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                      {amount.toFixed(4)}
+                      <strong>{amount.toFixed(4)}</strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                      {(amount * order.price).toFixed(2)}
+                      <strong>{(amount * order.price).toFixed(2)}</strong>
                     </div>
                   </div>
                 );

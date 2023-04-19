@@ -82,7 +82,11 @@ const AdjustMarginModal = ({ position }: any) => {
       selected.name
     );
 
-    setToastMessage("Updated margin sucessfuly");
+    let message =
+      selected.name == "Add"
+        ? " +" + marginChange?.toFixed(2) + " USDC"
+        : " -" + marginChange?.toFixed(2) + " USDC";
+    setToastMessage("Updated margin sucessfuly:" + message);
 
     forceRerender();
 

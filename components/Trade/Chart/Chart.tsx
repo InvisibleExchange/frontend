@@ -38,6 +38,8 @@ export default Chart;
 const ChartInner = ({ token, height }: any) => {
   const symbols = { BTC: "BINANCE:BTCUSD", ETH: "BINANCE:ETHUSD" };
 
+  useEffect(() => {}, [token, height]);
+
   return (
     <TradingViewWidget
       symbol={symbols[token]}

@@ -293,8 +293,6 @@ async function sendPerpOrder(
     feeLimit
   );
 
-  console.log("before");
-
   let { perpOrder, pfrKey } = user.makePerpetualOrder(
     expirationTimestamp,
     position_effect_type,
@@ -308,22 +306,17 @@ async function sendPerpOrder(
     initial_margin
   );
 
-  console.log("perpOrder");
-
   user.awaittingOrder = true;
 
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
 
-  console.log("orderJson: ", orderJson);
-
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
     .then((res) => {
       let order_response = res.data.response;
 
-      console.log(order_response);
 
       if (order_response.successful) {
         storeOrderId(
@@ -639,6 +632,7 @@ async function sendSplitOrder(user, token, newAmount) {
 
   let notes_in = notesIn.map((n) => n.toGrpcObject());
   let notes_out = notesOut.map((n) => n.toGrpcObject());
+
 
   await axios
     .post(`${EXPRESS_APP_URL}/split_notes`, {

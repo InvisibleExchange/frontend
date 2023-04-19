@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import classNames from "classnames";
 import { useState } from "react";
 import { Tab } from "@headlessui/react";
@@ -6,8 +6,22 @@ import { Tab } from "@headlessui/react";
 import DepositPanel from "./DepositPanel";
 import WithdrawPanel from "./WithdrawPanel";
 import Toast from "../Layout/Toast/Toast";
+import { WalletContext } from "../../context/WalletContext";
 
 const Transact = () => {
+  let [toasts, setToasts] = useState<any>([]);
+  const showToast = (message) => {
+    console.log("showToast", message);
+    if (!message) return;
+
+    const id = new Date().getTime();
+
+    setToasts([...toasts, { id, message }]);
+  };
+  const onToastDismiss = (id) => {
+    setToasts(toasts.filter((toast) => toast.id !== id));
+  };
+
   let [categories] = useState(["Deposit", "Withdraw"]);
 
   return (
@@ -42,7 +56,7 @@ const Transact = () => {
           </Tab.List>
           <Tab.Panels className="mt-2">
             <Tab.Panel>
-              <DepositPanel />
+              <DepositPanel showToast={showToast} />
             </Tab.Panel>
             <Tab.Panel>
               <WithdrawPanel />
@@ -50,6 +64,18 @@ const Transact = () => {
           </Tab.Panels>
         </Tab.Group>
       </div>
+
+      {/* TOASTS */}
+      <div className="toast-container">
+        {toasts.map((toast) => (
+          <Toast
+            key={toast.id}
+            message={toast.message}
+            onDismiss={() => onToastDismiss(toast.id)}
+          />
+        ))}
+      </div>
+      {/*  */}
     </div>
   );
 };
