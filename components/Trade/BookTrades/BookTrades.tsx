@@ -18,6 +18,8 @@ export default function BookTrades() {
   const {
     liquidity,
     perpLiquidity,
+    fills,
+    perpFills,
     getMarkPrice,
     selectedType,
     selectedMarket,
@@ -63,6 +65,8 @@ export default function BookTrades() {
     }
   }, [token, selectedType, liquidity, perpLiquidity]);
 
+  useEffect(() => {}, [fills, perpFills]);
+
   return (
     <div className="w-full h-[70vh]">
       <Book
@@ -71,7 +75,15 @@ export default function BookTrades() {
         askQueue={askQueue && askQueue.length > 0 ? askQueue : initAq}
         getMarkPrice={getMarkPrice}
       />
-      <Trades token={token} type={selectedType} />
+      <Trades
+        token={token}
+        type={selectedType}
+        fills={
+          selectedType == "spot"
+            ? fills[SYMBOLS_TO_IDS[token]]
+            : perpFills[SYMBOLS_TO_IDS[token]]
+        }
+      />
     </div>
   );
 }

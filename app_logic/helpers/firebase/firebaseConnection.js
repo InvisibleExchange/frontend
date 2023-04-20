@@ -484,9 +484,11 @@ async function fetchLatestFills(n, isPerp, token) {
       limit(n)
     );
   } else {
+    console.log(token);
+    console.log("n", n);
     q = query(
       collection(db, `fills`),
-      where("base_token", "==", token),
+      where("base_token", "==", Number(token)),
       orderBy("timestamp", "desc"),
       limit(n)
     );

@@ -22,9 +22,8 @@ const {
   SERVER_URL,
   handleSwapResult,
   handlePerpSwapResult,
-  SPOT_MARKET_IDS_2_TOKENS,
-  PERP_MARKET_IDS_2_TOKENS,
-  SYMBOLS_TO_IDS,
+  handleFillResult,
+  handleLiquidityUpdate,
   IDS_TO_SYMBOLS,
   SPOT_MARKET_IDS,
   PERP_MARKET_IDS,
@@ -33,6 +32,9 @@ const {
 } = require("../app_logic/helpers/utils");
 const User = require("../app_logic/users/Invisibl3User").default;
 const { trimHash } = require("../app_logic/users/Notes");
+const {
+  fetchLatestFills,
+} = require("../app_logic/helpers/firebase/firebaseConnection");
 
 import {
   NETWORKS,
@@ -81,6 +83,12 @@ export type WalletContextType = {
   perpLiquidity: {
     [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
   };
+  fills: {
+    [key: number]: any[];
+  };
+  perpFills: {
+    [key: number]: any[];
+  };
   getMarkPrice: (token: number, isPerp: boolean) => any;
 
   toastMessage: string | null;
@@ -121,6 +129,8 @@ export const WalletContext = createContext<WalletContextType>({
   allowances: {},
   liquidity: {},
   perpLiquidity: {},
+  fills: {},
+  perpFills: {},
   getMarkPrice: (token: number, isPerp: boolean) => 0,
 
   toastMessage: null,
@@ -226,11 +236,19 @@ function WalletProvider({ children }: Props) {
 
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
+
   const [liquidity, setLiquidity] = useState<{
     [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
   }>({});
   const [perpLiquidity, setPerpLiquidity] = useState<{
     [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
+  }>({});
+
+  const [fills, setFills] = useState<{
+    [token: number]: any[];
+  }>({});
+  const [perpFills, setPerpFills] = useState<{
+    [token: number]: any[];
   }>({});
 
   const walletsSub = onboard.state.select("wallets");
@@ -397,12 +415,19 @@ function WalletProvider({ children }: Props) {
     return markPrice;
   };
 
+  const [initialized, setInitialized] = useState<boolean>(false);
   const initialize = async () => {
+    if (initialized) return;
+    setInitialized(true);
+
     if (Object.keys(liquidity).length && Object.keys(perpLiquidity).length)
       return;
 
     let liquidity_: any = {};
     let perpLiquidity_: any = {};
+
+    let fills_: any = {};
+    let perpFills_: any = {};
 
     for (const [token, _] of Object.entries(SPOT_MARKET_IDS)) {
       let { bidQueue, askQueue } = await fetchLiquidity(token, false);
@@ -411,7 +436,10 @@ function WalletProvider({ children }: Props) {
         revAq.push(askQueue[i]);
       }
 
+      let fills = await fetchLatestFills(15, false, token);
+
       liquidity_[token] = { bidQueue, askQueue: revAq };
+      fills_[token] = fills;
     }
 
     for (const [token, _] of Object.entries(PERP_MARKET_IDS)) {
@@ -421,13 +449,17 @@ function WalletProvider({ children }: Props) {
         revAq.push(askQueue[i]);
       }
 
+      let fills = await fetchLatestFills(15, true, token);
+
       perpLiquidity_[token] = { bidQueue, askQueue: revAq };
+      perpFills_[token] = fills;
     }
 
     setLiquidity(liquidity_);
     setPerpLiquidity(perpLiquidity_);
 
-    // forceRerender();
+    setFills(fills_);
+    setPerpFills(perpFills_);
   };
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -462,46 +494,32 @@ function WalletProvider({ children }: Props) {
       // "swap_response": responseObject,
       // -> handleSwapResult(user, responseObject)
 
+      // 4.)
+      // "message_id": "SWAP_FILLED",
+      // "type": "perpetual"/"spot"
+      // "asset":  tokenId
+      // "amount":  amount
+      // "price":  price
+      // "is_buy":  isBuy
+      // "timestamp":  timestamp
+
       switch (msg.message_id) {
         case "LIQUIDITY_UPDATE":
-          let askQueue = msg.ask_liquidity.map((item: any) => {
-            return {
-              price: item[0],
-              amount: item[1],
-              timestamp: item[2],
-            };
-          });
-          let revAq: any[] = [];
-          for (let i = askQueue.length - 1; i >= 0; i--) {
-            revAq.push(askQueue[i]);
-          }
+          handleLiquidityUpdate(
+            msg,
+            liquidity,
+            setLiquidity,
+            perpLiquidity,
+            setPerpLiquidity
+          );
+          break;
 
-          let bidQueue = msg.bid_liquidity.map((item: any) => {
-            return {
-              price: item[0],
-              amount: item[1],
-              timestamp: item[2],
-            };
-          });
-
-          let pairLiquidity = { bidQueue, askQueue: revAq };
-
-          if (msg.type === "perpetual") {
-            let token = PERP_MARKET_IDS_2_TOKENS[msg.market];
-
-            let liq = perpLiquidity;
-            liq[token] = pairLiquidity;
-
-            setPerpLiquidity(liq);
+        case "SWAP_FILLED":
+          if (msg.type == "perpetual") {
+            handleFillResult(msg, perpFills, setPerpFills);
           } else {
-            let token = SPOT_MARKET_IDS_2_TOKENS[msg.market];
-
-            let liq = liquidity;
-            liq[token] = pairLiquidity;
-
-            setLiquidity(liq);
+            handleFillResult(msg, fills, setFills);
           }
-
           break;
 
         case "SWAP_RESULT":
@@ -575,6 +593,9 @@ function WalletProvider({ children }: Props) {
 
         liquidity: liquidity,
         perpLiquidity: perpLiquidity,
+        fills: fills,
+        perpFills: perpFills,
+
         getMarkPrice: getMarkPrice,
 
         toastMessage,

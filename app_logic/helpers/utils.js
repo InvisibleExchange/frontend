@@ -2,8 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note } = require("../users/Notes");
 
-const SERVER_URL = "localhost";
-// const SERVER_URL = "54.212.28.196";
+// const SERVER_URL = "localhost";
+const SERVER_URL = "54.212.28.196";
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -151,6 +151,83 @@ async function fetchLiquidity(token, isPerp) {
 // "order_id": u64,
 // "swap_response": responseObject,
 // -> handleSwapResult(user, responseObject)
+
+function handleLiquidityUpdate(
+  result,
+  liquidity,
+  setLiquidity,
+  perpLiquidity,
+  setPerpLiquidity
+) {
+  let askQueue = result.ask_liquidity.map((item) => {
+    return {
+      price: item[0],
+      amount: item[1],
+      timestamp: item[2],
+    };
+  });
+  let revAq = [];
+  for (let i = askQueue.length - 1; i >= 0; i--) {
+    revAq.push(askQueue[i]);
+  }
+
+  let bidQueue = result.bid_liquidity.map((item) => {
+    return {
+      price: item[0],
+      amount: item[1],
+      timestamp: item[2],
+    };
+  });
+
+  let pairLiquidity = { bidQueue, askQueue: revAq };
+
+  if (result.type === "perpetual") {
+    let token = PERP_MARKET_IDS_2_TOKENS[result.market];
+
+    let liq = perpLiquidity;
+    liq[token] = pairLiquidity;
+
+    setPerpLiquidity(liq);
+  } else {
+    let token = SPOT_MARKET_IDS_2_TOKENS[result.market];
+
+    let liq = liquidity;
+    liq[token] = pairLiquidity;
+
+    setLiquidity(liq);
+  }
+}
+
+/**
+ * Handles the result received from the backend after a swap executed.
+ * @param  result  The result structure is:
+ *  result format:
+ *   {
+ *          type: "perpetual"/"spot"
+ *          asset: u64
+ *          amount: u64
+ *          price: u64
+ *          is_buy: bool
+ *          timestamp: u64
+ *   }
+ */
+function handleFillResult(result, fills, setFills) {
+  let _fills = [...fills];
+  _fills.unshift({
+    amount: result.amount,
+    price: result.price,
+    base_token: result.asset,
+    side: result.is_buy ? "Buy" : "Sell",
+    time: result.timestamp,
+    isPerp: result.type == "perpetual",
+  });
+
+  if (_fills.length > 15) {
+    _fills.pop();
+  }
+
+  setFills(_fills);
+}
 
 /**
  * Handles the result received from the backend after a swap executed.
@@ -433,6 +510,8 @@ module.exports = {
   handleSwapResult,
   handlePerpSwapResult,
   handleNoteSplit,
+  handleFillResult,
+  handleLiquidityUpdate,
   getActiveOrders,
   fetchLiquidity,
   loginUser,

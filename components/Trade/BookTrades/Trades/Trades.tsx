@@ -4,9 +4,7 @@ import { prettyBalance, prettyBalanceUSD } from "../../../../utils/utils";
 import { TradeType } from "../BookTrades";
 import classNames from "classnames";
 
-const {
-  fetchLatestFills,
-} = require("../../../../app_logic/helpers/firebase/firebaseConnection");
+
 
 const {
   SYMBOLS_TO_IDS,
@@ -17,31 +15,10 @@ const {
 interface Props {
   token: string;
   type: "perpetual" | "spot";
+  fills: any[];
 }
 
-export default function Trades({ token, type }: Props) {
-  let [fills, setFills] = useState<any>(null);
-
-  useEffect(() => {
-    const fetchFills = async () => {
-      let fills_ = await fetchLatestFills(
-        25,
-        type == "perpetual",
-        SYMBOLS_TO_IDS[token]
-      );
-
-      setFills(fills_);
-    };
-
-    // const interval = setInterval(() => {
-    //   fetchFills();
-    // }, 10000);
-
-    fetchFills();
-
-    // return () => clearInterval(interval);
-  }, [token, type]);
-
+export default function Trades({ token, type, fills }: Props) {
   return (
     <div className="flex flex-col flex-1 mt-2 border rounded-sm h-[calc(36%-1.25rem)] border-border_color">
       <div className="px-4 py-2 text-sm tracking-wider font-overpass bg-fg_above_color">
