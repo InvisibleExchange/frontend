@@ -1,9 +1,9 @@
 const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
-const { Note } = require("../users/Notes");
+const { Note, trimHash } = require("../users/Notes");
 
-// const SERVER_URL = "localhost";
-const SERVER_URL = "54.212.28.196";
+const SERVER_URL = "localhost";
+// const SERVER_URL = "54.212.28.196";
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -212,16 +212,13 @@ function handleLiquidityUpdate(
  *   }
  */
 function handleFillResult(user, result, fills, setFills) {
-  console.log("fills", fills);
-  console.log("asset", result.asset);
-
   let _fills = fills[result.asset] ? [...fills[result.asset]] : [];
   _fills.unshift({
     amount: result.amount,
     price: result.price,
     base_token: result.asset,
     is_buy: result.is_buy,
-    time: result.timestamp,
+    timestamp: result.timestamp,
     isPerp: result.type == "perpetual",
   });
 
@@ -233,17 +230,19 @@ function handleFillResult(user, result, fills, setFills) {
 
   setFills(fills);
 
-  if (result.user_id_a == user.userId || result.user_id_b == user.userId) {
+  let trimedId = trimHash(user.userId, 64).toString();
+
+  if (result.user_id_a == trimedId || result.user_id_b == trimedId) {
     let fill = {
       amount: result.amount,
       price: result.price,
       base_token: result.asset,
-      side: result.user_id_a == user.userId ? "Buy" : "Sell",
+      side: result.user_id_a == trimedId ? "Buy" : "Sell",
       time: result.timestamp,
       isPerp: result.type == "perpetual",
     };
 
-    user.fills.push(fill);
+    user.fills.unshift(fill);
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import classNames from "classnames";
 import { WalletContext } from "../../../../context/WalletContext";
 
@@ -10,7 +10,6 @@ const {
 
 const FillHistory = () => {
   const { user } = useContext(WalletContext);
-  // [{base_token, amount, price, side, time, isPerp}]
 
   return (
     <div className="block footer-table-wrp">

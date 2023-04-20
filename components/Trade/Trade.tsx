@@ -31,7 +31,6 @@ export default function Trade() {
   };
 
   useEffect(() => {
-    console.log(toastMessage);
 
     // Make sure you have a valid message to display
     if (toastMessage) {

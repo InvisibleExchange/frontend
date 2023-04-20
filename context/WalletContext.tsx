@@ -469,7 +469,8 @@ function WalletProvider({ children }: Props) {
     let client = new W3CWebSocket(`ws://${SERVER_URL}:50053`);
 
     client.onopen = function () {
-      client.send(trimHash(user.userId, 64));
+      const ID = trimHash(user.userId, 64);
+      client.send(ID);
     };
 
     client.onmessage = function (e: any) {

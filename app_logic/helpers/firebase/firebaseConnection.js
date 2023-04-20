@@ -415,21 +415,31 @@ async function fetchOnchainDeposits(userId, privateSeed) {
 async function fetchUserFills(user_id_) {
   let user_id = trimHash(user_id_, 64).toString();
 
-  const q1 = query(collection(db, `fills`), where("user_id_a", "==", user_id));
+  const q1 = query(
+    collection(db, `fills`),
+    where("user_id_a", "==", user_id),
+    limit(20)
+  );
   const querySnapshot1 = await getDocs(q1);
 
-  const q2 = query(collection(db, `fills`), where("user_id_b", "==", user_id));
+  const q2 = query(
+    collection(db, `fills`),
+    where("user_id_b", "==", user_id),
+    limit(20)
+  );
   const querySnapshot2 = await getDocs(q2);
 
   const q3 = query(
     collection(db, `perp_fills`),
-    where("user_id_a", "==", user_id)
+    where("user_id_a", "==", user_id),
+    limit(20)
   );
   const querySnapshot3 = await getDocs(q3);
 
   const q4 = query(
     collection(db, `perp_fills`),
-    where("user_id_b", "==", user_id)
+    where("user_id_b", "==", user_id),
+    limit(20)
   );
   const querySnapshot4 = await getDocs(q4);
 
@@ -466,6 +476,11 @@ async function fetchUserFills(user_id_) {
     };
 
     fills.push(fill);
+  });
+
+  // order the fills by time
+  fills = fills.sort((a, b) => {
+    return b.time - a.time;
   });
 
   return fills;
