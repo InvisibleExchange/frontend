@@ -212,7 +212,7 @@ function handleLiquidityUpdate(
  *   }
  */
 function handleFillResult(result, fills, setFills) {
-  let _fills = [...fills];
+  let _fills = [...fills[result.asset]];
   _fills.unshift({
     amount: result.amount,
     price: result.price,
@@ -226,7 +226,9 @@ function handleFillResult(result, fills, setFills) {
     _fills.pop();
   }
 
-  setFills(_fills);
+  fills[result.asset] = _fills;
+
+  setFills(fills);
 }
 
 /**
@@ -306,8 +308,6 @@ function handleSwapResult(user, orderId, swap_response) {
  */
 function handlePerpSwapResult(user, orderId, swap_response) {
   //
-
-  console.log(swap_response);
 
   // ? Save position data (if not null)
   let position = swap_response.position;

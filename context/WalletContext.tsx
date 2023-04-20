@@ -520,6 +520,7 @@ function WalletProvider({ children }: Props) {
           } else {
             handleFillResult(msg, fills, setFills);
           }
+
           break;
 
         case "SWAP_RESULT":

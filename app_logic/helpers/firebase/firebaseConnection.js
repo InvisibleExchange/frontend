@@ -479,13 +479,11 @@ async function fetchLatestFills(n, isPerp, token) {
   if (isPerp) {
     q = query(
       collection(db, "perp_fills"),
-      where("synthetic_token", "==", token),
+      where("synthetic_token", "==", Number(token)),
       orderBy("timestamp", "desc"),
       limit(n)
     );
   } else {
-    console.log(token);
-    console.log("n", n);
     q = query(
       collection(db, `fills`),
       where("base_token", "==", Number(token)),

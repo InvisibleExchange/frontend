@@ -18,7 +18,6 @@ export default function Trade() {
 
   let [toasts, setToasts] = useState<any>([]);
   const showToast = (message) => {
-    console.log("showToast", message);
     if (!message) return;
 
     const id = new Date().getTime();
