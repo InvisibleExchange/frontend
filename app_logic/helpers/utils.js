@@ -212,6 +212,8 @@ function handleLiquidityUpdate(
  *   }
  */
 function handleFillResult(user, result, fills, setFills) {
+  console.log("fills", fills);
+  console.log("asset", result.asset);
   let _fills = [...fills[result.asset]];
   _fills.unshift({
     amount: result.amount,

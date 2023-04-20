@@ -516,9 +516,9 @@ function WalletProvider({ children }: Props) {
 
         case "SWAP_FILLED":
           if (msg.type == "perpetual") {
-            handleFillResult(msg, perpFills, setPerpFills);
+            handleFillResult(user, msg, perpFills, setPerpFills);
           } else {
-            handleFillResult(msg, fills, setFills);
+            handleFillResult(user, msg, fills, setFills);
           }
 
           break;
