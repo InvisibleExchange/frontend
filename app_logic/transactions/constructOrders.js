@@ -188,7 +188,7 @@ async function sendSpotOrder(
           let orderData = {
             base_asset: baseToken,
             quote_asset: quoteToken,
-            expiration_timestamp: expirationTime,
+            expiration_timestamp: expirationTimestamp,
             fee_limit: feeLimit,
             notes_in: limitOrder.notes_in,
             order_id: order_response.order_id,
@@ -317,7 +317,6 @@ async function sendPerpOrder(
     .then((res) => {
       let order_response = res.data.response;
 
-
       if (order_response.successful) {
         storeOrderId(
           user.userId,
@@ -373,7 +372,7 @@ async function sendPerpOrder(
         ) {
           let orderData = {
             synthetic_token: perpOrder.synthetic_token,
-            expiration_timestamp: perpOrder.expiration_timestamp,
+            expiration_timestamp: expirationTimestamp,
             fee_limit: feeLimit,
             order_id: order_response.order_id,
             position_effect_type: orderJson.position_effect_type,
@@ -632,7 +631,6 @@ async function sendSplitOrder(user, token, newAmount) {
 
   let notes_in = notesIn.map((n) => n.toGrpcObject());
   let notes_out = notesOut.map((n) => n.toGrpcObject());
-
 
   await axios
     .post(`${EXPRESS_APP_URL}/split_notes`, {

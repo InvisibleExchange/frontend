@@ -211,13 +211,13 @@ function handleLiquidityUpdate(
  *          timestamp: u64
  *   }
  */
-function handleFillResult(result, fills, setFills) {
+function handleFillResult(user, result, fills, setFills) {
   let _fills = [...fills[result.asset]];
   _fills.unshift({
     amount: result.amount,
     price: result.price,
     base_token: result.asset,
-    side: result.is_buy ? "Buy" : "Sell",
+    is_buy: result.is_buy,
     time: result.timestamp,
     isPerp: result.type == "perpetual",
   });
@@ -229,6 +229,19 @@ function handleFillResult(result, fills, setFills) {
   fills[result.asset] = _fills;
 
   setFills(fills);
+
+  if (result.user_id_a == user.userId || result.user_id_b == user.userId) {
+    let fill = {
+      amount: result.amount,
+      price: result.price,
+      base_token: result.asset,
+      side: result.user_id_a == user.userId ? "Buy" : "Sell",
+      time: result.timestamp,
+      isPerp: result.type == "perpetual",
+    };
+
+    user.fills.push(fill);
+  }
 }
 
 /**
