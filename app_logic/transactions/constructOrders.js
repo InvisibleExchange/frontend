@@ -31,7 +31,7 @@ const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`; // process.env.EXPRESS_APP_
  * This constructs a spot swap and sends it to the backend
  * ## Params:
  * @param  order_side "Buy"/"Sell"
- * @param  expirationTime expiration time in hours
+ * @param  expirationTime expiration time in seconds
  * @param  baseToken
  * @param  quoteToken (price token)
  * @param  baseAmount the amount of base tokens to be bought/sold (only for sell orders)
@@ -107,10 +107,10 @@ async function sendSpotOrder(
     );
   }
 
-  if (expirationTime < 4 || expirationTime > 1000)
+  if (expirationTime < 0 || expirationTime > 3600_000)
     throw new Error("Expiration time Invalid");
 
-  let ts = new Date().getTime() / 3600_000; // number of hours since epoch
+  let ts = new Date().getTime() / 1000; // number of seconds since epoch
   let expirationTimestamp = Number.parseInt(ts.toString()) + expirationTime;
 
   feeLimit = Number.parseInt(((feeLimit * receiveAmount) / 100).toString());
@@ -275,7 +275,10 @@ async function sendPerpOrder(
     if (!positionAddress) throw "Choose a position to modify/close";
   }
 
-  let ts = new Date().getTime() / 3600_000; // number of hours since epoch
+  if (expirationTime < 0 || expirationTime > 3600_000)
+    throw new Error("Expiration time Invalid");
+
+  let ts = new Date().getTime() / 1000; // number of seconds since epoch
   let expirationTimestamp = Number.parseInt(ts.toString()) + expirationTime;
 
   feeLimit = Number.parseInt(((feeLimit * collateralAmount) / 100).toString());
@@ -284,7 +287,6 @@ async function sendPerpOrder(
     user,
     order_side,
     position_effect_type,
-    expirationTime,
     syntheticToken,
     syntheticAmount,
     COLLATERAL_TOKEN,
@@ -627,15 +629,15 @@ async function sendSplitOrder(user, token, newAmount) {
 
   let res = user.restructureNotes(token, newAmount);
   if (!res) return;
-  let { notesIn, notesOut } = res;
+  let { notesIn, newNote, refundNote } = res;
 
   let notes_in = notesIn.map((n) => n.toGrpcObject());
-  let notes_out = notesOut.map((n) => n.toGrpcObject());
 
   await axios
     .post(`${EXPRESS_APP_URL}/split_notes`, {
       notes_in,
-      notes_out,
+      note_out: newNote.toGrpcObject(),
+      refund_note: refundNote.toGrpcObject(),
     })
     .then((res) => {
       let split_response = res.data.response;
@@ -643,7 +645,7 @@ async function sendSplitOrder(user, token, newAmount) {
       if (split_response.successful) {
         let zero_idxs = split_response.zero_idxs;
 
-        handleNoteSplit(user, zero_idxs, notesIn, notesOut);
+        handleNoteSplit(user, zero_idxs, notesIn, [newNote, refundNote]);
       } else {
         let msg =
           "Note split failed with error: \n" + split_response.error_message;
@@ -698,6 +700,8 @@ async function sendChangeMargin(
       s: signature[1].toString(),
     },
   };
+
+  console.log(marginChangeMessage);
 
   await axios
     .post(`${EXPRESS_APP_URL}/change_position_margin`, marginChangeMessage)

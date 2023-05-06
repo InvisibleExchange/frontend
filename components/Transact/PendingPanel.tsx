@@ -40,7 +40,7 @@ const PendingPanel = ({ type, user, showToast }: any) => {
 
                     showToast(
                       "Deposit successful: " +
-                        deposit.amount +
+                        deposit.amount.toFixed(2) +
                         " " +
                         deposit.token
                     );

@@ -239,6 +239,7 @@ const TradeForm = ({ type, perpType, token, action }: props) => {
 
   const lastPriceStyle = type == "market" ? "opacity-60" : "hover:opacity-75";
 
+
   return (
     <div className="mt-2">
       {/* Price ====================================== */}

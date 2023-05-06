@@ -492,6 +492,7 @@ function WalletProvider({ children }: Props) {
       // 3.)
       // "message_id": "SWAP_RESULT",
       // "order_id": u64,
+      // "market_id": u16,
       // "swap_response": responseObject,
       // -> handleSwapResult(user, responseObject)
 
@@ -506,6 +507,7 @@ function WalletProvider({ children }: Props) {
 
       switch (msg.message_id) {
         case "LIQUIDITY_UPDATE":
+
           handleLiquidityUpdate(
             msg,
             liquidity,
@@ -560,8 +562,6 @@ function WalletProvider({ children }: Props) {
     };
   };
 
-  // TODO: store user in local storage
-  // window.localStorage.setItem("user", user_);
 
   return (
     <WalletContext.Provider

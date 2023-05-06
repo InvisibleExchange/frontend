@@ -32,6 +32,7 @@
     "big-integer": "^1.6.51",
     "bootstrap": "^5.2.3",
     "classnames": "^2.3.2",
+    "dotenv": "^16.0.3",
     "eslint": "8.30.0",
     "eslint-config-next": "13.1.0",
     "ethers": "^5.7.2",

@@ -198,7 +198,7 @@ const _renderBuyButton = (
             //
 
             let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
+            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -249,7 +249,7 @@ const _renderBuyButton = (
         } else {
           try {
             let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
+            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -373,7 +373,7 @@ const _renderAskButton = (
             //
 
             let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
+            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -423,7 +423,7 @@ const _renderAskButton = (
         } else {
           try {
             let slippage = maxSlippage ? Number(maxSlippage) : 5;
-            let expirationTimesamp = expirationTime ? expirationTime : 1000;
+            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -485,8 +485,13 @@ const _renderLoginButton = (isLoading, setIsLoading, login, forceRerender) => {
   return (
     <div>
       {isLoading ? (
-        <div className="mt-14 ml-32 mr-32">
-          <LoadingSpinner />
+        <div className="mt-14  flex">
+          <div className="flex items-center justify-center flex-grow">
+            <LoadingSpinner />
+          </div>
+          <div className="flex  items-center justify-center flex-grow">
+            Decrypting account ...
+          </div>
         </div>
       ) : (
         <button
@@ -502,7 +507,7 @@ const _renderLoginButton = (isLoading, setIsLoading, login, forceRerender) => {
             }
           }}
         >
-          Login
+          Access Account
         </button>
       )}
     </div>

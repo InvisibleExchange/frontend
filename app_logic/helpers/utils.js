@@ -78,8 +78,8 @@ const PERP_MARKET_IDS = {
 };
 
 const SPOT_MARKET_IDS_2_TOKENS = {
-  11: 12345,
-  12: 54321,
+  11: { base: 12345, quote: 55555 },
+  12: { base: 54321, quote: 55555 },
 };
 
 const PERP_MARKET_IDS_2_TOKENS = {
@@ -189,7 +189,7 @@ function handleLiquidityUpdate(
 
     setPerpLiquidity(liq);
   } else {
-    let token = SPOT_MARKET_IDS_2_TOKENS[result.market];
+    let token = SPOT_MARKET_IDS_2_TOKENS[result.market].base;
 
     let liq = liquidity;
     liq[token] = pairLiquidity;

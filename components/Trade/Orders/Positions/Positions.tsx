@@ -184,7 +184,7 @@ const CloseField = ({ user, marketPrice, pos, forceRerender }: any) => {
       await sendPerpOrder(
         user,
         pos.order_side == "Long" ? "Short" : "Long",
-        1000, // expiration time in hours
+        600_000, // ~1 weeks
         "Close",
         pos.position_address, // position address
         pos.synthetic_token, //token

@@ -1,5 +1,3 @@
-import { DECIMALS_PER_ASSET } from "../helpers/utils";
-
 const bigInt = require("big-integer");
 const { pedersen, computeHashOnElements } = require("../helpers/pedersen");
 const { ec, getKeyPair } = require("starknet").ec;
@@ -398,20 +396,22 @@ export default class User {
       // ? Generate the dest spent and dest received addresses and blindings
       privKeys = notesIn.map((x) => x.privKey);
       let ytS = this.getDestSpentBlinding(privKeys);
-      let { KoR, koR, ytR } = this.getDestReceivedAddresses(synthetic_token);
-      this.notePrivKeys[KoR.getX().toString()] = koR;
 
-      // ? generate the refund note
-      let refundNote =
-        refundAmount > DUST_AMOUNT_PER_ASSET[collateral_token]
-          ? new Note(
-              KoR,
-              collateral_token,
-              refundAmount,
-              ytR,
-              notesIn[0].note.index
-            )
-          : null;
+      let refundNote;
+      if (refundAmount > DUST_AMOUNT_PER_ASSET[collateral_token]) {
+        let { KoR, koR, ytR } = this.getDestReceivedAddresses(synthetic_token);
+        this.notePrivKeys[KoR.getX().toString()] = koR;
+
+        refundNote = new Note(
+          KoR,
+          collateral_token,
+          refundAmount,
+          ytR,
+          notesIn[0].note.index
+        );
+
+        storePrivKey(this.userId, koR, false, this.privateSeed);
+      }
 
       let { positionPrivKey, positionAddress } =
         this.getPositionAddress(synthetic_token);
@@ -429,7 +429,6 @@ export default class User {
 
       storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
-      storePrivKey(this.userId, koR, false, this.privateSeed);
       storePrivKey(this.userId, positionPrivKey, true, this.privateSeed);
     } else if (position_effect_type == "Close") {
       let { KoR, koR, ytR } = this.getDestReceivedAddresses(collateral_token);
@@ -536,20 +535,31 @@ export default class User {
     let privKeys = notesIn.map((x) => x.privKey);
     let ytS = this.getDestSpentBlinding(privKeys);
     let { KoR, koR, ytR } = this.getDestReceivedAddresses(token_received);
-    let {
-      KoR: KoR2,
-      koR: koR2,
-      ytR: ytR2,
-    } = this.getDestReceivedAddresses(token_spent);
+
     let privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     this.notePrivKeys[KoR.getX().toString()] = koR;
-    this.notePrivKeys[KoR2.getX().toString()] = koR2;
+
+    let refundNote;
+    if (refundAmount > DUST_AMOUNT_PER_ASSET[token_spent]) {
+      let {
+        KoR: KoR2,
+        koR: koR2,
+        ytR: ytR2,
+      } = this.getDestReceivedAddresses(token_spent);
+      this.notePrivKeys[KoR2.getX().toString()] = koR2;
+
+      refundNote = new Note(
+        KoR2,
+        token_spent,
+        refundAmount,
+        ytR2,
+        notesIn[0].note.index
+      );
+
+      storePrivKey(this.userId, koR2, false, this.privateSeed);
+    }
 
     // ? generate the refund note
-    let refundNote =
-      refundAmount > DUST_AMOUNT_PER_ASSET[token_spent]
-        ? new Note(KoR2, token_spent, refundAmount, ytR2, notesIn[0].note.index)
-        : null;
 
     let limitOrder = new LimitOrder(
       expiration_timestamp,
@@ -570,7 +580,6 @@ export default class User {
     storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
     storePrivKey(this.userId, koR, false, this.privateSeed);
-    storePrivKey(this.userId, koR2, false, this.privateSeed);
 
     return { limitOrder, pfrKey: privKeySum };
   }
@@ -579,7 +588,7 @@ export default class User {
     let depositStarkKey = this.getDepositStarkKey(depositToken);
     let privKey = this._getDepositStarkPrivKey(depositToken);
 
-    // TODO
+    // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // if (starkKey != depositStarkKey) {
     //   throw new Error("Unknown stark key");
     // }
@@ -673,7 +682,8 @@ export default class User {
 
     return {
       notesIn: notesIn.map((n) => n.note),
-      notesOut: [newNote, refundNote],
+      newNote,
+      refundNote,
     };
   }
 

@@ -77,7 +77,6 @@ function checkPerpOrderValidity(
   user,
   orderSide,
   posEffectType,
-  expirationTime,
   syntheticToken,
   syntheticAmount,
   collateralToken,
@@ -85,12 +84,7 @@ function checkPerpOrderValidity(
   initialMargin,
   feeLimit
 ) {
-  if (
-    !expirationTime ||
-    !syntheticToken ||
-    !syntheticAmount ||
-    feeLimit == null
-  ) {
+  if (!syntheticToken || !syntheticAmount || feeLimit == null) {
     console.log("Please fill in all fields");
     throw "Unfilled fields";
   }
@@ -110,16 +104,10 @@ function checkPerpOrderValidity(
       throw "Insufficient balance";
     }
   } else {
-    console.log(user.positionData);
     if (!user.positionData[syntheticToken]) {
       console.log("Position does not exist. Try opening a position first");
       throw "order invalid";
     }
-  }
-
-  if (expirationTime <= 3 || expirationTime > 1000) {
-    console.log("Expiration time must be between 4 and 1000 hours");
-    throw "Exipration time invalid";
   }
 }
 

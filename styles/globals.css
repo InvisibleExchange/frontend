@@ -227,7 +227,7 @@ thead {
 .loading-spinner {
   width: 30px;
   height: 30px;
-  border: 10px solid #868687; /* Light grey */
+  border: 10px solid whitesmoke; /* Light grey */
   border-top: 10px solid #000000; /* Black */
   border-radius: 50%;
   animation: spinner 1s linear infinite;
