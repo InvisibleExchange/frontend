@@ -18,8 +18,7 @@ import mewWallet from "@web3-onboard/mew-wallet";
 import tallyHoWalletModule from "@web3-onboard/tallyho";
 // import logo from "../public/img/zz.svg"
 
-import init from "../___/starknet";
-import { pedersen_binding, pedersen_on_vec_binding } from "../___/starknet";
+import init from "../pkg/starknet";
 
 const {
   SERVER_URL,
