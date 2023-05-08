@@ -18,6 +18,9 @@ import mewWallet from "@web3-onboard/mew-wallet";
 import tallyHoWalletModule from "@web3-onboard/tallyho";
 // import logo from "../public/img/zz.svg"
 
+import init from "../pkg/starknet";
+import { pedersen_binding, pedersen_on_vec_binding } from "../pkg/starknet";
+
 const {
   SERVER_URL,
   handleSwapResult,
@@ -420,6 +423,8 @@ function WalletProvider({ children }: Props) {
     if (initialized) return;
     setInitialized(true);
 
+    await init();
+
     if (Object.keys(liquidity).length && Object.keys(perpLiquidity).length)
       return;
 
@@ -507,7 +512,6 @@ function WalletProvider({ children }: Props) {
 
       switch (msg.message_id) {
         case "LIQUIDITY_UPDATE":
-
           handleLiquidityUpdate(
             msg,
             liquidity,
@@ -561,7 +565,6 @@ function WalletProvider({ children }: Props) {
       forceRerender();
     };
   };
-
 
   return (
     <WalletContext.Provider
