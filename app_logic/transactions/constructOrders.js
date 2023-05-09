@@ -400,6 +400,7 @@ async function sendPerpOrder(
           "Failed to submit order with error: \n" +
           order_response.error_message;
         console.log(msg);
+
         user.awaittingOrder = false;
         throw new Error(msg);
       }

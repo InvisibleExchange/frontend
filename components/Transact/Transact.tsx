@@ -9,6 +9,8 @@ import Toast from "../Layout/Toast/Toast";
 import { WalletContext } from "../../context/WalletContext";
 
 const Transact = () => {
+  const { initialize } = useContext(WalletContext);
+
   let [toasts, setToasts] = useState<any>([]);
   const showToast = (message) => {
     console.log("showToast", message);
@@ -23,6 +25,8 @@ const Transact = () => {
   };
 
   let [categories] = useState(["Deposit", "Withdraw"]);
+
+  initialize();
 
   return (
     <div className="flex justify-center w-full">
