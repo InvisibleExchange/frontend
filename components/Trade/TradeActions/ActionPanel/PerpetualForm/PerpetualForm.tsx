@@ -24,14 +24,12 @@ const {
 const {
   COLLATERAL_TOKEN_DECIMALS,
   SYMBOLS_TO_IDS,
-
   COLLATERAL_TOKEN,
   DECIMALS_PER_ASSET,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
   getCurrentLeverage,
-  getMaxLeverage,
   getNewMaxLeverage,
   MAX_LEVERAGE,
 } = require("../../../../../app_logic/helpers/tradePriceCalculations");
