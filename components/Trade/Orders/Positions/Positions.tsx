@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import classNames from "classnames";
 import AdjustMarginModal from "./AdjustMarginModal";
+import CloseModal from "./CloseModal";
 
 import { WalletContext } from "../../../../context/WalletContext";
 
@@ -45,7 +46,7 @@ const Positions = () => {
             <th className="pr-3 ">Leverage</th>
             <th className="pr-3 ">Margin</th>
             <th className="pr-3 ">PNL(ROE %)</th>
-            <th className="pr-3  w-96">Close All Positions</th>
+            <th className="pr-3"></th>
           </tr>
         </thead>
 
@@ -139,12 +140,17 @@ const Positions = () => {
                       <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                     </td>
                     {/*  */}
-                    <CloseField
+
+                    <td className={classNames("pr-3 font-medium " + pnlColor)}>
+                      <CloseModal position={pos}></CloseModal>
+                    </td>
+
+                    {/* <CloseField
                       user={user}
                       marketPrice={getMarkPrice(pos.synthetic_token, true)}
                       pos={pos}
                       forceRerender={forceRerender}
-                    />
+                    /> */}
                     {/*  */}
                   </tr>
                 );

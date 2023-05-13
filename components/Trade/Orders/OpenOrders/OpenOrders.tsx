@@ -65,7 +65,22 @@ const OpenOrders = () => {
             <th className="pr-3">Action</th>
             <th className="pr-3">Expiry</th>
             <th className="pr-3">Fee Limit</th>
-            <th className="pr-3">Cancel</th>
+            <th className="pr-3">
+              <button
+                disabled={!orders || orders.length == 0}
+                style={{
+                  fontWeight: 900,
+                  opacity: !orders || orders.length == 0 ? 0.7 : 1,
+                }}
+                className="mb-1 hover:opacity-70 text-red"
+                onClick={async () => {
+                  await cancelAllOrders(user, orders);
+                  forceRerender();
+                }}
+              >
+                Cancel All
+              </button>
+            </th>
           </tr>
         </thead>
 
@@ -218,5 +233,26 @@ function getPosEffectType(position_effect_type: number) {
 
     default:
       throw Error("invalid pos_effect_type");
+  }
+}
+
+async function cancelAllOrders(user, orders) {
+  for (let order of orders) {
+    let isPerp = order.synthetic_token ? true : false;
+
+    let marketId: any;
+    if (isPerp) {
+      marketId = PERP_MARKET_IDS[order.synthetic_token];
+    } else {
+      marketId = SPOT_MARKET_IDS[order.base_asset];
+    }
+
+    await sendCancelOrder(
+      user,
+      order.order_id,
+      order.order_side,
+      isPerp,
+      marketId
+    );
   }
 }

@@ -326,4 +326,5 @@ module.exports = {
   getNewMaxLeverage,
   MAX_LEVERAGE,
   getSizeFromLeverage,
+  getMaxLeverage,
 };

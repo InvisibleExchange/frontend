@@ -6,7 +6,7 @@ import type { SliderProps } from "rc-slider";
 import raf from "rc-util/lib/raf";
 import Tooltip from "rc-tooltip";
 
-import { ThemeContext } from "../../../../context/ThemeContext";
+import { ThemeContext } from "../../../../../context/ThemeContext";
 
 const HandleTooltip = (props: {
   value: number;
@@ -69,7 +69,7 @@ export const handleRender: SliderProps["handleRender"] = (node, props) => {
 
 const marks_ = [0, 25, 50, 75, 100];
 
-const TooltipSpotSlider = ({
+const TooltipCloseSlider = ({
   tipFormatter,
   tipProps,
   ...props
@@ -175,4 +175,4 @@ const TooltipSpotSlider = ({
   );
 };
 
-export default TooltipSpotSlider;
+export default TooltipCloseSlider;
