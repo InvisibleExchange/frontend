@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from "react";
 
-const Toast = ({ message, duration = 3000, onDismiss }) => {
+const Toast = ({ message, expiry, onDismiss }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     setVisible(true);
+
+    let now = new Date().getTime();
+    let duration = expiry - now;
     const timer = setTimeout(() => {
-      if (visible) {
-        setVisible(false);
-        if (onDismiss) {
-          onDismiss();
-        }
+      let now = new Date().getTime();
+      let duration = expiry - now;
+      if (duration <= 0) {
+        handleDismiss();
       }
     }, duration);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [duration, onDismiss, visible]);
+  }, []);
 
   const handleDismiss = () => {
     setVisible(false);

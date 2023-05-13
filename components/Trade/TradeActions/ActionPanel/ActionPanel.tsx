@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Tab } from "@headlessui/react";
 
-import PerpetualForm from "./PerpetualForm/PerpetualForm";
+import PerpetualForm from "./PerpetualForm/PerpetualFormWrapper";
 import SpotForm from "./SpotForm";
 import { WalletContext } from "../../../../context/WalletContext";
 

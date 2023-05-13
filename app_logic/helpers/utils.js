@@ -2,8 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note, trimHash } = require("../users/Notes");
 
-// const SERVER_URL = "localhost";
-const SERVER_URL = "54.212.28.196";
+const SERVER_URL = "localhost";
+// const SERVER_URL = "54.212.28.196";
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -14,11 +14,6 @@ const IDS_TO_SYMBOLS = {
   12345: "BTC",
   54321: "ETH",
   55555: "USDC",
-};
-
-const LEVERAGE_BOUNDS_PER_ASSET = {
-  12345: [1, 20.0], // BTC
-  54321: [10.0, 100.0], // ETH
 };
 
 const DECIMALS_PER_ASSET = {
@@ -38,30 +33,11 @@ const DUST_AMOUNT_PER_ASSET = {
   55555: 50000, // USDC ~ 5c
 };
 
-const MAX_LEVERAGE = 15;
-
 const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
 const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
-
-function get_max_leverage(token, amount) {
-  let [min_bound, max_bound] = LEVERAGE_BOUNDS_PER_ASSET[token];
-
-  let maxLev;
-  if (amount < min_bound) {
-    maxLev = MAX_LEVERAGE;
-  } else if (amount < max_bound) {
-    // b. For trades between $100,000 and $1,000,000, reduce the maximum leverage proportionally, such as 50 * ($100,000/$trade size).
-
-    maxLev = MAX_LEVERAGE * (min_bound / amount);
-  } else {
-    maxLev = 1;
-  }
-
-  return maxLev;
-}
 
 /// Things we keep track of
 /// Index prices
@@ -520,8 +496,6 @@ module.exports = {
   LEVERAGE_DECIMALS,
   COLLATERAL_TOKEN_DECIMALS,
   COLLATERAL_TOKEN,
-  get_max_leverage,
-  MAX_LEVERAGE,
   handleSwapResult,
   handlePerpSwapResult,
   handleNoteSplit,

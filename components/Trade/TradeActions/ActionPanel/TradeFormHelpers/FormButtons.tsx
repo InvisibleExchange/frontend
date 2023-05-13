@@ -4,7 +4,6 @@ import { checkValidSizeIncrease, checkValidSizeFlip } from "./FormHelpers";
 import { WalletContext } from "../../../../../context/WalletContext";
 
 const {
-  get_max_leverage,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
@@ -45,7 +44,7 @@ const _renderActionButtons = (
           <LoadingSpinner />
         </div>
       ) : action === "none" ? (
-        <div className="flex items-center  gap-2 mt-14">
+        <div className="flex items-center gap-2 mt-14">
           {_renderBuyButton(
             user,
             baseAmount,
@@ -79,7 +78,7 @@ const _renderActionButtons = (
             setToastMessage
           )}
         </div>
-      ) : action === "buy" ? (
+      ) : action === "buy" || action === "Long" ? (
         <div className="flex items-center gap-2 mt-14">
           {_renderBuyButton(
             user,
@@ -291,7 +290,7 @@ const _renderBuyButton = (
       }}
       className="w-full py-2 uppercase rounded-md bg-green_lighter shadow-green font-overpass hover:shadow-green_dark hover:opacity-90"
     >
-      BUY
+      {perpType == "perpetual" ? "LONG" : "BUY"}
     </button>
   );
 };
@@ -465,7 +464,7 @@ const _renderAskButton = (
       }}
       className="w-full py-2 uppercase rounded-md bg-red_lighter shadow-red font-overpass hover:shadow-red_dark hover:opacity-90"
     >
-      SELL
+      {perpType == "perpetual" ? "SHORT" : "SELL"}
     </button>
   );
 };

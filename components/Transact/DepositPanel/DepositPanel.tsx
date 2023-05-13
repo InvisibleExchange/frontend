@@ -9,7 +9,7 @@ import { WalletContext } from "../../../context/WalletContext";
 const {
   _renderConnectButton,
   _renderLoginButton,
-} = require("../../Trade/TradeActions/ActionPanel/TradeForm/FormButtons");
+} = require("../../Trade/TradeActions/ActionPanel/TradeFormHelpers/FormButtons");
 
 const tokens = [
   { id: 1, name: "ETH" },

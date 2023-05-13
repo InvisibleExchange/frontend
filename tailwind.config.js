@@ -53,9 +53,9 @@ module.exports = {
         blue: "0 0 15px 0 #007bffad;",
       },
       screens: {
-        xs: "360px",
-        xsh: { raw: `(min-height: 360px)` },
-        smh: { raw: `(min-height: 600px)` },
+        // xs: "360px",
+        // xsh: { raw: `(min-height: 360px)` },
+        // smh: { raw: `(min-height: 600px)` },
         mdh: { raw: `(min-height: 960px)` },
         lgh: { raw: `(min-height: 1280px)` },
         xlh: { raw: `(min-height: 1920px)` },

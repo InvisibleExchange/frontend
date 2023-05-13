@@ -17,12 +17,6 @@ const {
   calulateLiqPriceInFlipSide,
 } = require("../../../../../app_logic/helpers/tradePriceCalculations");
 
-const {
-  sendSpotOrder,
-  sendPerpOrder,
-  sendSplitOrder,
-} = require("../../../../../app_logic/transactions/constructOrders");
-
 function checkValidSizeIncrease(
   user,
   order_side,
@@ -133,6 +127,10 @@ function calculateNewSize(
   let size =
     position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
 
+  if (!increaseSize) {
+    return size;
+  }
+
   if (isBuy) {
     if (position.order_side == "Long") {
       return size + increaseSize;
@@ -162,6 +160,13 @@ function calculateAvgEntryPrice(
   price: number,
   isBuy: boolean
 ): number {
+  if (!increaseSize) {
+    return (
+      position.entry_price /
+      10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+    );
+  }
+
   if (isBuy) {
     if (position.order_side == "Long") {
       return calcAvgEntryInIncreaseSize(position, increaseSize, price);
@@ -203,6 +208,13 @@ function calculateNewLiqPrice(
   price: number,
   isBuy: boolean
 ): number {
+  if (!increaseSize) {
+    return (
+      position.liquidation_price /
+      10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+    );
+  }
+
   if (isBuy) {
     if (position.order_side == "Long") {
       return (

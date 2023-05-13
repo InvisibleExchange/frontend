@@ -392,14 +392,16 @@ function WalletProvider({ children }: Props) {
   const getMarkPrice = (token: number, isPerp: boolean) => {
     let bidLiq, askLiq;
     if (isPerp) {
-      if (!perpLiquidity[token]) return 0;
+      // Todo: Fetch it from cryptowatch
+      if (!perpLiquidity[token]) return 1000;
 
       let { bidQueue, askQueue } = perpLiquidity[token];
 
       bidLiq = bidQueue;
       askLiq = askQueue;
     } else {
-      if (!liquidity[token]) return 0;
+      // Todo: Fetch it from cryptowatch
+      if (!liquidity[token]) return 1000;
 
       let { bidQueue, askQueue } = liquidity[token];
 
@@ -410,7 +412,8 @@ function WalletProvider({ children }: Props) {
     let topBidPrice = bidLiq[0]?.price;
     let topAskPrice = askLiq[askLiq.length - 1]?.price;
 
-    if (!topBidPrice || !topAskPrice) return 0;
+    // Todo: Fetch it from cryptowatch
+    if (!topBidPrice || !topAskPrice) return 1000;
 
     let markPrice = (topBidPrice + topAskPrice) / 2;
 

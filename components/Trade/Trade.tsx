@@ -17,24 +17,37 @@ export default function Trade() {
     useContext(WalletContext);
 
   let [toasts, setToasts] = useState<any>([]);
+  let _toasts_: any[] = toasts;
+
   const showToast = (message) => {
     if (!message) return;
 
     const id = new Date().getTime();
 
-    setToasts([...toasts, { id, message }]);
-    setToastMessage(null);
+    let expiry = new Date().getTime() + 3000;
+
+    _toasts_ = [..._toasts_, { id, message, expiry }];
+
+    _toasts_ = _toasts_.filter((toast) => toast.expiry > new Date().getTime());
+
+    setToasts(_toasts_);
   };
+
   const onToastDismiss = (id) => {
-    setToasts(toasts.filter((toast) => toast.id !== id));
+    _toasts_ = _toasts_.filter((toast) => toast.id !== id);
+
+    let now = new Date().getTime();
+
     setToastMessage(null);
   };
 
   useEffect(() => {
-
     // Make sure you have a valid message to display
     if (toastMessage) {
-      showToast(toastMessage);
+      let message = toastMessage;
+      setToastMessage(null);
+
+      showToast(message);
     }
   }, [toastMessage]);
 
@@ -59,10 +72,11 @@ export default function Trade() {
         </div>
         {/* TOASTS */}
         <div className="toast-container">
-          {toasts.map((toast) => (
+          {_toasts_.map((toast) => (
             <Toast
               key={toast.id}
               message={toast.message}
+              expiry={toast.expiry}
               onDismiss={() => onToastDismiss(toast.id)}
             />
           ))}

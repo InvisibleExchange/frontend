@@ -12,6 +12,7 @@ const HandleTooltip = (props: {
   value: number;
   children: React.ReactElement;
   visible: boolean;
+  // colorPair: any;
   tipFormatter?: (value: number) => React.ReactNode;
 }) => {
   const {
@@ -19,6 +20,7 @@ const HandleTooltip = (props: {
     children,
     visible,
     tipFormatter = (val) => `${val}`,
+    // colorPair,
     ...restProps
   } = props;
 
@@ -48,8 +50,13 @@ const HandleTooltip = (props: {
   return (
     <Tooltip
       placement="top"
-      overlay={tipFormatter(value)}
-      overlayInnerStyle={{ minHeight: "auto" }}
+      overlay={tipFormatter(Math.abs(value))}
+      overlayInnerStyle={{
+        minHeight: "auto",
+        // color: value >= 0 ? colorPair.positiveColor : colorPair.negativeColor,
+        // fontWeight: 900,
+        // fontSize: "small",
+      }}
       ref={tooltipRef}
       visible={visible}
       {...restProps}
@@ -70,12 +77,17 @@ export const handleRender: SliderProps["handleRender"] = (node, props) => {
 const TooltipPerpetualSlider = ({
   tipFormatter,
   tipProps,
+  minLeverage,
   maxLeverage,
+  defaultValue,
+  orderSide,
   ...props
 }: SliderProps & {
   tipFormatter?: (value: number) => React.ReactNode;
   tipProps: any;
   maxLeverage: number;
+  minLeverage: number;
+  orderSide: "Long" | "Short" | "none";
 }) => {
   const { theme } = React.useContext(ThemeContext);
 
@@ -85,6 +97,7 @@ const TooltipPerpetualSlider = ({
         value={handleProps.value}
         visible={handleProps.dragging}
         tipFormatter={tipFormatter}
+        // colorPair={{ positiveColor, negativeColor }}
         {...tipProps}
       >
         {node}
@@ -92,26 +105,89 @@ const TooltipPerpetualSlider = ({
     );
   };
 
-  let marks = { 0.1: "0.1x" };
-  marks[maxLeverage] = maxLeverage.toString() + "x";
+  let positiveColor;
+  let negativeColor;
+  if (!orderSide || orderSide === "none") {
+    positiveColor = "rgb(183, 189, 198)";
+    negativeColor = "rgb(183, 189, 198)";
+  } else {
+    if (orderSide === "Long") {
+      positiveColor = "green";
+      negativeColor = "#9A2018";
+    } else {
+      positiveColor = "#9A2018";
+      negativeColor = "green";
+    }
+  }
 
-  let middle = Math.floor(maxLeverage / 2);
-  let low_middle = Math.floor(middle / 2);
-  let high_middle = Math.floor((middle + maxLeverage) / 2);
+  let marks = {};
+  marks[minLeverage] = (
+    <div
+      style={{
+        color: minLeverage >= 0 ? positiveColor : negativeColor,
+        fontWeight: 900,
+      }}
+    >
+      {Math.abs(minLeverage).toString() + "x"}{" "}
+    </div>
+  );
+  marks[maxLeverage] = (
+    <div
+      style={{
+        color: maxLeverage >= 0 ? positiveColor : negativeColor,
+        fontWeight: 900,
+      }}
+    >
+      {Math.abs(maxLeverage).toString() + "x"}{" "}
+    </div>
+  );
 
-  marks[middle] = middle.toString() + "x";
-  marks[low_middle] = low_middle.toString() + "x";
-  marks[high_middle] = high_middle.toString() + "x";
+  let middle = Math.floor((maxLeverage + minLeverage) / 2);
+  let low_middle = Math.floor((middle + minLeverage) / 2);
+  let high_middle = Math.floor((middle + maxLeverage + 1) / 2);
+
+  marks[middle] = (
+    <div
+      style={{
+        color: middle >= 0 ? positiveColor : negativeColor,
+        fontWeight: 900,
+      }}
+    >
+      {Math.abs(middle).toString() + "x"}{" "}
+    </div>
+  );
+
+  marks[low_middle] = (
+    <div
+      style={{
+        color: low_middle >= 0 ? positiveColor : negativeColor,
+        fontWeight: 900,
+      }}
+    >
+      {Math.abs(low_middle).toString() + "x"}{" "}
+    </div>
+  );
+
+  marks[high_middle] = (
+    <div
+      style={{
+        color: high_middle >= 0 ? positiveColor : negativeColor,
+        fontWeight: 900,
+      }}
+    >
+      {Math.abs(high_middle).toString() + "x"}{" "}
+    </div>
+  );
 
   return (
     <Slider
       {...props}
-      min={0.1}
+      min={minLeverage ? minLeverage : 0.1}
       max={maxLeverage}
       marks={marks}
       step={0.1}
       range={true}
-      defaultValue={1}
+      defaultValue={defaultValue ? defaultValue : 1}
       included={true}
       handleRender={tipHandleRender}
       trackStyle={{
@@ -124,20 +200,23 @@ const TooltipPerpetualSlider = ({
           theme === "dark" ? "rgb(71, 77, 87)" : "rgb(220, 224, 229)",
         height: 4,
       }}
-      dotStyle={{
-        transform: "translateX(-50%) rotate(45deg)",
-        backgroundColor:
-          theme === "dark" ? "rgb(24, 26, 32)" : "rgb(255, 255, 255)",
-        width: "10px",
-        height: "10px",
-        borderRadius: "2px",
-        border:
-          theme === "dark"
-            ? "2px solid rgb(71, 77, 87)"
-            : "2px solid rgb(234, 236, 239)",
-        overflow: "visible",
-        cursor: "pointer",
-        bottom: "-3px",
+      dotStyle={(val) => {
+        let fillColor = Number(val) >= 0 ? positiveColor : negativeColor;
+
+        return {
+          transform: "translateX(-50%) rotate(45deg)",
+          backgroundColor: theme === "dark" ? fillColor : "rgb(255, 255, 255)",
+          width: "10px",
+          height: "10px",
+          borderRadius: "2px",
+          border:
+            theme === "dark"
+              ? "2px solid " + fillColor
+              : "2px solid rgb(234, 236, 239)",
+          overflow: "visible",
+          cursor: "pointer",
+          bottom: "-3px",
+        };
       }}
       activeDotStyle={{
         transform: "translateX(-50%) rotate(45deg)",

@@ -1,3 +1,3 @@
-import SpotForm from "./SpotForm";
+import SpotForm from "./SpotFormWrapper";
 
 export default SpotForm;
