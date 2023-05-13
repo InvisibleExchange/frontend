@@ -1,8 +1,7 @@
-import { useContext, useState } from "react";
-import { Tab } from "@headlessui/react";
+import { useContext } from "react";
 
-import PerpetualForm from "./PerpetualForm/PerpetualFormWrapper";
-import SpotForm from "./SpotForm";
+import PerpetualFormWrapper from "./PerpetualForm/PerpetualFormWrapper";
+import SpotFormWrapper from "./SpotForm/SpotFormWrapper";
 import { WalletContext } from "../../../../context/WalletContext";
 
 const ActionPanel = () => {
@@ -16,9 +15,9 @@ const ActionPanel = () => {
   return (
     <div>
       {selectedType == "perpetual" ? (
-        <PerpetualForm token={token} />
+        <PerpetualFormWrapper token={token} />
       ) : (
-        <SpotForm token={token} />
+        <SpotFormWrapper token={token} />
       )}
     </div>
   );

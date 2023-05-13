@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import classNames from "classnames";
 import { useState } from "react";
 import { Tab } from "@headlessui/react";
@@ -9,20 +9,43 @@ import Toast from "../Layout/Toast/Toast";
 import { WalletContext } from "../../context/WalletContext";
 
 const Transact = () => {
-  const { initialize } = useContext(WalletContext);
+  const { initialize, setToastMessage, toastMessage } =
+    useContext(WalletContext);
 
   let [toasts, setToasts] = useState<any>([]);
+  let _toasts_: any[] = toasts;
+
   const showToast = (message) => {
-    console.log("showToast", message);
     if (!message) return;
 
     const id = new Date().getTime();
 
-    setToasts([...toasts, { id, message }]);
+    let expiry = new Date().getTime() + 3000;
+
+    _toasts_ = [..._toasts_, { id, message, expiry }];
+
+    _toasts_ = _toasts_.filter((toast) => toast.expiry > new Date().getTime());
+
+    setToasts(_toasts_);
   };
+
   const onToastDismiss = (id) => {
-    setToasts(toasts.filter((toast) => toast.id !== id));
+    _toasts_ = _toasts_.filter((toast) => toast.id !== id);
+
+    let now = new Date().getTime();
+
+    setToastMessage(null);
   };
+
+  useEffect(() => {
+    // Make sure you have a valid message to display
+    if (toastMessage) {
+      let message = toastMessage;
+      setToastMessage(null);
+
+      showToast(message);
+    }
+  }, [toastMessage]);
 
   let [categories] = useState(["Deposit", "Withdraw"]);
 
@@ -71,10 +94,11 @@ const Transact = () => {
 
       {/* TOASTS */}
       <div className="toast-container">
-        {toasts.map((toast) => (
+        {_toasts_.map((toast) => (
           <Toast
             key={toast.id}
             message={toast.message}
+            expiry={toast.expiry}
             onDismiss={() => onToastDismiss(toast.id)}
           />
         ))}
