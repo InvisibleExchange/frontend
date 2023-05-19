@@ -62,8 +62,7 @@ export default function Trade() {
         <TradeActions />
         <div className="w-full col-span-2 2xl:col-span-3 bg-bg_color ">
           <MarketStats />
-
-          {/* <Chart /> */}
+          <Chart />
         </div>
         <div>
           <BookTrades />
