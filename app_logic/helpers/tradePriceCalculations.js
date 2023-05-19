@@ -7,8 +7,8 @@ const {
 // calculate prices
 
 const LEVERAGE_BOUNDS_PER_ASSET = {
-  12345: [1, 20.0], // BTC
-  54321: [10.0, 100.0], // ETH
+  12345: [1.5, 30.0], // BTC
+  54321: [15.0, 150.0], // ETH
 };
 const MAX_LEVERAGE = 15;
 
