@@ -184,7 +184,7 @@ async function sendSpotOrder(
         ) {
           // If the order has not been fully filled already and is not a market order
 
-          order_side = order_side == "Buy" ? 0 : 1;
+          order_side = order_side == "Buy" ? 1 : 0;
           let orderData = {
             base_asset: baseToken,
             quote_asset: quoteToken,
@@ -407,24 +407,84 @@ async function sendPerpOrder(
     });
 }
 
-async function sendLiquidationOrder(user, expirationTime, position) {
-  if (expirationTime < 4 || expirationTime > 1000)
-    throw new Error("Expiration time Invalid");
+/**
+ * This constructs a perpetual swap and sends it to the backend
+ * ## Params:
+ * @param  position  the position to be modified/closed (null if open)
+ * @param  price (null if market order)
+ * @param  syntheticToken the token of the position to be opened
+ * @param  syntheticAmount the amount of synthetic tokens to be bought/sold
+ * @param  initial_margin if the position is being opened (else null)
+ * @param  slippage  the slippage limit in percentage (1 = 1%) (null if limit)
+ */
+async function sendLiquidationOrder(
+  user,
+  position,
+  price,
+  syntheticToken,
+  syntheticAmount,
+  initial_margin,
+  slippage
+) {
+  let syntheticDecimals = DECIMALS_PER_ASSET[syntheticToken];
+  let priceDecimals = PRICE_DECIMALS_PER_ASSET[syntheticToken];
 
-  let ts = new Date().getTime() / 3600_000; // number of hours since epoch
-  let expirationTimestamp = Number.parseInt(ts.toString()) + expirationTime;
+  let decimalMultiplier =
+    syntheticDecimals + priceDecimals - COLLATERAL_TOKEN_DECIMALS;
 
-  let perpOrder = user.makeLiquidationOrder(expirationTimestamp, position);
+  syntheticAmount = syntheticAmount * 10 ** syntheticDecimals;
+  let scaledPrice = price * 10 ** priceDecimals;
 
-  let orderJson = perpOrder.toGrpcObject();
+  let order_side = position.order_side == "Long" ? "Short" : "Long";
+  scaledPrice =
+    order_side == "Long"
+      ? (scaledPrice * (100 + slippage)) / 100
+      : (scaledPrice * (100 - slippage)) / 100;
+  scaledPrice = Number.parseInt(scaledPrice);
+
+  let collateralAmount =
+    (BigInt(syntheticAmount) * BigInt(scaledPrice)) /
+    10n ** BigInt(decimalMultiplier);
+  collateralAmount = Number.parseInt(collateralAmount.toString());
+
+  initial_margin = Number.parseInt(
+    initial_margin * 10 ** COLLATERAL_TOKEN_DECIMALS
+  );
+
+  let liquidationOrder = user.makeLiquidationOrder(
+    position,
+    syntheticAmount,
+    collateralAmount,
+    initial_margin
+  );
+
+  let orderJson = liquidationOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
 
   await axios
-    .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
+    .post(`${EXPRESS_APP_URL}/submit_liquidation_order`, orderJson)
     .then((res) => {
       let order_response = res.data.response;
 
       if (order_response.successful) {
+        // ? Save position data (if not null)
+        let position = order_response.new_position;
+
+        if (position) {
+          this.position.order_side =
+            this.position.order_side == 1 ? "Long" : "Short";
+
+          if (
+            !user.positionData[position.synthetic_token] ||
+            user.positionData[position.synthetic_token].length == 0
+          ) {
+            user.positionData[position.synthetic_token] = [position];
+          } else {
+            user.positionData[position.synthetic_token].push(position);
+          }
+
+          //
+        }
       } else {
         let msg =
           "Failed to submit order with error: \n" +

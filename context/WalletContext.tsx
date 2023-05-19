@@ -246,12 +246,37 @@ function WalletProvider({ children }: Props) {
     [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
   }>({});
 
+  let initLiquidity;
+  let initPerpLiquidity;
+  function updateLiquidity(msg: any) {
+    let liq = Object.keys(liquidity).length == 0 ? initLiquidity : liquidity;
+    let perpLiq =
+      Object.keys(perpLiquidity).length == 0
+        ? initPerpLiquidity
+        : perpLiquidity;
+
+    handleLiquidityUpdate(msg, liq, setLiquidity, perpLiq, setPerpLiquidity);
+  }
+
   const [fills, setFills] = useState<{
     [token: number]: any[];
   }>({});
   const [perpFills, setPerpFills] = useState<{
     [token: number]: any[];
   }>({});
+
+  let initFills;
+  let initPerpFills;
+  function updateFills(msg: any) {
+    if (msg.type == "perpetual") {
+      let perpFills_ =
+        Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
+      handleFillResult(user, msg, perpFills_, setPerpFills);
+    } else {
+      let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
+      handleFillResult(user, msg, fills_, setFills);
+    }
+  }
 
   const walletsSub = onboard.state.select("wallets");
   walletsSub.subscribe((wallets) => {
@@ -384,7 +409,7 @@ function WalletProvider({ children }: Props) {
 
     if (user_) {
       setUser(user_);
-      listenToWebSocket(user_);
+      listenToServerWebSocket(user_);
       return user_;
     }
   };
@@ -421,9 +446,13 @@ function WalletProvider({ children }: Props) {
   };
 
   const [initialized, setInitialized] = useState<boolean>(false);
+  let initialized_ = false;
   const initialize = async () => {
-    if (initialized) return;
+    if (initialized || initialized_) {
+      return;
+    }
     setInitialized(true);
+    initialized_ = true;
 
     await init();
 
@@ -465,31 +494,33 @@ function WalletProvider({ children }: Props) {
     setLiquidity(liquidity_);
     setPerpLiquidity(perpLiquidity_);
 
+    initLiquidity = liquidity_;
+    initPerpLiquidity = perpLiquidity_;
+
     setFills(fills_);
     setPerpFills(perpFills_);
+
+    initFills = fills_;
+    initPerpFills = perpFills_;
+
+    listenToRelayWebSocket();
   };
 
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  const listenToWebSocket = (user: any) => {
+  const listenToServerWebSocket = (user: any) => {
+    // * SERVER WEBSOCKET (listens for fills, swaps, perp_swaps)
     let W3CWebSocket = require("websocket").w3cwebsocket;
-    let client = new W3CWebSocket(`ws://${SERVER_URL}:50053`);
+    let serverClient = new W3CWebSocket(`ws://${SERVER_URL}:50053`);
 
-    client.onopen = function () {
-      const ID = trimHash(user.userId, 64);
-      client.send(ID);
+    serverClient.onopen = function () {
+      const ID = trimHash(user.userId, 64).toString();
+
+      serverClient.send(JSON.stringify({ user_id: ID, config_code: "0" }));
     };
 
-    client.onmessage = function (e: any) {
+    serverClient.onmessage = function (e: any) {
       let msg = JSON.parse(e.data);
-
-      // 1.)
-      // "message_id": LIQUIDITY_UPDATE,
-      // "type": "perpetual"/"spot"
-      // "market":  11 / 12 / 21 / 22
-      // "ask_liquidity": [ [price, size, timestamp], [price, size, timestamp], ... ]
-      // "bid_liquidity": [ [price, size, timestamp], [price, size, timestamp], ... ]
-
       // 2.)
       // "message_id": "PERPETUAL_SWAP",
       // "order_id": u64,
@@ -503,35 +534,7 @@ function WalletProvider({ children }: Props) {
       // "swap_response": responseObject,
       // -> handleSwapResult(user, responseObject)
 
-      // 4.)
-      // "message_id": "SWAP_FILLED",
-      // "type": "perpetual"/"spot"
-      // "asset":  tokenId
-      // "amount":  amount
-      // "price":  price
-      // "is_buy":  isBuy
-      // "timestamp":  timestamp
-
       switch (msg.message_id) {
-        case "LIQUIDITY_UPDATE":
-          handleLiquidityUpdate(
-            msg,
-            liquidity,
-            setLiquidity,
-            perpLiquidity,
-            setPerpLiquidity
-          );
-          break;
-
-        case "SWAP_FILLED":
-          if (msg.type == "perpetual") {
-            handleFillResult(user, msg, perpFills, setPerpFills);
-          } else {
-            handleFillResult(user, msg, fills, setFills);
-          }
-
-          break;
-
         case "SWAP_RESULT":
           handleSwapResult(user, msg.order_id, msg.swap_response);
 
@@ -558,6 +561,54 @@ function WalletProvider({ children }: Props) {
               " " +
               IDS_TO_SYMBOLS[msg.swap_response.synthetic_token]
           );
+          break;
+
+        default:
+          break;
+      }
+
+      forceRerender();
+    };
+  };
+
+  const listenToRelayWebSocket = () => {
+    // * RELAY WEBSOCKET (listens for liquidity)
+
+    let W3CWebSocket = require("websocket").w3cwebsocket;
+    let relayClient = new W3CWebSocket(`ws://${SERVER_URL}:4040`);
+
+    relayClient.onopen = function () {};
+
+    relayClient.onmessage = function (e: any) {
+      let msg = JSON.parse(e.data);
+
+      // 1.)
+      // "message_id": LIQUIDITY_UPDATE,
+      // "liquidity_updates": [ liquidityUpdate1, liquidityUpdate2, ... ]
+      // => liquidityUpdate: {
+      //    "type": "perpetual"/"spot"
+      //    "market":  11 / 12 / 21 / 22
+      //    "ask_diffs": [[index,[price, size, timestamp]], [index,[price, size, timestamp]], ... ]
+      //    "bid_diffs": [[index,[price, size, timestamp]], [index,[price, size, timestamp]], ... ]
+      // }
+
+      // 4.)
+      // "message_id": "SWAP_FILLED",
+      // "type": "perpetual"/"spot"
+      // "asset":  tokenId
+      // "amount":  amount
+      // "price":  price
+      // "is_buy":  isBuy
+      // "timestamp":  timestamp
+
+      switch (msg.message_id) {
+        case "LIQUIDITY_UPDATE":
+          updateLiquidity(msg);
+          break;
+
+        case "SWAP_FILLED":
+          updateFills(msg);
+
           break;
 
         default:

@@ -97,14 +97,11 @@ const OpenOrders = () => {
 
               let receivedToken = isPerp
                 ? order.synthetic_token
-                : order.order_side === 1 || order.order_side === false
-                ? order.quote_asset
-                : order.base_asset;
+                : order.order_side
+                ? order.base_asset
+                : order.quote_asset;
 
-              let color =
-                order.order_side === 1 || order.order_side === false
-                  ? "text-red"
-                  : "text-green_lighter";
+              let color = !order.order_side ? "text-red" : "text-green_lighter";
               return (
                 <tbody key={idx} className="overflow-y-auto max-h-24">
                   <tr
@@ -130,7 +127,7 @@ const OpenOrders = () => {
                     </td>
                     {/* Buy sell */}
                     <td className={classNames("pr-3 font-medium")}>
-                      {order.order_side === 1 || order.order_side === false
+                      {!order.order_side
                         ? isPerp
                           ? "Short"
                           : "Sell"

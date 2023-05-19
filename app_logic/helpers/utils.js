@@ -111,10 +111,18 @@ async function fetchLiquidity(token, isPerp) {
 
 // 1.)
 // "message_id": LIQUIDITY_UPDATE,
-// "type": "perpetual"/"spot"
-// "market":  11 / 12 / 21 / 22
-// "ask_liquidity": [ [price, size, timestamp], [price, size, timestamp], ... ]
-// "bid_liquidity": [ [price, size, timestamp], [price, size, timestamp], ... ]
+// "liquidity_updates": [ liquidityUpdate1, liquidityUpdate2, ... ]
+// => liquidityUpdate: {
+//    "type": "perpetual"/"spot"
+//    "market":  11 / 12 / 21 / 22
+//    "ask_diffs": [ [index,[price, size, timestamp]], [index,[price, size, timestamp]], ... ]
+//    "bid_diffs": [ [index,[price, size, timestamp]], [index,[price, size, timestamp]], ... ]
+// }
+
+// type: book.is_perp ? "perpetual" : "spot",
+// market: book.market_id,
+// bid_diffs: bid_diffs,
+// ask_diffs: ask_diffs,
 
 // 2.)
 // "message_id": "PERPETUAL_SWAP",
@@ -135,42 +143,75 @@ function handleLiquidityUpdate(
   perpLiquidity,
   setPerpLiquidity
 ) {
-  let askQueue = result.ask_liquidity.map((item) => {
-    return {
-      price: item[0],
-      amount: item[1],
-      timestamp: item[2],
-    };
-  });
-  let revAq = [];
-  for (let i = askQueue.length - 1; i >= 0; i--) {
-    revAq.push(askQueue[i]);
+  let isSpotUpdated = false;
+  let isPerpUpdated = false;
+
+  for (let update of result.liquidity_updates) {
+    update = JSON.parse(update);
+
+    let isPerp = update.is_perp;
+    let marketId = update.market_id;
+
+    let liq = isPerp
+      ? { ...perpLiquidity[PERP_MARKET_IDS_2_TOKENS[marketId]] }
+      : { ...liquidity[SPOT_MARKET_IDS_2_TOKENS[marketId].base] };
+
+    if (!liq) {
+      liq = {
+        bidQueue: [],
+        askQueue: [],
+      };
+    }
+    if (!liq.bidQueue) {
+      liq.bidQueue = [];
+    }
+    if (!liq.askQueue) {
+      liq.askQueue = [];
+    }
+
+    if (update.ask_queue) {
+      let askQueue = update.ask_queue.map((item) => {
+        return {
+          price: item[0],
+          amount: item[1],
+          timestamp: item[2],
+        };
+      });
+      let revAq = [];
+      for (let i = askQueue.length - 1; i >= 0; i--) {
+        revAq.push(askQueue[i]);
+      }
+
+      liq.askQueue = revAq;
+    }
+
+    if (update.bid_queue) {
+      let bidQueue = update.bid_queue.map((item) => {
+        return {
+          price: item[0],
+          amount: item[1],
+          timestamp: item[2],
+        };
+      });
+
+      liq.bidQueue = bidQueue;
+    }
+
+    if (isPerp) {
+      isPerpUpdated = true;
+      perpLiquidity[PERP_MARKET_IDS_2_TOKENS[marketId]] = liq;
+    } else {
+      isSpotUpdated = true;
+
+      liquidity[SPOT_MARKET_IDS_2_TOKENS[marketId].base] = liq;
+    }
   }
 
-  let bidQueue = result.bid_liquidity.map((item) => {
-    return {
-      price: item[0],
-      amount: item[1],
-      timestamp: item[2],
-    };
-  });
-
-  let pairLiquidity = { bidQueue, askQueue: revAq };
-
-  if (result.type === "perpetual") {
-    let token = PERP_MARKET_IDS_2_TOKENS[result.market];
-
-    let liq = perpLiquidity;
-    liq[token] = pairLiquidity;
-
-    setPerpLiquidity(liq);
-  } else {
-    let token = SPOT_MARKET_IDS_2_TOKENS[result.market].base;
-
-    let liq = liquidity;
-    liq[token] = pairLiquidity;
-
-    setLiquidity(liq);
+  if (isSpotUpdated) {
+    setLiquidity(liquidity);
+  }
+  if (isPerpUpdated) {
+    setPerpLiquidity(perpLiquidity);
   }
 }
 
@@ -188,38 +229,45 @@ function handleLiquidityUpdate(
  *   }
  */
 function handleFillResult(user, result, fills, setFills) {
-  let _fills = fills[result.asset] ? [...fills[result.asset]] : [];
-  _fills.unshift({
-    amount: result.amount,
-    price: result.price,
-    base_token: result.asset,
-    is_buy: result.is_buy,
-    timestamp: result.timestamp,
-    isPerp: result.type == "perpetual",
-  });
+  for (let f of result.fillUpdates) {
+    f = JSON.parse(f);
 
-  if (_fills.length > 15) {
-    _fills.pop();
+    if (!fills[f.asset]) {
+      fills[f.asset] = [];
+    }
+
+    fills[f.asset].unshift({
+      amount: f.amount,
+      price: f.price,
+      base_token: f.asset,
+      is_buy: f.is_buy,
+      timestamp: f.timestamp,
+      isPerp: f.type == "perpetual",
+    });
+
+    if (fills[f.asset].length > 15) {
+      fills[f.asset].pop();
+    }
+
+    if (user) {
+      let trimedId = trimHash(user.userId, 64).toString();
+
+      if (f.user_id_a == trimedId || f.user_id_b == trimedId) {
+        let fill = {
+          amount: f.amount,
+          price: f.price,
+          base_token: f.asset,
+          side: f.user_id_a == trimedId ? "Buy" : "Sell",
+          time: f.timestamp,
+          isPerp: f.type == "perpetual",
+        };
+
+        user.fills.unshift(fill);
+      }
+    }
   }
-
-  fills[result.asset] = _fills;
 
   setFills(fills);
-
-  let trimedId = trimHash(user.userId, 64).toString();
-
-  if (result.user_id_a == trimedId || result.user_id_b == trimedId) {
-    let fill = {
-      amount: result.amount,
-      price: result.price,
-      base_token: result.asset,
-      side: result.user_id_a == trimedId ? "Buy" : "Sell",
-      time: result.timestamp,
-      isPerp: result.type == "perpetual",
-    };
-
-    user.fills.unshift(fill);
-  }
 }
 
 /**

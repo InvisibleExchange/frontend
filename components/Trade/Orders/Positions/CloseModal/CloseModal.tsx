@@ -123,14 +123,6 @@ const CloseModal = ({ position }: any) => {
                         <Tab.Group
                           onChange={(e) => {
                             setIsMarket(!!e);
-
-                            if (isMarket) {
-                              setPrice(
-                                Number(
-                                  getMarkPrice(position.synthetic_token, true)
-                                )
-                              );
-                            }
                           }}
                         >
                           <Tab.List className="flex space-x-5 rounded-xl bg-blue-900/20">
@@ -173,7 +165,7 @@ const CloseModal = ({ position }: any) => {
 
                             <Tab.Panel className={classNames("rounded-xl")}>
                               {/* PRICE =================================== */}
-                              <div className="flex justify-between text-sm dark:text-gray_lighter ">
+                              {/* <div className="flex justify-between text-sm dark:text-gray_lighter ">
                                 <p>Price(USD)</p>
                               </div>
                               <div className="relative">
@@ -189,7 +181,7 @@ const CloseModal = ({ position }: any) => {
                                         ).toFixed(2)
                                   }
                                 />
-                              </div>
+                              </div> */}
                             </Tab.Panel>
                           </Tab.Panels>
                         </Tab.Group>
@@ -238,9 +230,13 @@ const CloseModal = ({ position }: any) => {
                       type="button"
                       className="justify-center w-full px-4 py-2.5 text-sm text-white font-medium  rounded-md bg-blue hover:opacity-90"
                       onClick={async () => {
-                        if (!amount || !price) {
-                          alert("Please enter a valid amount and price");
+                        if (!amount) {
+                          alert("Please enter a valid amount");
                           return;
+                        }
+
+                        if (!price) {
+                          price = getMarkPrice(position.synthetic_token, true);
                         }
 
                         await onSumbitCloseOrder(
@@ -273,7 +269,7 @@ const onSumbitCloseOrder = async (
   position: any,
   isMarket: boolean,
   closeAmount: number,
-  price: number
+  price: number | null
 ) => {
   try {
     await sendPerpOrder(

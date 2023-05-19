@@ -174,8 +174,36 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
 
   const lastPriceStyle = type == "market" ? "opacity-60" : "hover:opacity-75";
 
+  const testLiquidations =
+    require("../../../../../app_logic/transactions/test/liquidation_test").default;
+
+  // if (user) {
+  //   console.log(
+  //     "positionData usdc",
+  //     user.noteData[55555].map((note: any) => note.index)
+  //   );
+  //   console.log(
+  //     "positionData eth",
+  //     user.noteData[54321].map((note: any) => note.index)
+  //   );
+  // }
+
   return (
     <div className="mt-2">
+      {/* // TODO */}
+
+      {/* <button
+        className="justify-center px-4 py-2 m-3 text-sm text-white font-medium  rounded-md bg-blue hover:opacity-90"
+        onClick={async () => {
+          await testLiquidations(user, markPrice);
+        }}
+      >
+        {" "}
+        Test Liquidations
+      </button> */}
+
+      {/* // TODO */}
+
       {/* Price ====================================== */}
       <div className="relative">
         <input

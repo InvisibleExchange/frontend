@@ -12,7 +12,7 @@ const HandleTooltip = (props: {
   value: number;
   children: React.ReactElement;
   visible: boolean;
-  // colorPair: any;
+  colorPair: any;
   tipFormatter?: (value: number) => React.ReactNode;
 }) => {
   const {
@@ -20,7 +20,7 @@ const HandleTooltip = (props: {
     children,
     visible,
     tipFormatter = (val) => `${val}`,
-    // colorPair,
+    colorPair,
     ...restProps
   } = props;
 
@@ -53,9 +53,11 @@ const HandleTooltip = (props: {
       overlay={tipFormatter(Math.abs(value))}
       overlayInnerStyle={{
         minHeight: "auto",
-        // color: value >= 0 ? colorPair.positiveColor : colorPair.negativeColor,
-        // fontWeight: 900,
-        // fontSize: "small",
+        color: value >= 0 ? colorPair.positiveColor : colorPair.negativeColor,
+        fontWeight: "bolder",
+        fontSize: "small",
+        fontFamily: "sans-serif",
+        textShadow: "2px 2px 2px rgba(0, 0, 0, 0.5)",
       }}
       ref={tooltipRef}
       visible={visible}
@@ -66,13 +68,13 @@ const HandleTooltip = (props: {
   );
 };
 
-export const handleRender: SliderProps["handleRender"] = (node, props) => {
-  return (
-    <HandleTooltip value={props.value} visible={props.dragging}>
-      {node}
-    </HandleTooltip>
-  );
-};
+// export const handleRender: SliderProps["handleRender"] = (node, props) => {
+//   return (
+//     <HandleTooltip value={props.value} visible={props.dragging}>
+//       {node}
+//     </HandleTooltip>
+//   );
+// };
 
 const TooltipPerpetualSlider = ({
   tipFormatter,
@@ -97,7 +99,7 @@ const TooltipPerpetualSlider = ({
         value={handleProps.value}
         visible={handleProps.dragging}
         tipFormatter={tipFormatter}
-        // colorPair={{ positiveColor, negativeColor }}
+        colorPair={{ positiveColor, negativeColor }}
         {...tipProps}
       >
         {node}

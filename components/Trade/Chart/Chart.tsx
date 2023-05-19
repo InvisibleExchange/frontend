@@ -3,8 +3,6 @@ import TradingViewWidget, { Themes } from "react-tradingview-widget";
 import { WalletContext } from "../../../context/WalletContext";
 
 const Chart = () => {
-  // const symbols = { BTC: "BINANCE:BTCUSD", ETH: "BINANCE:ETHUSD" };
-
   const { selectedType, selectedMarket } = useContext(WalletContext);
 
   let token =
