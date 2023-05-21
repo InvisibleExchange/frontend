@@ -400,6 +400,7 @@ export default class User {
     let positionPrivKey = null;
     let perpPosition = null;
 
+
     if (position_effect_type == "Open") {
       // ? Get the notesIn and priv keys for these notes
       let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
@@ -426,6 +427,8 @@ export default class User {
         storePrivKey(this.userId, koR, false, this.privateSeed);
       }
 
+     
+
       let { positionPrivKey, positionAddress } =
         this.getPositionAddress(synthetic_token);
       this.positionPrivKeys[positionAddress.getX().toString()] =
@@ -439,6 +442,8 @@ export default class User {
         positionAddress.getX().toString(),
         allow_partial_liquidation
       );
+
+      
 
       storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
@@ -488,6 +493,9 @@ export default class User {
     if (privKeys) {
       privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     }
+
+
+
 
     let perpOrder = new PerpOrder(
       expiration_timestamp,

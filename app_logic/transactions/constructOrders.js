@@ -754,15 +754,13 @@ async function sendChangeMargin(
       : null,
     position: {
       ...position,
-      order_side: position.order_side == "Long" ? 0 : 1,
+      order_side: position.order_side == "Long" ? 1 : 0,
     },
     signature: {
       r: signature[0].toString(),
       s: signature[1].toString(),
     },
   };
-
-  console.log(marginChangeMessage);
 
   await axios
     .post(`${EXPRESS_APP_URL}/change_position_margin`, marginChangeMessage)
@@ -810,15 +808,24 @@ async function sendChangeMargin(
 
             let liquidationPrice = _getLiquidationPrice(
               pos.entry_price,
-              bankruptcyPrice,
-              pos.order_side
+              pos.margin,
+              pos.position_size,
+              pos.order_side,
+              pos.synthetic_token,
+              pos.allow_partial_liquidations
             );
 
             pos.bankruptcy_price = bankruptcyPrice;
             pos.liquidation_price = liquidationPrice;
 
             let hash = computeHashOnElements([
-              pos.order_side == "Long" ? 0 : 1,
+              pos.order_side == "Long"
+                ? pos.allow_partial_liquidations
+                  ? 1
+                  : 0
+                : pos.allow_partial_liquidations
+                ? 2
+                : 3,
               pos.synthetic_token,
               pos.position_size,
               pos.entry_price,

@@ -42,29 +42,21 @@ const AdjustMarginModal = ({ position }: any) => {
   let [isOpen, setIsOpen] = useState(false);
   const [selected, _setSelected] = useState(types[0]);
 
-  const [maxValue, _setMaxValue] = useState(
-    user.getAvailableAmount(COLLATERAL_TOKEN) / 10 ** COLLATERAL_TOKEN_DECIMALS
-  );
+  let maxAddable =
+    user.getAvailableAmount(COLLATERAL_TOKEN) / 10 ** COLLATERAL_TOKEN_DECIMALS;
+  let maxRemovable =
+    (position.margin - minViableMargin) / 10 ** COLLATERAL_TOKEN_DECIMALS;
 
   const [marginChange, _setMarginChange] = useState<number | null>(null);
 
   function setSelected(val: any) {
     _setSelected(val);
-
-    if (val.name == "Add") {
-      _setMaxValue(
-        user.getAvailableAmount(COLLATERAL_TOKEN) /
-          10 ** COLLATERAL_TOKEN_DECIMALS
-      );
-    } else {
-      _setMaxValue(
-        (position.margin - minViableMargin) / 10 ** COLLATERAL_TOKEN_DECIMALS
-      );
-    }
   }
 
   function setMarginChange(num: any) {
     num = Number.parseFloat(num);
+
+    let maxValue = selected.name == "Add" ? maxAddable : maxRemovable;
 
     if (num > maxValue) {
       _setMarginChange(maxValue);
@@ -161,7 +153,10 @@ const AdjustMarginModal = ({ position }: any) => {
                         Max{" "}
                         {selected.name == "Add" ? " addable: " : " removable: "}
                         <span className="dark:text-white">
-                          {maxValue.toFixed(2)} USDC
+                          {selected.name == "Add"
+                            ? maxAddable.toFixed(2)
+                            : maxRemovable.toFixed(2)}{" "}
+                          USDC
                         </span>
                       </p>
                     </div>
@@ -227,7 +222,11 @@ const AdjustMarginModal = ({ position }: any) => {
                         />
                         <button
                           onClick={() => {
-                            setMarginChange(maxValue);
+                            setMarginChange(
+                              selected.name == "Add"
+                                ? maxAddable.toFixed(2)
+                                : maxRemovable.toFixed(2)
+                            );
                           }}
                           className="absolute text-sm cursor-pointer right-4 top-3 text-yellow active:opacity-60"
                         >
@@ -256,7 +255,10 @@ const AdjustMarginModal = ({ position }: any) => {
                         {selected.name == "Add" ? " addable " : " removable "}
                       </p>
                       <p className="font-bold dark:text-white">
-                        {maxValue.toFixed(2)} USDC
+                        {selected.name == "Add"
+                          ? maxAddable.toFixed(2)
+                          : maxRemovable.toFixed(2)}{" "}
+                        USDC
                       </p>
                     </div>
                     <div className="flex justify-between mt-3 text-sm dark:text-gray_lighter">

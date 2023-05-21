@@ -354,7 +354,7 @@ function getMinMaxLeverage(
       price,
       SYMBOLS_TO_IDS[token]
     );
-    newMaxLeverage = Number.parseInt(newMaxLeverage);
+    newMaxLeverage = Math.ceil(newMaxLeverage * 10) / 10;
 
     // getCurrentLeverage(indexPrice, size, margin)
     let currentLeverage = getCurrentLeverage(
@@ -363,7 +363,7 @@ function getMinMaxLeverage(
         10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]],
       positionData.margin / 10 ** COLLATERAL_TOKEN_DECIMALS
     );
-    currentLeverage = Number.parseInt(currentLeverage);
+    currentLeverage = Math.ceil(currentLeverage * 10) / 10;
 
     // ? If increasing position size
     if (positionData.order_side == side) {

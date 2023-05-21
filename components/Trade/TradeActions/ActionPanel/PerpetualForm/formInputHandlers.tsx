@@ -173,6 +173,7 @@ const _handleSliderChange = (
   val: any
 ) => {
   let leverage_ = Number(val[0]);
+
   if (newMinMaxLeverage) {
     leverage_ = Math.min(leverage_, newMinMaxLeverage?.upperBound);
     leverage_ = Math.max(leverage_, newMinMaxLeverage?.lowerBound);
@@ -187,7 +188,7 @@ const _handleSliderChange = (
     if (Number(price)) {
       let margin = positionData.margin / 10 ** COLLATERAL_TOKEN_DECIMALS;
 
-      let newSize = getSizeFromLeverage(Number(price), leverage, margin);
+      let newSize = getSizeFromLeverage(Number(price), leverage_, margin);
       let sizeChange = Math.abs(
         newSize -
           positionData.position_size /
@@ -199,7 +200,7 @@ const _handleSliderChange = (
   } else {
     if (price && baseAmount) {
       let nominalValue = Number(baseAmount) * Number(price);
-      let initMargin = nominalValue / leverage;
+      let initMargin = nominalValue / leverage_;
 
       setQuoteAmount(formatInputNum(initMargin.toString(), 4));
     }

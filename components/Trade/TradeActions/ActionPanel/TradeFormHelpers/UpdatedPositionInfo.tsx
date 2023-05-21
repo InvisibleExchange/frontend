@@ -6,9 +6,6 @@ const {
 } = require("./FormHelpers");
 
 const {
-  COLLATERAL_TOKEN_DECIMALS,
-  SYMBOLS_TO_IDS,
-  COLLATERAL_TOKEN,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
 } = require("../../../../../app_logic/helpers/utils");
@@ -59,6 +56,7 @@ const UpdatedPositionInfo = ({
         {/* // <div className="mt-1 flex items-center justify-between text-sm font-overpass text-fg_below_color dark:text-white"> */}
         <p className="text-[14px] w-full ">
           <div className="items-left justify-between">
+            {/* // * SIZE */}
             <div className="flex items-center justify-between px-1">
               <strong> Size: </strong>
 
@@ -80,6 +78,8 @@ const UpdatedPositionInfo = ({
                 {token}
               </strong>
             </div>
+
+            {/* // * AVG ENTRY PRICE */}
             <div className="mt-3 flex items-center justify-between px-1">
               <strong> Avg. Entry: </strong>
 
@@ -98,6 +98,8 @@ const UpdatedPositionInfo = ({
                 USD
               </strong>
             </div>
+
+            {/* // * EST. LIQ PRICE */}
             <div className="mt-3 flex items-center justify-between px-1">
               <strong> Liq. Price: </strong>
               <strong>
@@ -105,7 +107,7 @@ const UpdatedPositionInfo = ({
                   positionData.liquidation_price /
                   10 ** PRICE_DECIMALS_PER_ASSET[positionData.synthetic_token]
                 ).toFixed(3)}
-                {"  =>  "}
+                {"  =>   ~"}
                 {calculateNewLiqPrice(
                   positionData,
                   Number(baseAmount),

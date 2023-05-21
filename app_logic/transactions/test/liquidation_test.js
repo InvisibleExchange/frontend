@@ -31,8 +31,6 @@ async function testLiquidations(user, marketPrice) {
     position_index.toString()
   );
 
-  console.log("pos: ", position);
-
   let leverage = 10;
   let size = position.position_size / 10 ** DECIMALS_PER_ASSET[synthetic_token];
   let initial_margin = (size * marketPrice) / leverage;

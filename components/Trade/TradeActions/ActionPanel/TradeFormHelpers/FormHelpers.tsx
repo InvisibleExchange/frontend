@@ -173,7 +173,8 @@ function calculateAvgEntryPrice(
     } else {
       if (
         increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+        position.position_size /
+          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
       ) {
         return price;
       } else {
@@ -189,7 +190,8 @@ function calculateAvgEntryPrice(
     } else {
       if (
         increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+        position.position_size /
+          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
       ) {
         return price;
       } else {
@@ -224,7 +226,8 @@ function calculateNewLiqPrice(
     } else {
       if (
         increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+        position.position_size /
+          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
       ) {
         return (
           calulateLiqPriceInFlipSide(position, increaseSize, price) /
@@ -246,7 +249,8 @@ function calculateNewLiqPrice(
     } else {
       if (
         increaseSize >
-        position.size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+        position.position_size /
+          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
       ) {
         return (
           calulateLiqPriceInFlipSide(position, increaseSize, price) /
