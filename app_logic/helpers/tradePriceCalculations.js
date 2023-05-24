@@ -217,27 +217,17 @@ function getCurrentLeverage(indexPrice, size, margin) {
   return currentLeverage;
 }
 
-function getMinViableMargin(position) {
-  const maxLeverage = getMaxLeverage(
-    Number(position.synthetic_token),
+function getMinViableMargin(position, indexPrice) {
+  let size =
     Number(position.position_size) /
-      10 ** DECIMALS_PER_ASSET[position.synthetic_token]
-  );
+    10 ** DECIMALS_PER_ASSET[position.synthetic_token];
 
-  let maxLiquidationPrice =
-    (1 - 1 / maxLeverage) * Number(position.entry_price);
+  const maxLeverage = getMaxLeverage(Number(position.synthetic_token), size);
 
-  let multiplier =
-    10 **
-    (DECIMALS_PER_ASSET[position.synthetic_token] +
-      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
-      COLLATERAL_TOKEN_DECIMALS);
+  // ? Assume a 1% slippage
+  let minMargin = (Number(indexPrice) * size * 1.05) / maxLeverage;
 
-  let minMargin =
-    (Number(position.position_size) * maxLiquidationPrice) / maxLeverage;
-  minMargin = minMargin / multiplier;
-
-  return minMargin;
+  return minMargin * 10 ** COLLATERAL_TOKEN_DECIMALS;
 }
 
 function getMaxLeverage(token, amount) {

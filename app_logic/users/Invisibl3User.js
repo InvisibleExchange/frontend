@@ -381,14 +381,10 @@ export default class User {
     allow_partial_liquidation = true
   ) {
     if (!["Open", "Close", "Modify"].includes(position_effect_type)) {
-      alert(
-        "Invalid position effect type (liquidation orders created seperately)"
-      );
       throw "Invalid position effect type (liquidation orders created seperately)";
     }
 
     if (!["Long", "Short"].includes(order_side)) {
-      alert("Invalid order side");
       throw "Invalid order side";
     }
 
@@ -399,7 +395,6 @@ export default class User {
 
     let positionPrivKey = null;
     let perpPosition = null;
-
 
     if (position_effect_type == "Open") {
       // ? Get the notesIn and priv keys for these notes
@@ -427,8 +422,6 @@ export default class User {
         storePrivKey(this.userId, koR, false, this.privateSeed);
       }
 
-     
-
       let { positionPrivKey, positionAddress } =
         this.getPositionAddress(synthetic_token);
       this.positionPrivKeys[positionAddress.getX().toString()] =
@@ -442,8 +435,6 @@ export default class User {
         positionAddress.getX().toString(),
         allow_partial_liquidation
       );
-
-      
 
       storeUserData(this.userId, this.noteCounts, this.positionCounts);
 
@@ -493,9 +484,6 @@ export default class User {
     if (privKeys) {
       privKeySum = privKeys.reduce((a, b) => a + b, 0n);
     }
-
-
-
 
     let perpOrder = new PerpOrder(
       expiration_timestamp,
@@ -752,6 +740,7 @@ export default class User {
 
   changeMargin(positionAddress, token, direction, amount) {
     if (amount == 0) throw Error("amount is zero");
+    amount = Number.parseInt(amount);
 
     let position;
     let positionPrivKey;

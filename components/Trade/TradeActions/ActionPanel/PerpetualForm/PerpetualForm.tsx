@@ -48,7 +48,6 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
     login,
     connect,
     forceRerender,
-    getSelectedPosition,
     getMarkPrice,
     setToastMessage,
   } = useContext(WalletContext);
@@ -67,6 +66,13 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
   let newMinMaxLeverage = positionData
     ? getMinMaxLeverage(positionData, token, action, markPrice)
     : null;
+
+  if (
+    newMinMaxLeverage &&
+    newMinMaxLeverage.lowerBound >= newMinMaxLeverage?.upperBound
+  ) {
+    newMinMaxLeverage.lowerBound = newMinMaxLeverage?.upperBound;
+  }
 
   function percentFormatter(v: any) {
     return `${v}`;
@@ -177,16 +183,16 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
   const testLiquidations =
     require("../../../../../app_logic/transactions/test/liquidation_test").default;
 
-  // if (user) {
-  //   console.log(
-  //     "positionData usdc",
-  //     user.noteData[55555].map((note: any) => note.index)
-  //   );
-  //   console.log(
-  //     "positionData eth",
-  //     user.noteData[54321].map((note: any) => note.index)
-  //   );
-  // }
+  if (user) {
+    console.log(
+      "positionData usdc",
+      user.noteData[55555]?.map((note: any) => note.index + " - " + note.amount)
+    );
+    // console.log(
+    //   "positionData eth",
+    //   user.noteData[54321].map((note: any) => note.index + " - " + note.hash)
+    // );
+  }
 
   return (
     <div className="mt-2">
@@ -241,6 +247,11 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
           value={baseAmount?.toString()}
           onChange={handleBaseAmountChange}
           placeholder="Amount"
+          disabled={
+            newMinMaxLeverage
+              ? newMinMaxLeverage.lowerBound >= newMinMaxLeverage?.upperBound
+              : false
+          }
         />
         <div className="absolute top-0 right-0 w-16 px-3 py-1.5 text-base font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
           {token}

@@ -55,6 +55,9 @@ function checkValidSizeIncrease(
   totalNominal = totalNominal + baseAmount * price;
   let avgPrice = totalNominal / totalBaseAmount;
 
+  console.log(totalBaseAmount);
+  console.log(avgPrice);
+
   // TODO: TEST THIS =================================================
 
   if (

@@ -31,13 +31,15 @@ const types = [{ name: "Add" }, { name: "Remove" }];
 
 const AdjustMarginModal = ({ position }: any) => {
   const { theme } = useContext(ThemeContext);
-  const { user, forceRerender, setToastMessage } = useContext(WalletContext);
+  const { user, forceRerender, setToastMessage, getMarkPrice } =
+    useContext(WalletContext);
 
   useEffect(() => {
     setSelected(types[0]);
   }, [position, user]);
 
-  const minViableMargin = getMinViableMargin(position);
+  let price = getMarkPrice(position.synthetic_token, true);
+  const minViableMargin = Math.max(getMinViableMargin(position, price), 0);
 
   let [isOpen, setIsOpen] = useState(false);
   const [selected, _setSelected] = useState(types[0]);
@@ -64,6 +66,10 @@ const AdjustMarginModal = ({ position }: any) => {
       _setMarginChange(num);
     }
   }
+
+
+  // 20021 701 373
+
 
   async function sendMarginChangeRequest() {
     await sendChangeMargin(

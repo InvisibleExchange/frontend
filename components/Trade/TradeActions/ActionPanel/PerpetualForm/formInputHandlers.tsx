@@ -137,6 +137,7 @@ const _handleBaseAmountChange = (
     }
   }
 };
+
 const _handleQuoteAmountChange = (
   setQuoteAmount,
   setBaseAmount,
@@ -161,6 +162,7 @@ const _handleQuoteAmountChange = (
     setMaxLeverage(Number(formatInputNum(max_leverage.toString(), 1)));
   }
 };
+
 const _handleSliderChange = (
   setQuoteAmount,
   leverage,
@@ -184,6 +186,16 @@ const _handleSliderChange = (
 
   setLeverage(leverage_);
 
+  if (newMinMaxLeverage) {
+    leverage_ = Math.min(leverage_, newMinMaxLeverage?.upperBound - 0.1);
+    let adjustment =
+      newMinMaxLeverage?.lowerBound >= newMinMaxLeverage?.upperBound ? 0.3 : 0;
+    leverage_ = Math.max(leverage_, newMinMaxLeverage?.lowerBound + adjustment);
+  } else {
+    leverage_ = Math.min(leverage_, MAX_LEVERAGE - 0.1);
+    leverage_ = Math.max(leverage_, 0.1);
+  }
+
   if (positionData) {
     if (Number(price)) {
       let margin = positionData.margin / 10 ** COLLATERAL_TOKEN_DECIMALS;
@@ -195,7 +207,7 @@ const _handleSliderChange = (
             10 ** DECIMALS_PER_ASSET[positionData.synthetic_token]
       );
 
-      setBaseAmount(Number(formatInputNum(sizeChange.toString(), 3)));
+      setBaseAmount(formatInputNum(sizeChange.toString(), 4));
     }
   } else {
     if (price && baseAmount) {

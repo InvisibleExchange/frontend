@@ -253,7 +253,7 @@ async function sendPerpOrder(
   let decimalMultiplier =
     syntheticDecimals + priceDecimals - COLLATERAL_TOKEN_DECIMALS;
 
-  syntheticAmount = syntheticAmount * 10 ** syntheticDecimals;
+  syntheticAmount = Number.parseInt(syntheticAmount * 10 ** syntheticDecimals);
   let scaledPrice = price * 10 ** priceDecimals;
   scaledPrice = isMarket
     ? order_side == "Long"
