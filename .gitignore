@@ -36,6 +36,6 @@ yarn-error.log*
 next-env.d.ts
 
 
-
+app_logic/transactions/test
 app_logic/helpers/firebase
 !app_logic/helpers/firebase/firebaseConnection.js
