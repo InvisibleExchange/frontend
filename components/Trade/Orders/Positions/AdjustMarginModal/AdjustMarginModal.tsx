@@ -46,8 +46,10 @@ const AdjustMarginModal = ({ position }: any) => {
 
   let maxAddable =
     user.getAvailableAmount(COLLATERAL_TOKEN) / 10 ** COLLATERAL_TOKEN_DECIMALS;
-  let maxRemovable =
-    (position.margin - minViableMargin) / 10 ** COLLATERAL_TOKEN_DECIMALS;
+  let maxRemovable = Math.max(
+    (position.margin - minViableMargin) / 10 ** COLLATERAL_TOKEN_DECIMALS,
+    0
+  );
 
   const [marginChange, _setMarginChange] = useState<number | null>(null);
 
@@ -67,9 +69,7 @@ const AdjustMarginModal = ({ position }: any) => {
     }
   }
 
-
   // 20021 701 373
-
 
   async function sendMarginChangeRequest() {
     await sendChangeMargin(

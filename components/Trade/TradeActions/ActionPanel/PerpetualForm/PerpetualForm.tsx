@@ -183,16 +183,16 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
   const testLiquidations =
     require("../../../../../app_logic/transactions/test/liquidation_test").default;
 
-  if (user) {
-    console.log(
-      "positionData usdc",
-      user.noteData[55555]?.map((note: any) => note.index + " - " + note.amount)
-    );
-    // console.log(
-    //   "positionData eth",
-    //   user.noteData[54321].map((note: any) => note.index + " - " + note.hash)
-    // );
-  }
+  // if (user) {
+  //   console.log(
+  //     "positionData usdc",
+  //     user.noteData[55555]?.map((note: any) => note.index + " - " + note.amount)
+  //   );
+  // console.log(
+  //   "positionData eth",
+  //   user.noteData[54321].map((note: any) => note.index + " - " + note.hash)
+  // );
+  // }
 
   return (
     <div className="mt-2">

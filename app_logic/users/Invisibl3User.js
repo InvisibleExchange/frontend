@@ -12,7 +12,7 @@ const {
   removeOrderId,
   fetchUserFills,
   fetchDeprecatedKeys,
-} = require("../helpers/firebase/firebaseConnection");
+} = require("../helpers/firebaseConnection");
 
 const {
   _subaddressPrivKeys,

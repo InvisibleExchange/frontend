@@ -1,4 +1,4 @@
-const { db } = require("./firebaseConfig.js");
+const { db } = require("./firebase/firebaseConfig.js");
 const {
   collection,
   addDoc,
@@ -15,8 +15,8 @@ const {
 } = require("firebase/firestore");
 const bigInt = require("big-integer");
 
-const { Note, trimHash } = require("../../users/Notes.js");
-const { pedersen } = require("../pedersen.js");
+const { Note, trimHash } = require("../users/Notes.js");
+const { pedersen } = require("./pedersen.js");
 
 const { ec, getKeyPair } = require("starknet").ec; //require("starknet/utils/ellipticCurve.js");
 

@@ -2,7 +2,7 @@ const { checkPerpOrderValidity } = require("../helpers/orderHelpers");
 const { trimHash, Note } = require("../users/Notes");
 
 const axios = require("axios");
-const { storeOrderId } = require("../helpers/firebase/firebaseConnection");
+const { storeOrderId } = require("../helpers/firebaseConnection");
 
 const { computeHashOnElements } = require("../helpers/pedersen");
 

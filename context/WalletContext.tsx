@@ -34,9 +34,7 @@ const {
 } = require("../app_logic/helpers/utils");
 const User = require("../app_logic/users/Invisibl3User").default;
 const { trimHash } = require("../app_logic/users/Notes");
-const {
-  fetchLatestFills,
-} = require("../app_logic/helpers/firebase/firebaseConnection");
+const { fetchLatestFills } = require("../app_logic/helpers/firebaseConnection");
 
 import {
   NETWORKS,

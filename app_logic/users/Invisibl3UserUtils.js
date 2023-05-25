@@ -7,7 +7,7 @@ const {
   fetchStoredPosition,
   fetchStoredNotes,
   storePrivKey,
-} = require("../helpers/firebase/firebaseConnection");
+} = require("../helpers/firebaseConnection");
 
 /* global BigInt */
 
