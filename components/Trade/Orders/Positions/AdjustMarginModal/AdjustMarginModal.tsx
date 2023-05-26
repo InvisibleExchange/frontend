@@ -69,10 +69,8 @@ const AdjustMarginModal = ({ position }: any) => {
     }
   }
 
-  // 20021 701 373
-
   async function sendMarginChangeRequest() {
-    await sendChangeMargin(
+    let errMsg = await sendChangeMargin(
       user,
       position.position_address,
       position.synthetic_token,
@@ -80,11 +78,23 @@ const AdjustMarginModal = ({ position }: any) => {
       selected.name
     );
 
-    let message =
-      selected.name == "Add"
-        ? " +" + marginChange?.toFixed(2) + " USDC"
-        : " -" + marginChange?.toFixed(2) + " USDC";
-    setToastMessage("Updated margin sucessfuly:" + message);
+    let message;
+    if (errMsg) {
+      message = errMsg;
+    } else {
+      message =
+        selected.name == "Add"
+          ? "Updated margin sucessfuly: " +
+            " +" +
+            marginChange?.toFixed(2) +
+            " USDC"
+          : "Updated margin sucessfuly: " +
+            " -" +
+            marginChange?.toFixed(2) +
+            " USDC";
+    }
+
+    setToastMessage(message);
 
     forceRerender();
 

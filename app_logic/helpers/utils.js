@@ -2,8 +2,8 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note, trimHash } = require("../users/Notes");
 
-// const SERVER_URL = "localhost";
-const SERVER_URL = "54.212.28.196";
+const SERVER_URL = "localhost";
+// const SERVER_URL = "54.212.28.196";
 
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
@@ -228,46 +228,40 @@ function handleLiquidityUpdate(
  *          timestamp: u64
  *   }
  */
-function handleFillResult(user, result, fills, setFills) {
-  for (let f of result.fillUpdates) {
-    f = JSON.parse(f);
-
-    if (!fills[f.asset]) {
-      fills[f.asset] = [];
-    }
-
-    fills[f.asset].unshift({
-      amount: f.amount,
-      price: f.price,
-      base_token: f.asset,
-      is_buy: f.is_buy,
-      timestamp: f.timestamp,
-      isPerp: f.type == "perpetual",
-    });
-
-    if (fills[f.asset].length > 15) {
-      fills[f.asset].pop();
-    }
-
-    if (user) {
-      let trimedId = trimHash(user.userId, 64).toString();
-
-      if (f.user_id_a == trimedId || f.user_id_b == trimedId) {
-        let fill = {
-          amount: f.amount,
-          price: f.price,
-          base_token: f.asset,
-          side: f.user_id_a == trimedId ? "Buy" : "Sell",
-          time: f.timestamp,
-          isPerp: f.type == "perpetual",
-        };
-
-        user.fills.unshift(fill);
-      }
-    }
+function handleFillResult(user, f, fills) {
+  if (!fills[f.asset]) {
+    fills[f.asset] = [];
   }
 
-  setFills(fills);
+  fills[f.asset].unshift({
+    amount: f.amount,
+    price: f.price,
+    base_token: f.asset,
+    is_buy: f.is_buy,
+    timestamp: f.timestamp,
+    isPerp: f.type == "perpetual",
+  });
+
+  if (fills[f.asset].length > 15) {
+    fills[f.asset].pop();
+  }
+
+  if (user) {
+    let trimedId = trimHash(user.userId, 64).toString();
+
+    if (f.user_id_a == trimedId || f.user_id_b == trimedId) {
+      let fill = {
+        amount: f.amount,
+        price: f.price,
+        base_token: f.asset,
+        side: f.user_id_a == trimedId ? "Buy" : "Sell",
+        time: f.timestamp,
+        isPerp: f.type == "perpetual",
+      };
+
+      user.fills.unshift(fill);
+    }
+  }
 }
 
 /**

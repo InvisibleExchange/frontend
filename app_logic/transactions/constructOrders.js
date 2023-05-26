@@ -732,7 +732,7 @@ async function sendChangeMargin(
   amount,
   direction
 ) {
-  let margin_change = amount * 10 ** COLLATERAL_TOKEN_DECIMALS;
+  let margin_change = Number.parseInt(amount * 10 ** COLLATERAL_TOKEN_DECIMALS);
 
   //todo: if (direction == "decrease" && margin_change >= MARGIN_LEFT?) {}
   let { notes_in, refund_note, close_order_fields, position, signature } =
@@ -762,7 +762,7 @@ async function sendChangeMargin(
     },
   };
 
-  await axios
+  let err_msg = await axios
     .post(`${EXPRESS_APP_URL}/change_position_margin`, marginChangeMessage)
     .then((res) => {
       let marginChangeResponse = res.data.response;
@@ -841,13 +841,17 @@ async function sendChangeMargin(
             return pos;
           }
         });
+
+        return null;
       } else {
         let msg =
           "Failed to submit order with error: \n" +
           marginChangeResponse.error_message;
-        console.log(msg);
+        return msg;
       }
     });
+
+  return err_msg;
 }
 
 module.exports = {
