@@ -18,7 +18,8 @@ const {
 const _handlePriceChange = (
   setPrice,
   baseAmount,
-  setQuoteAmount,
+  setBaseAmount,
+  quoteAmount,
   leverage,
   positionData,
   action,
@@ -64,11 +65,9 @@ const _handlePriceChange = (
       setLeverage(Number(formatInputNum(leverage_.toString(), 1)));
     }
   } else {
-    if (baseAmount) {
-      let nominalValue = Number(baseAmount) * price;
-
-      let initMargin = nominalValue / leverage;
-      setQuoteAmount(formatInputNum(initMargin.toString(), 4));
+    if (quoteAmount) {
+      let baseAmount_ = (Number(quoteAmount) * leverage) / Number(price);
+      setBaseAmount(formatInputNum(baseAmount_.toString(), 4));
     }
   }
 };
@@ -145,9 +144,11 @@ const _handleQuoteAmountChange = (
   price,
   token,
   leverage,
-  e: any
+  e: any,
+  maxQuote: number
 ) => {
   let quoteAmount = formatInputNum(e.target.value, 2);
+  quoteAmount = quoteAmount ? Math.min(quoteAmount, maxQuote).toString() : null;
   setQuoteAmount(quoteAmount);
 
   if (!quoteAmount || quoteAmount == "0") {
@@ -164,10 +165,8 @@ const _handleQuoteAmountChange = (
 };
 
 const _handleSliderChange = (
-  setQuoteAmount,
-  leverage,
   setLeverage,
-  baseAmount,
+  quoteAmount,
   positionData,
   price,
   setBaseAmount,
@@ -210,11 +209,9 @@ const _handleSliderChange = (
       setBaseAmount(formatInputNum(sizeChange.toString(), 4));
     }
   } else {
-    if (price && baseAmount) {
-      let nominalValue = Number(baseAmount) * Number(price);
-      let initMargin = nominalValue / leverage_;
-
-      setQuoteAmount(formatInputNum(initMargin.toString(), 4));
+    if (price && quoteAmount) {
+      let baseAmount_ = (Number(quoteAmount) * leverage_) / Number(price);
+      setBaseAmount(formatInputNum(baseAmount_.toString(), 4));
     }
   }
 };

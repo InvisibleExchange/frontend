@@ -83,7 +83,8 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
     _handlePriceChange(
       setPrice,
       baseAmount,
-      setQuoteAmount,
+      setBaseAmount,
+      quoteAmount,
       leverage,
       positionData,
       action,
@@ -109,6 +110,9 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
     );
   }
   function handleQuoteAmountChange(e: any) {
+
+
+
     _handleQuoteAmountChange(
       setQuoteAmount,
       setBaseAmount,
@@ -116,15 +120,14 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
       price,
       token,
       leverage,
-      e
+      e,
+      maxQuote
     );
   }
   function handleSliderChange(val: any) {
     _handleSliderChange(
-      setQuoteAmount,
-      leverage,
       setLeverage,
-      baseAmount,
+      quoteAmount,
       positionData,
       price,
       setBaseAmount,
