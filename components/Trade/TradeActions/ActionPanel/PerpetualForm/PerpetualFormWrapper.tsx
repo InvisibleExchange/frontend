@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { use, useContext, useEffect, useState } from "react";
 import { RadioGroup, Tab } from "@headlessui/react";
 import classNames from "classnames";
 import TradeForm from "./PerpetualForm";
@@ -16,7 +16,7 @@ const plans = [
 ];
 
 const PerpetualFormWrapper = ({ token }: any) => {
-  let { user, getSelectedPosition } = useContext(WalletContext);
+  let { user, getSelectedPosition, formInputs } = useContext(WalletContext);
 
   let selectedPosition = getSelectedPosition();
   let positionData;
@@ -36,6 +36,16 @@ const PerpetualFormWrapper = ({ token }: any) => {
 
   let [categories] = useState(["Limit", "Market"]);
   const [selected, setSelected] = useState<any>(defaultPlan);
+
+  const [rerenderCount, setRerenderCount] = useState<any>(0);
+
+  const [selectedMarketType, setSelectedMarketType] = useState<
+    "limit" | "market"
+  >("limit");
+
+  useEffect(() => {
+    setRerenderCount(rerenderCount + 1);
+  }, [formInputs]);
 
   return (
     <div>
@@ -81,42 +91,38 @@ const PerpetualFormWrapper = ({ token }: any) => {
         </RadioGroup>
       ) : null}
       {/* MARKET / LIMIT ORDER SELECTOR */}
-      <Tab.Group>
-        <Tab.List className="flex pl-4 space-x-5 rounded-xl bg-blue-900/20">
-          {categories.map((category) => (
-            <Tab
-              key={category}
-              className={({ selected }) =>
-                classNames(
-                  "rounded-lg pt-4 text-sm font-medium leading-5 tracking-wider outline-none",
-                  selected ? "text-blue hover:outline-none" : ""
-                )
-              }
-            >
-              {category}
-            </Tab>
-          ))}
-        </Tab.List>
-        <Tab.Panels className="mt-2">
-          <Tab.Panel className={classNames("rounded-xl p-3")}>
-            <TradeForm
-              type="limit"
-              token={token}
-              action={!positionData ? "none" : selected.name}
-              positionData={positionData}
-            />
-          </Tab.Panel>
+      <div className="flex pl-4 space-x-5  rounded-xl bg-blue-900/20">
+        <div
+          key={"Limit"}
+          className={classNames(
+            "rounded-lg pt-4 text-sm font-medium leading-5 cursor-pointer tracking-wider outline-none",
+            selectedMarketType == "limit" ? "text-blue hover:outline-none" : ""
+          )}
+          onClick={() => setSelectedMarketType("limit")}
+        >
+          Limit
+        </div>
 
-          <Tab.Panel className={classNames("rounded-xl p-3")}>
-            <TradeForm
-              type="market"
-              token={token}
-              action={!positionData ? "none" : selected.name}
-              positionData={positionData}
-            />
-          </Tab.Panel>
-        </Tab.Panels>
-      </Tab.Group>
+        <div
+          key={"Market"}
+          className={classNames(
+            "rounded-lg pt-4 text-sm font-medium leading-5 cursor-pointer tracking-wider outline-none",
+            selectedMarketType == "market" ? "text-blue hover:outline-none" : ""
+          )}
+          onClick={() => setSelectedMarketType("market")}
+        >
+          Market
+        </div>
+      </div>
+
+      <TradeForm
+        key={rerenderCount}
+        type={selectedMarketType}
+        token={token}
+        action={!positionData ? "none" : selected.name}
+        positionData={positionData}
+        formInputs={formInputs}
+      />
     </div>
   );
 };

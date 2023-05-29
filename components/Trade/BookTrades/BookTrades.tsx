@@ -20,9 +20,10 @@ export default function BookTrades() {
     perpLiquidity,
     fills,
     perpFills,
-    getMarkPrice,
+    forceRerender,
     selectedType,
     selectedMarket,
+    setFormInputs,
   } = useContext(WalletContext);
 
   let token =
@@ -71,9 +72,11 @@ export default function BookTrades() {
     <div className="w-full h-[70vh]">
       <Book
         token={token}
+        isPerp={selectedType == "perpetual"}
         bidQueue={bidQueue && bidQueue.length > 0 ? bidQueue : initBq}
         askQueue={askQueue && askQueue.length > 0 ? askQueue : initAq}
-        getMarkPrice={getMarkPrice}
+        setFormInputs={setFormInputs}
+        forceRerender={forceRerender}
       />
       <Trades
         token={token}

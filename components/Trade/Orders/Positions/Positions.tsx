@@ -45,7 +45,8 @@ const Positions = () => {
             <th className="pr-3 ">Liq.Price</th>
             <th className="pr-3 ">Leverage</th>
             <th className="pr-3 ">Margin</th>
-            <th className="pr-3 ">PNL(ROE %)</th>
+            <th className="pr-3 ">Unrealized PNL(%)</th>
+            <th className="pr-3 ">Realized PNL(%)</th>
             <th className="pr-3"></th>
           </tr>
         </thead>
@@ -135,12 +136,17 @@ const Positions = () => {
                         <AdjustMarginModal position={pos} />
                       </div>
                     </td>
+                    {/* Unrealized PNL */}
                     <td className={classNames("pr-3 font-medium " + pnlColor)}>
                       <p>{pnl.toFixed(2)} USD</p>
                       <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                     </td>
-                    {/*  */}
-
+                    {/* Realized PNL */}
+                    <td className={classNames("pr-3 font-medium " + pnlColor)}>
+                      <p>{pnl.toFixed(2)} USD</p>
+                      <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
+                    </td>
+                    {/* Close Button */}
                     <td className={classNames("pr-3 font-medium " + pnlColor)}>
                       <CloseModal position={pos}></CloseModal>
                     </td>

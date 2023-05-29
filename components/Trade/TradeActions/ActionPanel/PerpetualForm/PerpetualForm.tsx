@@ -39,9 +39,16 @@ type props = {
   token: string;
   action: "Long" | "Short";
   positionData: any;
+  formInputs: any;
 };
 
-const TradeForm = ({ type, token, action, positionData }: props) => {
+const TradeForm = ({
+  type,
+  token,
+  action,
+  positionData,
+  formInputs,
+}: props) => {
   let {
     user,
     userAddress,
@@ -50,18 +57,25 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
     forceRerender,
     getMarkPrice,
     setToastMessage,
+    setFormInputs,
   } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {}, [user]);
 
+  let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], true);
+
+  useEffect(() => {
+    if (type == "market") {
+      handlePriceChange({ target: { value: markPrice.toString() } });
+    }
+  }, [type]);
+
   const maxQuote = user
     ? user.getAvailableAmount(COLLATERAL_TOKEN) /
       10 ** COLLATERAL_TOKEN_DECIMALS
     : 0;
-
-  let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], true);
 
   let newMinMaxLeverage = positionData
     ? getMinMaxLeverage(positionData, token, action, markPrice)
@@ -74,12 +88,32 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
     newMinMaxLeverage.lowerBound = newMinMaxLeverage?.upperBound;
   }
 
+  let price_, baseAmount_, quoteAmount_;
+  if (
+    formInputs &&
+    formInputs.isPerp &&
+    formInputs.token == SYMBOLS_TO_IDS[token]
+  ) {
+    price_ = formInputs.price
+      ? formatInputNum(formInputs.price.toString(), 2)
+      : null;
+    baseAmount_ = formInputs.amount
+      ? formatInputNum(formInputs.amount.toString(), 4)
+      : null;
+    quoteAmount_ = formInputs.quoteAmount
+      ? formatInputNum(formInputs.quoteAmount.toString(), 2)
+      : null;
+  }
+
   function percentFormatter(v: any) {
     return `${v}`;
   }
 
+  // do somethin when the component is destroyed
+
   // * Form input handles
   function handlePriceChange(e: any) {
+    let price = formatInputNum(e.target.value, 2);
     _handlePriceChange(
       setPrice,
       baseAmount,
@@ -91,10 +125,11 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
       token,
       newMinMaxLeverage,
       setLeverage,
-      e
+      price
     );
   }
   function handleBaseAmountChange(e: any) {
+    let baseAmount_ = formatInputNum(e.target.value, 4);
     _handleBaseAmountChange(
       setQuoteAmount,
       setBaseAmount,
@@ -106,12 +141,11 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
       newMinMaxLeverage,
       leverage,
       setLeverage,
-      e
+      baseAmount_
     );
   }
   function handleQuoteAmountChange(e: any) {
-
-
+    let quoteAmount = formatInputNum(e.target.value, 2);
 
     _handleQuoteAmountChange(
       setQuoteAmount,
@@ -120,11 +154,13 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
       price,
       token,
       leverage,
-      e,
+      quoteAmount,
       maxQuote
     );
   }
   function handleSliderChange(val: any) {
+    let leverage_ = Number(val[0]);
+
     _handleSliderChange(
       setLeverage,
       quoteAmount,
@@ -132,7 +168,7 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
       price,
       setBaseAmount,
       newMinMaxLeverage,
-      val
+      leverage_
     );
   }
 
@@ -171,10 +207,10 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
   const [price, setPrice] = useState<string | null>(
     type == "market"
       ? getMarkPrice(SYMBOLS_TO_IDS[token], true).toFixed(2) ?? "0.00"
-      : null
+      : price_
   );
-  const [baseAmount, setBaseAmount] = useState<string | null>(null);
-  const [quoteAmount, setQuoteAmount] = useState<string | null>(null);
+  const [baseAmount, setBaseAmount] = useState<string | null>(baseAmount_);
+  const [quoteAmount, setQuoteAmount] = useState<string | null>(quoteAmount_);
 
   const [refundNow, setRefundNow] = useState<boolean>(true);
 
@@ -206,7 +242,7 @@ const TradeForm = ({ type, token, action, positionData }: props) => {
           readOnly={type === "market"}
           type="number"
           step={0.01}
-          value={price?.toString()}
+          value={type == "market" ? markPrice.toFixed(2) : price?.toString()}
           onChange={handlePriceChange}
           placeholder="Price"
         />

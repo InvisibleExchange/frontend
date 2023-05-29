@@ -26,9 +26,8 @@ const _handlePriceChange = (
   token,
   newMinMaxLeverage,
   setLeverage,
-  e: any
+  price
 ) => {
-  let price = formatInputNum(e.target.value, 2);
   setPrice(price);
 
   if (!price) {
@@ -82,9 +81,8 @@ const _handleBaseAmountChange = (
   newMinMaxLeverage,
   leverage,
   setLeverage,
-  e: any
+  baseAmount_: any
 ) => {
-  let baseAmount_ = formatInputNum(e.target.value, 4);
   setBaseAmount(baseAmount_);
 
   if (!baseAmount_ || baseAmount_ == "0") {
@@ -144,10 +142,11 @@ const _handleQuoteAmountChange = (
   price,
   token,
   leverage,
-  e: any,
+  quoteAmount: any,
   maxQuote: number
 ) => {
-  let quoteAmount = formatInputNum(e.target.value, 2);
+  console.log("quoteAmount", quoteAmount);
+
   quoteAmount = quoteAmount ? Math.min(quoteAmount, maxQuote).toString() : null;
   setQuoteAmount(quoteAmount);
 
@@ -171,10 +170,8 @@ const _handleSliderChange = (
   price,
   setBaseAmount,
   newMinMaxLeverage,
-  val: any
+  leverage_: any
 ) => {
-  let leverage_ = Number(val[0]);
-
   if (newMinMaxLeverage) {
     leverage_ = Math.min(leverage_, newMinMaxLeverage?.upperBound);
     leverage_ = Math.max(leverage_, newMinMaxLeverage?.lowerBound);

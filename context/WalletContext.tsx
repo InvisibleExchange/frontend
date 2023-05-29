@@ -77,6 +77,9 @@ export type WalletContextType = {
 
   balances: TokenBalanceObject;
   allowances: TokenAllowanceObject;
+
+  setFormInputs: any;
+  formInputs: any;
   liquidity: {
     [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
   };
@@ -115,6 +118,8 @@ export const WalletContext = createContext<WalletContextType>({
   setSelectedMarket: () => {},
   selectedType: "perpetual",
   setSelectedType: () => {},
+  setFormInputs: () => {},
+  formInputs: null,
 
   connect: () => {},
   disconnect: () => {},
@@ -236,6 +241,8 @@ function WalletProvider({ children }: Props) {
 
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
+
+  const [formInputs, setFormInputs] = useState<any>(null);
 
   const [liquidity, setLiquidity] = useState<{
     [key: number]: { askQueue: TradeType[]; bidQueue: TradeType[] };
@@ -393,24 +400,6 @@ function WalletProvider({ children }: Props) {
     } else {
       onboard.state.actions.updateBalances();
     }
-  };
-
-  const hasSufficientBalance = (token: ZZToken, amount: number) => {
-    const balance = balances[token.address];
-    if (!balance) {
-      console.warn("hasSufficientBalance: balance is undefined");
-      return false;
-    }
-    return utils.parseUnits(String(amount), token.decimals).lte(balance);
-  };
-
-  const hasSufficientAllowance = (token: ZZToken, amount: number) => {
-    const allowance = allowances[token.address];
-    if (!allowance) {
-      console.warn("hasSufficientAllowance: allowance is undefined");
-      return false;
-    }
-    return utils.parseUnits(String(amount), token.decimals).lte(allowance);
   };
 
   const login = async () => {
@@ -665,6 +654,8 @@ function WalletProvider({ children }: Props) {
         balances,
         allowances,
 
+        setFormInputs,
+        formInputs,
         liquidity: liquidity,
         perpLiquidity: perpLiquidity,
         fills: fills,

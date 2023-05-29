@@ -31,9 +31,10 @@ type props = {
   type: string;
   token: string;
   action: string;
+  formInputs: any;
 };
 
-const TradeForm = ({ type, token, action }: props) => {
+const TradeForm = ({ type, token, action, formInputs }: props) => {
   let {
     user,
     userAddress,
@@ -49,6 +50,14 @@ const TradeForm = ({ type, token, action }: props) => {
 
   useEffect(() => {}, [user]);
 
+  let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], false);
+
+  useEffect(() => {
+    if (type == "market") {
+      handlePriceChange({ target: { value: markPrice.toString() } });
+    }
+  }, [type]);
+
   const maxBase = user
     ? user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
       10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
@@ -58,7 +67,22 @@ const TradeForm = ({ type, token, action }: props) => {
       10 ** COLLATERAL_TOKEN_DECIMALS
     : 0;
 
-  // const tradeType = useSelector(tradeTypeSelector);
+  let price_, baseAmount_, quoteAmount_;
+  if (
+    formInputs &&
+    formInputs.isPerp &&
+    formInputs.token == SYMBOLS_TO_IDS[token]
+  ) {
+    price_ = formInputs.price
+      ? formatInputNum(formInputs.price.toString(), 2)
+      : null;
+    baseAmount_ = formInputs.amount
+      ? formatInputNum(formInputs.amount.toString(), 4)
+      : null;
+    quoteAmount_ = formInputs.quoteAmount
+      ? formatInputNum(formInputs.quoteAmount.toString(), 2)
+      : null;
+  }
 
   function percentFormatter(v: any) {
     return `${v}`;
@@ -93,16 +117,13 @@ const TradeForm = ({ type, token, action }: props) => {
     return _renderLoginButton(isLoading, setIsLoading, login, forceRerender);
   }
 
-  const [leverage, setLeverage] = useState(1);
-  const [maxLeverage, setMaxLeverage] = useState(MAX_LEVERAGE);
-
   const [price, setPrice] = useState<string | null>(
     type == "market"
       ? getMarkPrice(SYMBOLS_TO_IDS[token], false).toFixed(2) ?? "0.00"
-      : null
+      : price_
   );
-  const [baseAmount, setBaseAmount] = useState<string | null>(null);
-  const [quoteAmount, setQuoteAmount] = useState<string | null>(null);
+  const [baseAmount, setBaseAmount] = useState<string | null>(baseAmount_);
+  const [quoteAmount, setQuoteAmount] = useState<string | null>(quoteAmount_);
 
   const handlePriceChange = (e: any) => {
     let price = formatInputNum(e.target.value, 2);
@@ -125,7 +146,6 @@ const TradeForm = ({ type, token, action }: props) => {
     setBaseAmount(baseAmount_);
 
     if (!baseAmount_ || baseAmount_ == "0") {
-      setMaxLeverage(MAX_LEVERAGE);
       return;
     }
 

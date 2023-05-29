@@ -17,16 +17,20 @@ import { WalletContext } from "../../../../context/WalletContext";
 
 type Props = {
   token: string;
+  isPerp: boolean;
   bidQueue: any;
   askQueue: any;
-  getMarkPrice: any;
+  setFormInputs: any;
+  forceRerender: any;
 };
 
 export default function Book({
   token,
+  isPerp,
   bidQueue,
   askQueue,
-  getMarkPrice,
+  setFormInputs,
+  forceRerender,
 }: Props) {
   // const { userAddress } = useContext(WalletContext);
 
@@ -65,7 +69,23 @@ export default function Book({
                   10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
 
                 return (
-                  <div className="flex" key={index}>
+                  <div
+                    className="flex cursor-pointer border-border_color hover:bg-border_color"
+                    onClick={() => {
+                      // formInputs = {isPerp, token, price, amount, quoteAmount}
+                      setFormInputs({
+                        isPerp: isPerp,
+                        token: SYMBOLS_TO_IDS[token],
+                        price: order.price,
+                        amount:
+                          amount /
+                          10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]],
+                        quoteAmount: amount * order.price,
+                      });
+                      forceRerender();
+                    }}
+                    key={index}
+                  >
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
                       <strong>{order.price.toFixed(2)}</strong>
                     </div>
@@ -99,7 +119,23 @@ export default function Book({
                   10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
 
                 return (
-                  <div className="flex" key={index}>
+                  <div
+                    className="flex cursor-pointer border-border_color hover:bg-border_color"
+                    onClick={() => {
+                      // formInputs = {isPerp, token, price, amount, quoteAmount}
+                      setFormInputs({
+                        isPerp: isPerp,
+                        token: SYMBOLS_TO_IDS[token],
+                        price: order.price,
+                        amount:
+                          amount /
+                          10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]],
+                        quoteAmount: amount * order.price,
+                      });
+                      forceRerender();
+                    }}
+                    key={index}
+                  >
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
                       <strong>{order.price.toFixed(2)}</strong>
                     </div>
