@@ -193,7 +193,10 @@ const CloseModal = ({ position }: any) => {
                           </p>
                           <p>
                             Max:{" "}
-                            <span className="dark:text-white">
+                            <span
+                              className="dark:text-white  cursor-pointer "
+                              onClick={() => handleSliderChange(100)}
+                            >
                               {positionSize}{" "}
                               {IDS_TO_SYMBOLS[position.synthetic_token]}
                             </span>
