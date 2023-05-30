@@ -81,6 +81,20 @@ const TradeForm = ({ type, token, action, formInputs }: props) => {
     quoteAmount_ = formInputs.quoteAmount
       ? formatInputNum(formInputs.quoteAmount.toString(), 2)
       : null;
+
+    if (formInputs.side) {
+      switch (formInputs.side) {
+        case "Bid":
+          action = "sell";
+          break;
+        case "Ask":
+          action = "buy";
+          break;
+
+        default:
+          break;
+      }
+    }
   }
 
   function percentFormatter(v: any) {

@@ -79,6 +79,7 @@ export default function Book({
                         price: order.price,
                         amount,
                         quoteAmount: amount * order.price,
+                        side: "Ask",
                       });
                       forceRerender();
                     }}
@@ -127,6 +128,7 @@ export default function Book({
                         price: order.price,
                         amount,
                         quoteAmount: amount * order.price,
+                        side: "Bid",
                       });
                       forceRerender();
                     }}

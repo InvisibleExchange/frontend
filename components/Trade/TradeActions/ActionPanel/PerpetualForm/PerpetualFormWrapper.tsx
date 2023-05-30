@@ -45,10 +45,15 @@ const PerpetualFormWrapper = ({ token }: any) => {
 
   useEffect(() => {
     setRerenderCount(rerenderCount + 1);
+
+    if (formInputs && formInputs.side) {
+      if (formInputs.side == "Bid") {
+        setSelected({ name: "Short" });
+      } else {
+        setSelected({ name: "Long" });
+      }
+    }
   }, [formInputs]);
-
-
-
 
   return (
     <div>
@@ -56,40 +61,44 @@ const PerpetualFormWrapper = ({ token }: any) => {
       {positionData ? (
         <RadioGroup value={selected} onChange={setSelected}>
           <div className="flex items-center justify-center py-1 mx-3 mt-5 rounded-lg bg-fg_below_color">
-            {plans.map((plan) => (
-              <RadioGroup.Option
-                key={plan.name}
-                value={plan}
-                className={({ active, checked }) =>
-                  `${active ? "mx-1" : "mx-1"}
-                  ${
-                    checked &&
-                    plan.name === "Long" &&
-                    " text-white bg-green_lighter shadow-green"
-                  }
-                  ${
-                    checked &&
-                    plan.name === "Short" &&
-                    " text-white bg-red_lighter shadow-red"
-                  } w-full rounded-lg py-1.5 cursor-pointer`
+            {plans.map((plan) => {
+              let checked = selected.name === plan.name;
+
+              return (
+                <RadioGroup.Option
+                  key={plan.name}
+                  value={plan}
+                  className={() =>
+                    `
+                ${
+                  checked &&
+                  plan.name === "Long" &&
+                  " text-white bg-green_lighter shadow-green"
                 }
-              >
-                {({ active, checked }) => (
-                  <>
-                    <div className="text-center">
-                      <RadioGroup.Label
-                        as="p"
-                        className={`font-medium block uppercase text-sm  ${
-                          checked ? "text-white" : "text-gray-900"
-                        }`}
-                      >
-                        {plan.name}
-                      </RadioGroup.Label>
-                    </div>
-                  </>
-                )}
-              </RadioGroup.Option>
-            ))}
+                ${
+                  checked &&
+                  plan.name === "Short" &&
+                  " text-white bg-red_lighter shadow-red"
+                } w-full rounded-lg py-1.5 cursor-pointer`
+                  }
+                >
+                  {() => (
+                    <>
+                      <div className="text-center">
+                        <RadioGroup.Label
+                          as="p"
+                          className={`font-medium block uppercase text-sm  ${
+                            checked ? "text-white" : "text-gray-900"
+                          }`}
+                        >
+                          {plan.name}
+                        </RadioGroup.Label>
+                      </div>
+                    </>
+                  )}
+                </RadioGroup.Option>
+              );
+            })}
           </div>
         </RadioGroup>
       ) : null}

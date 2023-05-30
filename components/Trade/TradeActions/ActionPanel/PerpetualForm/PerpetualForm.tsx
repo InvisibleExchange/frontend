@@ -14,6 +14,7 @@ import {
   _handleQuoteAmountChange,
   _handleSliderChange,
 } from "./formInputHandlers";
+import { match } from "assert";
 
 const {
   _renderActionButtons,
@@ -63,6 +64,36 @@ const TradeForm = ({
 
   useEffect(() => {}, [user]);
 
+  let price_, baseAmount_, quoteAmount_;
+  if (
+    formInputs &&
+    formInputs.isPerp &&
+    formInputs.token == SYMBOLS_TO_IDS[token]
+  ) {
+    price_ = formInputs.price
+      ? formatInputNum(formInputs.price.toString(), 2)
+      : null;
+    baseAmount_ = formInputs.amount
+      ? formatInputNum(formInputs.amount.toString(), 4)
+      : null;
+    quoteAmount_ = formInputs.quoteAmount
+      ? formatInputNum(formInputs.quoteAmount.toString(), 2)
+      : null;
+    if (formInputs.side) {
+      switch (formInputs.side) {
+        case "Bid":
+          action = "Short";
+          break;
+        case "Ask":
+          action = "Long";
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
   let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], true);
 
   useEffect(() => {
@@ -85,23 +116,6 @@ const TradeForm = ({
     newMinMaxLeverage.lowerBound >= newMinMaxLeverage?.upperBound
   ) {
     newMinMaxLeverage.lowerBound = newMinMaxLeverage?.upperBound;
-  }
-
-  let price_, baseAmount_, quoteAmount_;
-  if (
-    formInputs &&
-    formInputs.isPerp &&
-    formInputs.token == SYMBOLS_TO_IDS[token]
-  ) {
-    price_ = formInputs.price
-      ? formatInputNum(formInputs.price.toString(), 2)
-      : null;
-    baseAmount_ = formInputs.amount
-      ? formatInputNum(formInputs.amount.toString(), 4)
-      : null;
-    quoteAmount_ = formInputs.quoteAmount
-      ? formatInputNum(formInputs.quoteAmount.toString(), 2)
-      : null;
   }
 
   function percentFormatter(v: any) {
