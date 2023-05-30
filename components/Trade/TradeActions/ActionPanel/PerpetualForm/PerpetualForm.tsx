@@ -57,7 +57,6 @@ const TradeForm = ({
     forceRerender,
     getMarkPrice,
     setToastMessage,
-    setFormInputs,
   } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -149,11 +148,9 @@ const TradeForm = ({
 
     _handleQuoteAmountChange(
       setQuoteAmount,
-      setBaseAmount,
-      setMaxLeverage,
+      setLeverage,
       price,
-      token,
-      leverage,
+      baseAmount,
       quoteAmount,
       maxQuote
     );

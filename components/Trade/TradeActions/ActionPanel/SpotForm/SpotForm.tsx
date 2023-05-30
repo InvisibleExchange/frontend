@@ -41,7 +41,6 @@ const TradeForm = ({ type, token, action, formInputs }: props) => {
     login,
     connect,
     forceRerender,
-    getSelectedPosition,
     getMarkPrice,
     setToastMessage,
   } = useContext(WalletContext);
@@ -70,7 +69,7 @@ const TradeForm = ({ type, token, action, formInputs }: props) => {
   let price_, baseAmount_, quoteAmount_;
   if (
     formInputs &&
-    formInputs.isPerp &&
+    !formInputs.isPerp &&
     formInputs.token == SYMBOLS_TO_IDS[token]
   ) {
     price_ = formInputs.price

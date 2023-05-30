@@ -77,9 +77,7 @@ export default function Book({
                         isPerp: isPerp,
                         token: SYMBOLS_TO_IDS[token],
                         price: order.price,
-                        amount:
-                          amount /
-                          10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]],
+                        amount,
                         quoteAmount: amount * order.price,
                       });
                       forceRerender();
@@ -127,9 +125,7 @@ export default function Book({
                         isPerp: isPerp,
                         token: SYMBOLS_TO_IDS[token],
                         price: order.price,
-                        amount:
-                          amount /
-                          10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]],
+                        amount,
                         quoteAmount: amount * order.price,
                       });
                       forceRerender();

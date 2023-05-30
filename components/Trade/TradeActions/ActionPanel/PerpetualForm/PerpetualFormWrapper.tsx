@@ -47,6 +47,9 @@ const PerpetualFormWrapper = ({ token }: any) => {
     setRerenderCount(rerenderCount + 1);
   }, [formInputs]);
 
+
+
+
   return (
     <div>
       {/* BUY / SELL ORDER SELECTOR */}

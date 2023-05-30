@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
 import { checkValidSizeIncrease, checkValidSizeFlip } from "./FormHelpers";
-import { WalletContext } from "../../../../../context/WalletContext";
 
 const {
   COLLATERAL_TOKEN_DECIMALS,
@@ -18,6 +17,11 @@ const {
   sendPerpOrder,
   sendSplitOrder,
 } = require("../../../../../app_logic/transactions/constructOrders");
+
+const {
+  getCurrentLeverage,
+  getMaxLeverage,
+} = require("../../../../../app_logic/helpers/tradePriceCalculations");
 
 const _renderActionButtons = (
   user,
@@ -191,6 +195,18 @@ const _renderBuyButton = (
                   setIsLoading(false);
                   return;
                 }
+              }
+            } else {
+              let leverage = getCurrentLeverage(price, baseAmount, quoteAmount);
+              let maxLeverage = getMaxLeverage(
+                SYMBOLS_TO_IDS[token],
+                baseAmount
+              );
+
+              if (leverage > maxLeverage) {
+                alert("Leverage too high");
+                setIsLoading(false);
+                return;
               }
             }
 
@@ -366,6 +382,18 @@ const _renderAskButton = (
                   setIsLoading(false);
                   return;
                 }
+              }
+            } else {
+              let leverage = getCurrentLeverage(price, baseAmount, quoteAmount);
+              let maxLeverage = getMaxLeverage(
+                SYMBOLS_TO_IDS[token],
+                baseAmount
+              );
+
+              if (leverage > maxLeverage) {
+                alert("Leverage too high");
+                setIsLoading(false);
+                return;
               }
             }
 

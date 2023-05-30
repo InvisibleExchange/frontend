@@ -137,16 +137,12 @@ const _handleBaseAmountChange = (
 
 const _handleQuoteAmountChange = (
   setQuoteAmount,
-  setBaseAmount,
-  setMaxLeverage,
+  setLeverage,
   price,
-  token,
-  leverage,
+  baseAmount,
   quoteAmount: any,
   maxQuote: number
 ) => {
-  console.log("quoteAmount", quoteAmount);
-
   quoteAmount = quoteAmount ? Math.min(quoteAmount, maxQuote).toString() : null;
   setQuoteAmount(quoteAmount);
 
@@ -154,12 +150,9 @@ const _handleQuoteAmountChange = (
     return;
   }
 
-  if (price && leverage) {
-    let baseAmount = (Number(quoteAmount) * leverage) / Number(price);
-    setBaseAmount(formatInputNum(baseAmount.toString(), 4));
-
-    let max_leverage = getMaxLeverage(SYMBOLS_TO_IDS[token], baseAmount);
-    setMaxLeverage(Number(formatInputNum(max_leverage.toString(), 1)));
+  if (price && baseAmount) {
+    let leverage = (baseAmount * Number(price)) / Number(quoteAmount);
+    setLeverage(Number(formatInputNum(leverage.toString(), 1)));
   }
 };
 
