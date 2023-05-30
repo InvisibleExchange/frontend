@@ -230,19 +230,22 @@ const TradeForm = ({
 
   const lastPriceStyle = type == "market" ? "opacity-60" : "hover:opacity-75";
 
+
   // if (user) {
   //   console.log(
   //     "positionData usdc",
   //     user.noteData[55555]?.map((note: any) => note.index + " - " + note.amount)
   //   );
-  //   console.log(
-  //     "positionData eth",
-  //     user.noteData[54321]?.map((note: any) => note.index + " - " + note.hash)
-  //   );
+  // console.log(
+  //   "positionData eth",
+  //   user.noteData[54321].map((note: any) => note.index + " - " + note.hash)
+  // );
   // }
 
   return (
     <div className="mt-2">
+      
+
       {/* Price ====================================== */}
       <div className="relative">
         <input

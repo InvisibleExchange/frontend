@@ -273,31 +273,13 @@ function WalletProvider({ children }: Props) {
   let initFills;
   let initPerpFills;
   function updateFills(msg: any) {
-    //
-
-    let spotFillUpdated = false;
-    let perpFillUpdated = false;
-
-    let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
-    let perpFills_ =
-      Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
-    for (let f of msg.fillUpdates) {
-      let fill = JSON.parse(f);
-
-      if (fill.type == "perpetual") {
-        handleFillResult(user, fill, perpFills_);
-        perpFillUpdated = true;
-      } else {
-        handleFillResult(user, fill, fills_);
-        spotFillUpdated = true;
-      }
-    }
-
-    if (spotFillUpdated) {
-      setFills(fills_);
-    }
-    if (perpFillUpdated) {
-      setPerpFills(perpFills_);
+    if (msg.type == "perpetual") {
+      let perpFills_ =
+        Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
+      handleFillResult(user, msg, perpFills_, setPerpFills);
+    } else {
+      let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
+      handleFillResult(user, msg, fills_, setFills);
     }
   }
 
