@@ -295,38 +295,31 @@ const TradeForm = ({
       </div>
 
       {/* Quote input ====================================== */}
-      {/* {positionData ? null : ( */}
-      <div className="relative mt-5">
-        <input
-          name="quote"
-          className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
-          placeholder={"Initial Margin"}
-          type="number"
-          step={0.001}
-          value={quoteAmount?.toString()}
-          onChange={handleQuoteAmountChange}
-        />
-        <div className="absolute top-0 right-0 w-16 px-3 py-1.5 text-base font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
-          USDC
+      {positionData ? null : (
+        <div className="relative mt-5">
+          <input
+            name="quote"
+            className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
+            placeholder={"Initial Margin"}
+            type="number"
+            step={0.001}
+            value={quoteAmount?.toString()}
+            onChange={handleQuoteAmountChange}
+          />
+          <div className="absolute top-0 right-0 w-16 px-3 py-1.5 text-base font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
+            USDC
+          </div>
         </div>
-      </div>
-      {/* )} */}
+      )}
       {/* Available collateral ====================================== */}
-      {/* {positionData ? null : ( */}
-      <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
-        <p className="text-[12px]">Available balance</p>
-        <p
-          className="cursor-pointer"
-          onClick={() => {
-            handleQuoteAmountChange({
-              target: { value: maxQuote.toString() },
-            });
-          }}
-        >
-          {Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)} USDC
-        </p>
-      </div>
-      {/* )} */}
+      {positionData ? null : (
+        <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
+          <p className="text-[12px]">Available balance</p>
+          <p>
+            {Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)} USDC
+          </p>
+        </div>
+      )}
       {/* Slider ====================================== */}
 
       <div className="mx-2 mt-12">
