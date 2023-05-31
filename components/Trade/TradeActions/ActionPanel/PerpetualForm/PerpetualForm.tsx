@@ -230,7 +230,6 @@ const TradeForm = ({
 
   const lastPriceStyle = type == "market" ? "opacity-60" : "hover:opacity-75";
 
-
   // if (user) {
   //   console.log(
   //     "positionData usdc",
@@ -244,8 +243,6 @@ const TradeForm = ({
 
   return (
     <div className="mt-2">
-      
-
       {/* Price ====================================== */}
       <div className="relative">
         <input
@@ -315,7 +312,14 @@ const TradeForm = ({
       {positionData ? null : (
         <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
           <p className="text-[12px]">Available balance</p>
-          <p>
+          <p
+            className="cursor-pointer"
+            onClick={() => {
+              handleQuoteAmountChange({
+                target: { value: maxQuote.toString() },
+              });
+            }}
+          >
             {Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)} USDC
           </p>
         </div>

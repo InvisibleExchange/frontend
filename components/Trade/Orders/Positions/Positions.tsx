@@ -98,6 +98,9 @@ const Positions = () => {
                         className={classNames(
                           "text-[12px] " + symbolColor.toString()
                         )}
+                        style={{
+                          fontStyle: "italic",
+                        }}
                       >
                         ({pos.order_side})
                       </p>
@@ -111,12 +114,15 @@ const Positions = () => {
                         {/* <AdjustSizeModal /> */}
                       </div>
                     </td>
+                    {/*  */}
                     <td className={classNames("pr-3 font-medium")}>
                       {entryPrice.toFixed(2)}
                     </td>
+                    {/*  */}
                     <td className={classNames("pr-3 font-medium ")}>
                       {markPrice.toFixed(2)} USD
                     </td>
+                    {/*  */}
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
                         pos.liquidation_price /
@@ -124,30 +130,51 @@ const Positions = () => {
                       ).toFixed(2)}{" "}
                       USD
                     </td>
+                    {/*  */}
                     <td className={classNames("pr-3 font-medium ")}>
                       {getCurrentLeverage(markPrice, size, margin).toFixed(2)}
                     </td>
+                    {/*  */}
                     <td className={classNames("pr-3 font-medium ")}>
                       <div className="flex items-center gap-2">
                         <div>
-                          <p className="text-sm">{margin.toFixed(2)} USDC</p>
+                          <p
+                            className="text-sm"
+                            style={{
+                              color: "whitesmoke",
+                              fontWeight: "bold",
+                              textShadow: "2px 2px 0px rgba(0, 0, 0, 0.5)",
+                            }}
+                          >
+                            {margin.toFixed(2)} USDC
+                          </p>
                           {/* <p className="text-[12px]">(Isolated)</p> */}
                         </div>
                         <AdjustMarginModal position={pos} />
                       </div>
                     </td>
                     {/* Unrealized PNL */}
-                    <td className={classNames("pr-3 font-medium " + pnlColor)}>
+                    <td
+                      className={classNames("pr-3 font-medium " + pnlColor)}
+                      style={{
+                        fontStyle: "italic",
+                      }}
+                    >
                       <p>{pnl.toFixed(2)} USD</p>
                       <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                     </td>
                     {/* Realized PNL */}
-                    <td className={classNames("pr-3 font-medium " + pnlColor)}>
+                    <td
+                      className={classNames("pr-3 font-medium " + pnlColor)}
+                      style={{
+                        fontStyle: "italic",
+                      }}
+                    >
                       <p>{pnl.toFixed(2)} USD</p>
                       <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                     </td>
                     {/* Close Button */}
-                    <td className={classNames("pr-3 font-medium " + pnlColor)}>
+                    <td className={classNames("pr-3")}>
                       <CloseModal position={pos}></CloseModal>
                     </td>
 

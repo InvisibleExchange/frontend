@@ -112,7 +112,7 @@ const AdjustMarginModal = ({ position }: any) => {
           onClick={openModal}
           className="rounded-m hover:opacity-75"
         >
-          <FaEdit className="w-4 h-4" />
+          <FaEdit className="w-5 h-4" />
         </button>
       </div>
 

@@ -71,6 +71,7 @@ const CloseModal = ({ position }: any) => {
             fontWeight: 900,
             borderRadius: 15,
             backgroundColor: "rgba(0,0,0, 0.3)",
+            zIndex: 0,
           }}
           className="mr-20 px-5 rounded border border-red p-2 hover:opacity-70 text-red"
           onClick={openModal}
@@ -193,7 +194,10 @@ const CloseModal = ({ position }: any) => {
                           </p>
                           <p>
                             Max:{" "}
-                            <span className="dark:text-white">
+                            <span
+                              className="dark:text-white cursor-pointer"
+                              onClick={() => setAmount(Number(positionSize))}
+                            >
                               {positionSize}{" "}
                               {IDS_TO_SYMBOLS[position.synthetic_token]}
                             </span>
