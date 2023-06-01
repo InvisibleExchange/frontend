@@ -33,7 +33,7 @@ export default function Trade() {
     setToasts(_toasts_);
   };
 
-  function onToastDismiss(_id) {
+  function onToastDismiss() {
     //delay to allow animation to finish
     setTimeout(() => {
       _toasts_ = [];
@@ -71,13 +71,11 @@ export default function Trade() {
           <Orders />
         </div>
         {/* TOASTS */}
-        {toasts ? toasts.length : null}
         {toasts && toasts.length > 0 ? (
           <div className="toast-container">
             {_toasts_.map((toast, idx) => (
               <Toast
                 key={toast.id}
-                id={toast.id}
                 message={toast.message}
                 expiry={toast.expiry}
                 onDismiss={onToastDismiss}

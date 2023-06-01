@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const Toast = ({ id, message, expiry, onDismiss }) => {
+const Toast = ({ message, expiry, onDismiss }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const Toast = ({ id, message, expiry, onDismiss }) => {
     setVisible(false);
 
     if (onDismiss) {
-      onDismiss(id);
+      onDismiss();
     }
   };
 

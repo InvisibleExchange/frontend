@@ -29,12 +29,12 @@ const Transact = () => {
     setToasts(_toasts_);
   };
 
-  const onToastDismiss = (id) => {
-    _toasts_ = _toasts_.filter((toast) => toast.id !== id);
-
-    let now = new Date().getTime();
-
-    setToastMessage(null);
+  const onToastDismiss = () => {
+    //delay to allow animation to finish
+    setTimeout(() => {
+      _toasts_ = [];
+      setToasts(_toasts_);
+    }, 3000);
   };
 
   useEffect(() => {
@@ -93,16 +93,18 @@ const Transact = () => {
       </div>
 
       {/* TOASTS */}
-      <div className="toast-container">
-        {_toasts_.map((toast) => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            expiry={toast.expiry}
-            onDismiss={() => onToastDismiss(toast.id)}
-          />
-        ))}
-      </div>
+      {toasts && toasts.length > 0 ? (
+        <div className="toast-container">
+          {_toasts_.map((toast) => (
+            <Toast
+              key={toast.id}
+              message={toast.message}
+              expiry={toast.expiry}
+              onDismiss={() => onToastDismiss}
+            />
+          ))}
+        </div>
+      ) : null}
       {/*  */}
     </div>
   );
