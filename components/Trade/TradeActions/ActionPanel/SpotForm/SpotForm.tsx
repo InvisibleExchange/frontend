@@ -200,8 +200,6 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
 
   return (
     <div className="mt-2">
-      {"action: " + action}
-
       {/* Price ====================================== */}
       <div className="relative">
         <input
