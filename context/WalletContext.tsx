@@ -273,14 +273,12 @@ function WalletProvider({ children }: Props) {
   let initFills;
   let initPerpFills;
   function updateFills(msg: any) {
-    if (msg.type == "perpetual") {
-      let perpFills_ =
-        Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
-      handleFillResult(user, msg, perpFills_, setPerpFills);
-    } else {
-      let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
-      handleFillResult(user, msg, fills_, setFills);
-    }
+    console.log("updateFills", msg);
+
+    let perpFills_ =
+      Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
+    let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
+    handleFillResult(user, msg, fills_, setFills, perpFills_, setPerpFills);
   }
 
   const walletsSub = onboard.state.select("wallets");

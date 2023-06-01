@@ -30,11 +30,11 @@ const {
 type props = {
   type: string;
   token: string;
-  action: string;
+  action_: string;
   formInputs: any;
 };
 
-const TradeForm = ({ type, token, action, formInputs }: props) => {
+const TradeForm = ({ type, token, action_, formInputs }: props) => {
   let {
     user,
     userAddress,
@@ -46,8 +46,11 @@ const TradeForm = ({ type, token, action, formInputs }: props) => {
   } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [action, setAction] = useState<string>(action_);
 
-  useEffect(() => {}, [user]);
+  useEffect(() => {
+    setAction(action_);
+  }, [user, action_]);
 
   let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], false);
 
@@ -81,20 +84,6 @@ const TradeForm = ({ type, token, action, formInputs }: props) => {
     quoteAmount_ = formInputs.quoteAmount
       ? formatInputNum(formInputs.quoteAmount.toString(), 2)
       : null;
-
-    if (formInputs.side) {
-      switch (formInputs.side) {
-        case "Bid":
-          action = "sell";
-          break;
-        case "Ask":
-          action = "buy";
-          break;
-
-        default:
-          break;
-      }
-    }
   }
 
   function percentFormatter(v: any) {
@@ -211,6 +200,8 @@ const TradeForm = ({ type, token, action, formInputs }: props) => {
 
   return (
     <div className="mt-2">
+      {"action: " + action}
+
       {/* Price ====================================== */}
       <div className="relative">
         <input

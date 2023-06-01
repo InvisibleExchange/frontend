@@ -38,7 +38,7 @@ const {
 type props = {
   type: string;
   token: string;
-  action: "Long" | "Short";
+  action_: "Long" | "Short";
   positionData: any;
   formInputs: any;
 };
@@ -46,7 +46,7 @@ type props = {
 const TradeForm = ({
   type,
   token,
-  action,
+  action_,
   positionData,
   formInputs,
 }: props) => {
@@ -61,8 +61,11 @@ const TradeForm = ({
   } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [action, setAction] = useState<"Long" | "Short">(action_);
 
-  useEffect(() => {}, [user]);
+  useEffect(() => {
+    setAction(action_);
+  }, [user, action_]);
 
   let price_, baseAmount_, quoteAmount_;
   if (
@@ -79,19 +82,6 @@ const TradeForm = ({
     quoteAmount_ = formInputs.quoteAmount
       ? formatInputNum(formInputs.quoteAmount.toString(), 2)
       : null;
-    if (formInputs.side) {
-      switch (formInputs.side) {
-        case "Bid":
-          action = "Short";
-          break;
-        case "Ask":
-          action = "Long";
-          break;
-
-        default:
-          break;
-      }
-    }
   }
 
   let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], true);

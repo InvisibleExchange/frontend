@@ -228,9 +228,18 @@ function handleLiquidityUpdate(
  *          timestamp: u64
  *   }
  */
-function handleFillResult(user, result, fills, setFills) {
+function handleFillResult(
+  user,
+  result,
+  fills_,
+  setFills,
+  perpFills_,
+  setPerpFills
+) {
   for (let f of result.fillUpdates) {
     f = JSON.parse(f);
+
+    let fills = f.type == "perpetual" ? perpFills_ : fills_;
 
     if (!fills[f.asset]) {
       fills[f.asset] = [];
@@ -267,7 +276,8 @@ function handleFillResult(user, result, fills, setFills) {
     }
   }
 
-  setFills(fills);
+  setFills(fills_);
+  setPerpFills(perpFills_);
 }
 
 /**

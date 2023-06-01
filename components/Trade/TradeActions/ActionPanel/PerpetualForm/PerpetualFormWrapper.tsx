@@ -127,11 +127,13 @@ const PerpetualFormWrapper = ({ token }: any) => {
         </div>
       </div>
 
+      {selected ? selected.name : "null"}
+
       <TradeForm
         key={rerenderCount}
         type={selectedMarketType}
         token={token}
-        action={!positionData ? "none" : selected.name}
+        action_={!positionData ? "none" : selected.name}
         positionData={positionData}
         formInputs={formInputs}
       />

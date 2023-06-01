@@ -108,11 +108,13 @@ const SpotFormWrapper = ({ token }: any) => {
         </div>
       </div>
 
+      {selected ? selected.name : "null"}
+
       <TradeForm
         key={rerenderCount}
         type={selectedMarketType}
         token={token}
-        action={selected.name}
+        action_={selected.name}
         formInputs={formInputs}
       />
     </div>
