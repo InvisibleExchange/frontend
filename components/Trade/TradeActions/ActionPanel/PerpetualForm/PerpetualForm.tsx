@@ -14,7 +14,6 @@ import {
   _handleQuoteAmountChange,
   _handleSliderChange,
 } from "./formInputHandlers";
-import { match } from "assert";
 
 const {
   _renderActionButtons,
