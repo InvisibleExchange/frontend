@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const Toast = ({ message, expiry, onDismiss }) => {
+const Toast = ({ message, expiry, onDismiss, type }) => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -29,8 +29,23 @@ const Toast = ({ message, expiry, onDismiss }) => {
     }
   };
 
+  let colorClass = "";
+  switch (type) {
+    case "error":
+      colorClass = "error_toast";
+      break;
+
+    case "info":
+      colorClass = "info_toast";
+      break;
+
+    default:
+      colorClass = "info_toast";
+      break;
+  }
+
   return (
-    <div className={`toast ${visible ? "show" : ""}`}>
+    <div className={`toast ${visible ? "show" : ""} ${colorClass}`}>
       {message || "Sample toast message"}
       <button className="dismiss-btn" onClick={handleDismiss} title="Dismiss">
         &times;

@@ -27,7 +27,7 @@ const {
 
 const types = [{ name: "Add" }, { name: "Remove" }];
 
-const CloseModal = ({ position }: any) => {
+const CloseModal = ({ position, setToastMessage }: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, getMarkPrice } = useContext(WalletContext);
 
@@ -235,7 +235,11 @@ const CloseModal = ({ position }: any) => {
                       className="justify-center w-full px-4 py-2.5 text-sm text-white font-medium  rounded-md bg-blue hover:opacity-90"
                       onClick={async () => {
                         if (!amount) {
-                          alert("Please enter a valid amount");
+                          setToastMessage({
+                            type: "error",
+                            message: "Please enter a valid amount",
+                          });
+
                           return;
                         }
 
@@ -248,7 +252,8 @@ const CloseModal = ({ position }: any) => {
                           position,
                           isMarket,
                           amount,
-                          price
+                          price,
+                          setToastMessage
                         );
                         closeModal();
                       }}
@@ -273,7 +278,8 @@ const onSumbitCloseOrder = async (
   position: any,
   isMarket: boolean,
   closeAmount: number,
-  price: number | null
+  price: number | null,
+  setToastMessage: any
 ) => {
   try {
     await sendPerpOrder(
@@ -290,7 +296,10 @@ const onSumbitCloseOrder = async (
       3, // slippage %
       isMarket
     );
-  } catch (error) {
-    alert(error);
+  } catch (error: any) {
+    setToastMessage({
+      type: "error",
+      message: error.toString(),
+    });
   }
 };

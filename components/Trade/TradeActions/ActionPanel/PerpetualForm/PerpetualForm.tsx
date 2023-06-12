@@ -6,7 +6,10 @@ import SettingsPopover from "../TradeFormHelpers/SettingsPopover";
 import UpdatedPositionInfo from "../TradeFormHelpers/UpdatedPositionInfo";
 import classNames from "classnames";
 
-import { formatInputNum } from "../TradeFormHelpers/FormHelpers";
+import {
+  addCommasToNumber,
+  formatInputNum,
+} from "../TradeFormHelpers/FormHelpers";
 
 import {
   _handlePriceChange,
@@ -219,17 +222,6 @@ const TradeForm = ({
 
   const lastPriceStyle = type == "market" ? "opacity-60" : "hover:opacity-75";
 
-  // if (user) {
-  //   console.log(
-  //     "positionData usdc",
-  //     user.noteData[55555]?.map((note: any) => note.index + " - " + note.amount)
-  //   );
-  // console.log(
-  //   "positionData eth",
-  //   user.noteData[54321].map((note: any) => note.index + " - " + note.hash)
-  // );
-  // }
-
   return (
     <div className="mt-2">
       {/* Price ====================================== */}
@@ -309,7 +301,10 @@ const TradeForm = ({
               });
             }}
           >
-            {Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)} USDC
+            {addCommasToNumber(
+              Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)
+            )}{" "}
+            USDC
           </p>
         </div>
       )}

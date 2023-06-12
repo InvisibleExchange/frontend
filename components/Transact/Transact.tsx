@@ -15,14 +15,14 @@ const Transact = () => {
   let [toasts, setToasts] = useState<any>([]);
   let _toasts_: any[] = toasts;
 
-  const showToast = (message) => {
+  const showToast = (type, message) => {
     if (!message) return;
 
     const id = new Date().getTime();
 
     let expiry = new Date().getTime() + 3000;
 
-    _toasts_ = [..._toasts_, { id, message, expiry }];
+    _toasts_ = [..._toasts_, { id, type, message, expiry }];
 
     _toasts_ = _toasts_.filter((toast) => toast.expiry > new Date().getTime());
 
@@ -40,10 +40,11 @@ const Transact = () => {
   useEffect(() => {
     // Make sure you have a valid message to display
     if (toastMessage) {
-      let message = toastMessage;
+      let type = toastMessage.type;
+      let message = toastMessage.message;
       setToastMessage(null);
 
-      showToast(message);
+      showToast(type, message);
     }
   }, [toastMessage]);
 
@@ -101,6 +102,7 @@ const Transact = () => {
               message={toast.message}
               expiry={toast.expiry}
               onDismiss={() => onToastDismiss}
+              type={toast.type}
             />
           ))}
         </div>

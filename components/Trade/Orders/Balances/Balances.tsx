@@ -1,6 +1,7 @@
 import React, { useContext } from "react";
 import classNames from "classnames";
 import { WalletContext } from "../../../../context/WalletContext";
+import { addCommasToNumber } from "../../TradeActions/ActionPanel/TradeFormHelpers/FormHelpers";
 
 const {
   IDS_TO_SYMBOLS,
@@ -51,11 +52,15 @@ const Balances = () => {
                     </td>
                     <td className={classNames("pr-3 font-medium")}>
                       {IDS_TO_SYMBOLS[token] == "USDC"
-                        ? (balance / 10 ** DECIMALS_PER_ASSET[token]).toFixed(2)
-                        : (
-                            (balance / 10 ** DECIMALS_PER_ASSET[token]) *
-                            getMarkPrice(token, false)
-                          ).toFixed(3)}{" "}
+                        ? addCommasToNumber(
+                            balance / 10 ** DECIMALS_PER_ASSET[token]
+                          ).toFixed(2)
+                        : addCommasToNumber(
+                            (
+                              (balance / 10 ** DECIMALS_PER_ASSET[token]) *
+                              getMarkPrice(token, false)
+                            ).toFixed(3)
+                          )}{" "}
                       USD
                     </td>
                   </tr>

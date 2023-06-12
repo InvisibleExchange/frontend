@@ -294,11 +294,46 @@ function formatInputNum(val: any, decimals: number) {
   }
 }
 
+function addCommasToNumber(num) {
+  // I want to receive a number and return a string with commas every third place from the right like so 12,234,567.89
+
+  // First I want to split the number into two parts, the whole number and the decimal
+  let numArr = num.toString().split(".");
+  let wholeNum = numArr[0];
+  let decimal = numArr[1];
+
+  // Next I want to split the whole number into an array of strings
+  let wholeNumArr = wholeNum.split("");
+
+  // Next I want to loop through the wholeNumArr backwards and add a comma every third place
+  let newWholeNumArr: any = [];
+  let count = 0;
+  for (let i = wholeNumArr.length - 1; i >= 0; i--) {
+    if (count == 3) {
+      newWholeNumArr.push(",");
+      count = 0;
+    }
+    newWholeNumArr.push(wholeNumArr[i]);
+    count++;
+  }
+
+  // Next I want to reverse the newWholeNumArr and join it into a string
+  let newWholeNum = newWholeNumArr.reverse().join("");
+
+  // Next I want to add the decimal back on if it exists
+  if (decimal) {
+    return newWholeNum + "." + decimal;
+  }
+
+  return newWholeNum;
+}
+
 export {
   calculateNewSize,
   calculateAvgEntryPrice,
   calculateNewLiqPrice,
   formatInputNum,
+  addCommasToNumber,
   checkValidSizeIncrease,
   checkValidSizeFlip,
 };

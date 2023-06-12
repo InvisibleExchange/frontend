@@ -149,7 +149,11 @@ const _renderBuyButton = (
         setIsLoading(true);
 
         if (!user || !baseAmount || !price) {
-          alert("Choose an amount&price to trade");
+          setToastMessage({
+            type: "error",
+            message: "Choose an amount&price to trade",
+          });
+
           setIsLoading(false);
           return;
         }
@@ -169,9 +173,12 @@ const _renderBuyButton = (
                     price
                   )
                 ) {
-                  alert(
-                    "Increase size too large for current margin (Add margin or close other open orders)"
-                  );
+                  setToastMessage({
+                    type: "error",
+                    message:
+                      "Increase size too large for current margin (Add margin or close other open orders)",
+                  });
+
                   setIsLoading(false);
                   return;
                 }
@@ -189,9 +196,12 @@ const _renderBuyButton = (
                     price
                   )
                 ) {
-                  alert(
-                    "Increase size too large for current margin (Add margin or close other open orders)"
-                  );
+                  setToastMessage({
+                    type: "error",
+                    message:
+                      "Increase size too large for current margin (Add margin or close other open orders)",
+                  });
+
                   setIsLoading(false);
                   return;
                 }
@@ -204,7 +214,11 @@ const _renderBuyButton = (
               );
 
               if (leverage > maxLeverage) {
-                alert("Leverage too high");
+                setToastMessage({
+                  type: "error",
+                  message: "Leverage too high",
+                });
+
                 setIsLoading(false);
                 return;
               }
@@ -248,18 +262,23 @@ const _renderBuyButton = (
             );
 
             if (type != "market") {
-              setToastMessage(
-                "Long Order was placed successfuly: " +
+              setToastMessage({
+                type: "info",
+                message:
+                  "Long Order was placed successfuly: " +
                   baseAmount.toFixed(2) +
                   " " +
                   token +
                   " at price: " +
                   price.toFixed(2) +
-                  " USD"
-              );
+                  " USD",
+              });
             }
-          } catch (error) {
-            alert("Error: " + error);
+          } catch (error: any) {
+            setToastMessage({
+              type: "error",
+              message: error.toString(),
+            });
           }
         } else {
           try {
@@ -286,17 +305,22 @@ const _renderBuyButton = (
             );
 
             if (type != "market") {
-              setToastMessage(
-                "Buy Order was placed successfuly: " +
+              setToastMessage({
+                type: "info",
+                message:
+                  "Buy Order was placed successfuly: " +
                   quoteAmount.toFixed(2) +
                   " USDC for " +
                   baseAmount.toFixed(2) +
                   " " +
-                  token
-              );
+                  token,
+              });
             }
-          } catch (error) {
-            alert("Error: " + error);
+          } catch (error: any) {
+            setToastMessage({
+              type: "error",
+              message: error.toString(),
+            });
           }
         }
 
@@ -335,7 +359,11 @@ const _renderAskButton = (
         setIsLoading(true);
 
         if (!user || !baseAmount || !price) {
-          alert("Choose an amount to trade");
+          setToastMessage({
+            type: "error",
+            message: "Choose an amount to trade",
+          });
+
           setIsLoading(false);
           return;
         }
@@ -356,9 +384,12 @@ const _renderAskButton = (
                     price
                   )
                 ) {
-                  alert(
-                    "Increase size too large for current margin (Add margin or close other open orders)"
-                  );
+                  setToastMessage({
+                    type: "error",
+                    message:
+                      "Increase size too large for current margin (Add margin or close other open orders)",
+                  });
+
                   setIsLoading(false);
                   return;
                 }
@@ -376,9 +407,12 @@ const _renderAskButton = (
                     price
                   )
                 ) {
-                  alert(
-                    "Increase size too large for current margin (Add margin or close other open orders)"
-                  );
+                  setToastMessage({
+                    type: "error",
+                    message:
+                      "Increase size too large for current margin (Add margin or close other open orders)",
+                  });
+
                   setIsLoading(false);
                   return;
                 }
@@ -391,7 +425,11 @@ const _renderAskButton = (
               );
 
               if (leverage > maxLeverage) {
-                alert("Leverage too high");
+                setToastMessage({
+                  type: "error",
+                  message: "Leverage too high",
+                });
+
                 setIsLoading(false);
                 return;
               }
@@ -434,18 +472,23 @@ const _renderAskButton = (
               type == "market"
             );
             if (type != "market") {
-              setToastMessage(
-                "Short Order was placed successfuly: " +
+              setToastMessage({
+                type: "info",
+                message:
+                  "Short Order was placed successfuly: " +
                   baseAmount.toFixed(2) +
                   " " +
                   token +
                   " at " +
                   price.toFixed(2) +
-                  " USD"
-              );
+                  " USD",
+              });
             }
-          } catch (error) {
-            alert("Error: " + error);
+          } catch (error: any) {
+            setToastMessage({
+              type: "error",
+              message: error.toString(),
+            });
           }
         } else {
           try {
@@ -471,18 +514,23 @@ const _renderAskButton = (
               type == "market"
             );
             if (type != "market") {
-              setToastMessage(
-                "Sell Order was placed successfuly: " +
+              setToastMessage({
+                type: "info",
+                message:
+                  "Sell Order was placed successfuly: " +
                   baseAmount.toFixed(2) +
                   " " +
                   token +
                   " for " +
                   quoteAmount.toFixed(2) +
-                  " USDC"
-              );
+                  " USDC",
+              });
             }
-          } catch (error) {
-            alert("Error: " + error);
+          } catch (error: any) {
+            setToastMessage({
+              type: "error",
+              message: error.toString(),
+            });
           }
         }
 

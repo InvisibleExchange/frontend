@@ -94,7 +94,7 @@ export type WalletContextType = {
   };
   getMarkPrice: (token: number, isPerp: boolean) => any;
 
-  toastMessage: string | null;
+  toastMessage: { type: string; message: string } | null;
   setToastMessage: any;
 
   setBalances: Dispatch<SetStateAction<TokenBalanceObject>>;
@@ -491,7 +491,10 @@ function WalletProvider({ children }: Props) {
     listenToRelayWebSocket();
   };
 
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<{
+    type: string;
+    message: string;
+  } | null>(null);
 
   const listenToServerWebSocket = (user: any) => {
     // * SERVER WEBSOCKET (listens for fills, swaps, perp_swaps)
@@ -523,29 +526,33 @@ function WalletProvider({ children }: Props) {
         case "SWAP_RESULT":
           handleSwapResult(user, msg.order_id, msg.swap_response);
 
-          setToastMessage(
-            "Swap executed successfully: " +
+          setToastMessage({
+            type: "info",
+            message:
+              "Swap executed successfully: " +
               (
                 msg.swap_response.swap_note.amount /
                 10 ** DECIMALS_PER_ASSET[msg.swap_response.swap_note.token]
               ).toFixed(3) +
               " " +
-              IDS_TO_SYMBOLS[msg.swap_response.swap_note.token]
-          );
+              IDS_TO_SYMBOLS[msg.swap_response.swap_note.token],
+          });
 
           break;
 
         case "PERPETUAL_SWAP":
           handlePerpSwapResult(user, msg.order_id, msg.swap_response);
-          setToastMessage(
-            "Perpetual swap executed successfully: " +
+          setToastMessage({
+            type: "info",
+            message:
+              "Perpetual swap executed successfully: " +
               (
                 msg.swap_response.qty /
                 10 ** DECIMALS_PER_ASSET[msg.swap_response.synthetic_token]
               ).toFixed(3) +
               " " +
-              IDS_TO_SYMBOLS[msg.swap_response.synthetic_token]
-          );
+              IDS_TO_SYMBOLS[msg.swap_response.synthetic_token],
+          });
           break;
 
         default:

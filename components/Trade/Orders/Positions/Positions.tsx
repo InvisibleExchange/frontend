@@ -22,7 +22,7 @@ const {
 } = require("../../../../app_logic/helpers/tradePriceCalculations");
 
 const Positions = () => {
-  let { user, getMarkPrice, setSelectedPosition, forceRerender } =
+  let { user, getMarkPrice, setSelectedPosition, setToastMessage } =
     useContext(WalletContext);
 
   let positions: any[] = [];
@@ -175,16 +175,11 @@ const Positions = () => {
                     </td>
                     {/* Close Button */}
                     <td className={classNames("pr-3")}>
-                      <CloseModal position={pos}></CloseModal>
+                      <CloseModal
+                        position={pos}
+                        setToastMessage={setToastMessage}
+                      ></CloseModal>
                     </td>
-
-                    {/* <CloseField
-                      user={user}
-                      marketPrice={getMarkPrice(pos.synthetic_token, true)}
-                      pos={pos}
-                      forceRerender={forceRerender}
-                    /> */}
-                    {/*  */}
                   </tr>
                 );
               })
@@ -196,88 +191,3 @@ const Positions = () => {
 };
 
 export default Positions;
-
-const CloseField = ({ user, marketPrice, pos, forceRerender }: any) => {
-  const [closeQty, setCloseQty] = useState<number | null>(null);
-  const [closePrice, setClosePrice] = useState<number | null>(null);
-
-  const onChangeQty = (e: any) => {
-    if (!e.target.value) {
-      setCloseQty(null);
-      return;
-    }
-
-    let qty_ = parseFloat(e.target.value);
-
-    qty_ = Math.max(0, qty_);
-    qty_ = Math.min(
-      qty_,
-      pos.position_size / 10 ** DECIMALS_PER_ASSET[pos.synthetic_token]
-    );
-
-    setCloseQty(qty_);
-  };
-
-  const onSumbitCloseOrder = async (isMarket: boolean) => {
-    try {
-      await sendPerpOrder(
-        user,
-        pos.order_side == "Long" ? "Short" : "Long",
-        600_000, // ~1 weeks
-        "Close",
-        pos.position_address, // position address
-        pos.synthetic_token, //token
-        closeQty, //amount
-        isMarket ? marketPrice : closePrice, // price
-        null, // initial margin
-        0.07, // fee_limit %
-        3, // slippage %
-        isMarket
-      );
-    } catch (error) {
-      alert(error);
-    }
-  };
-
-  return (
-    <td className={classNames("pr-3 font-medium text-right")}>
-      <div className="flex items-center gap-1">
-        <button
-          onClick={async () => {
-            await onSumbitCloseOrder(true);
-            forceRerender();
-          }}
-        >
-          Market
-        </button>
-        |{" "}
-        <button
-          onClick={async () => {
-            await onSumbitCloseOrder(false);
-            forceRerender();
-          }}
-        >
-          Limit
-        </button>
-        <input
-          className="w-20 pl-1 rounded-sm focus:outline focus:outline-yellow bg-border_color"
-          placeholder="price"
-          type="number"
-          step={0.01}
-          value={closePrice?.toString()}
-          onChange={(e) => {
-            setClosePrice(parseFloat(e.target.value));
-          }}
-        ></input>
-        <input
-          className="w-20 pl-1 rounded-sm focus:outline focus:outline-yellow bg-border_color"
-          placeholder="qty"
-          type="number"
-          step={0.001}
-          value={closeQty?.toString()}
-          onChange={onChangeQty}
-        ></input>
-      </div>
-    </td>
-  );
-};

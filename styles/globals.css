@@ -257,8 +257,7 @@ thead {
 
 .toast {
   display: flex;
-  align-items: center;
-  background-color: #00f7ff;
+  align-items: center;  
   color: black;
   padding: 6px 12px;
   border-radius: 8px;
@@ -272,6 +271,15 @@ thead {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 }
+
+.error_toast {
+  background-color: red;
+}
+
+.info_toast {
+  background-color: #00f7ff;
+}
+
 
 .toast.show {
   opacity: 1;

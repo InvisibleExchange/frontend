@@ -9,7 +9,10 @@ import SettingsPopover from "../TradeFormHelpers/SettingsPopover";
 import UpdatedPositionInfo from "../TradeFormHelpers/UpdatedPositionInfo";
 import classNames from "classnames";
 
-import { formatInputNum } from "../TradeFormHelpers/FormHelpers";
+import {
+  addCommasToNumber,
+  formatInputNum,
+} from "../TradeFormHelpers/FormHelpers";
 
 const {
   _renderActionButtons,
@@ -246,7 +249,10 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
         <p className="text-[12px]">Available balance</p>
         <p>
-          {Number(formatInputNum(maxBase.toString(), 3)).toFixed(3)} {token}
+          {addCommasToNumber(
+            Number(formatInputNum(maxBase.toString(), 3)).toFixed(3)
+          )}{" "}
+          {token}
         </p>
       </div>
       {/* Quote input ====================================== */}
@@ -267,7 +273,12 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       {/* Available collateral ====================================== */}
       <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
         <p className="text-[12px]">Available balance</p>
-        <p>{Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)} USDC</p>
+        <p>
+          {addCommasToNumber(
+            Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)
+          )}{" "}
+          USDC
+        </p>
       </div>
       {/* Slider ====================================== */}
 
