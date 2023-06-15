@@ -42,6 +42,7 @@ const Transact = () => {
     if (toastMessage) {
       let type = toastMessage.type;
       let message = toastMessage.message;
+
       setToastMessage(null);
 
       showToast(type, message);
@@ -84,7 +85,7 @@ const Transact = () => {
           </Tab.List>
           <Tab.Panels className="mt-2">
             <Tab.Panel>
-              <DepositPanel showToast={showToast} />
+              <DepositPanel showToast={setToastMessage} />
             </Tab.Panel>
             <Tab.Panel>
               <WithdrawPanel />

@@ -255,7 +255,7 @@ function handleFillResult(
     });
 
     if (fills[f.asset].length > 15) {
-      fills[f.asset].pop();
+      fills[f.asset] = fills[f.asset].slice(fills[f.asset].length - 15);
     }
 
     if (user) {

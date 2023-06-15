@@ -178,8 +178,8 @@ async function removePrivKey(userId, privKey, isPosition, privateSeed) {
 
   await deleteDoc(docRef);
 
-  let docRef2 = doc(db, `users/${userId}/deprecatedKeys`, encryptedPk);
-  await setDoc(docRef2, {});
+  // let docRef2 = doc(db, `users/${userId}/deprecatedKeys`, encryptedPk);
+  // await setDoc(docRef2, {});
 }
 
 async function storeOrderId(
@@ -227,8 +227,8 @@ async function removeOrderId(userId, orderId, isPerp, privateSeed) {
 
   await deleteDoc(docRef);
 
-  let docRef2 = doc(db, `users/${userId}/deprecatedOrderIds`, encryptedOrderId);
-  await setDoc(docRef2, {});
+  // let docRef2 = doc(db, `users/${userId}/deprecatedOrderIds`, encryptedOrderId);
+  // await setDoc(docRef2, {});
 }
 
 async function fetchUserData(userId, privateSeed) {

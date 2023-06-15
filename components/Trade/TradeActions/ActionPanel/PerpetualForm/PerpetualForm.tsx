@@ -387,7 +387,9 @@ function getMinMaxLeverage(
     let { newMaxLeverage, newMaxSize } = getNewMaxLeverage(
       positionData.margin / 10 ** COLLATERAL_TOKEN_DECIMALS,
       price,
-      SYMBOLS_TO_IDS[token]
+      SYMBOLS_TO_IDS[token],
+      positionData.order_side,
+      side
     );
     newMaxLeverage = Math.ceil(newMaxLeverage * 10) / 10;
 

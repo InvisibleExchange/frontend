@@ -239,6 +239,11 @@ function WalletProvider({ children }: Props) {
     return position;
   }
 
+  const [toastMessage, setToastMessage] = useState<{
+    type: string;
+    message: string;
+  } | null>(null);
+
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
 
@@ -273,8 +278,6 @@ function WalletProvider({ children }: Props) {
   let initFills;
   let initPerpFills;
   function updateFills(msg: any) {
-    console.log("updateFills", msg);
-
     let perpFills_ =
       Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
     let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
@@ -374,7 +377,6 @@ function WalletProvider({ children }: Props) {
   };
 
   const updateWalletBalance = (tokenAddressList: string[]) => {
-    console.log("updateWalletBalance", tokenAddressList);
     if (tokenAddressList.length > 0) {
       onboard.state.actions.updateBalances(tokenAddressList);
     } else {
@@ -389,7 +391,7 @@ function WalletProvider({ children }: Props) {
     try {
       user_ = await loginUser(signer);
     } catch (error) {
-      console.log("login error", error);
+      setToastMessage({ type: "error", message: "Login failed - " + error });
     }
 
     if (user_) {
@@ -490,11 +492,6 @@ function WalletProvider({ children }: Props) {
 
     listenToRelayWebSocket();
   };
-
-  const [toastMessage, setToastMessage] = useState<{
-    type: string;
-    message: string;
-  } | null>(null);
 
   const listenToServerWebSocket = (user: any) => {
     // * SERVER WEBSOCKET (listens for fills, swaps, perp_swaps)

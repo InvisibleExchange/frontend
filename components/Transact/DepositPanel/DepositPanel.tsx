@@ -44,7 +44,10 @@ const DepositPanel = ({ showToast }: any) => {
 
       {userAddress ? (
         user && user.userId ? (
-          <button className="w-full py-3 mt-8 text-center rounded-lg bg-green hover:opacity-70">
+          <button
+            className="w-full py-3 mt-8 text-center rounded-lg bg-green hover:opacity-70 opacity-70"
+            disabled={true}
+          >
             Make Deposit
           </button>
         ) : (

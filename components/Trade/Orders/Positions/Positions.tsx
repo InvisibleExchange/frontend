@@ -5,6 +5,9 @@ import CloseModal from "./CloseModal";
 
 import { WalletContext } from "../../../../context/WalletContext";
 
+import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
+import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
+
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
@@ -76,6 +79,20 @@ const Positions = () => {
                   pos.order_side == "Long" ? "text-green_lighter" : "text-red";
                 let pnlColor = pnl >= 0 ? "text-green_lighter" : "text-red";
 
+                let logo;
+                switch (pos.synthetic_token) {
+                  case 12345:
+                    logo = btcLogo;
+                    break;
+
+                  case 54321:
+                    logo = ethLogo;
+                    break;
+
+                  default:
+                    break;
+                }
+
                 return (
                   <tr
                     key={idx}
@@ -92,17 +109,31 @@ const Positions = () => {
                           "font-bold " + symbolColor.toString()
                         )}
                       >
-                        {IDS_TO_SYMBOLS[pos.synthetic_token] + "-PERP"}
-                      </p>
-                      <p
-                        className={classNames(
-                          "text-[12px] " + symbolColor.toString()
-                        )}
-                        style={{
-                          fontStyle: "italic",
-                        }}
-                      >
-                        ({pos.order_side})
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                          }}
+                        >
+                          <img
+                            src={logo.src}
+                            alt="Currency Logo"
+                            className="logo_icon"
+                          />
+                          <div className="ml-3">
+                            {IDS_TO_SYMBOLS[pos.synthetic_token] + "-PERP"}
+                            <p
+                              className={classNames(
+                                "text-[12px] " + symbolColor.toString()
+                              )}
+                              style={{
+                                fontStyle: "italic",
+                              }}
+                            >
+                              ({pos.order_side})
+                            </p>
+                          </div>
+                        </div>
                       </p>
                     </td>
                     <td className="font-medium ">

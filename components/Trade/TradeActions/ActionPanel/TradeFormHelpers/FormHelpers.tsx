@@ -55,9 +55,6 @@ function checkValidSizeIncrease(
   totalNominal = totalNominal + baseAmount * price;
   let avgPrice = totalNominal / totalBaseAmount;
 
-  console.log(totalBaseAmount);
-  console.log(avgPrice);
-
   // TODO: TEST THIS =================================================
 
   if (
@@ -274,6 +271,7 @@ function formatInputNum(val: any, decimals: number) {
     return null;
   }
 
+  val = val.toString();
   let decimalPointIndex = val.indexOf(".");
   if (decimalPointIndex == 0) {
     return "0" + val;
@@ -322,7 +320,7 @@ function addCommasToNumber(num) {
 
   // Next I want to add the decimal back on if it exists
   if (decimal) {
-    return newWholeNum + "." + decimal;
+    newWholeNum = newWholeNum + "." + decimal;
   }
 
   return newWholeNum;

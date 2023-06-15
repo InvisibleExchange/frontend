@@ -1,7 +1,10 @@
 import React, { useContext } from "react";
 import classNames from "classnames";
 import { WalletContext } from "../../../../context/WalletContext";
-import { addCommasToNumber } from "../../TradeActions/ActionPanel/TradeFormHelpers/FormHelpers";
+import {
+  addCommasToNumber,
+  formatInputNum,
+} from "../../TradeActions/ActionPanel/TradeFormHelpers/FormHelpers";
 
 const {
   IDS_TO_SYMBOLS,
@@ -36,6 +39,30 @@ const Balances = () => {
         <tbody className="overflow-y-auto max-h-24">
           {user && user.userId
             ? userBalances.map(({ token, balance }) => {
+                let bal = Number(
+                  formatInputNum(balance / 10 ** DECIMALS_PER_ASSET[token], 2)
+                ).toFixed(2);
+                let nominal =
+                  IDS_TO_SYMBOLS[token] == "USDC"
+                    ? Number(
+                        formatInputNum(
+                          (
+                            balance /
+                            10 ** DECIMALS_PER_ASSET[token]
+                          ).toString(),
+                          2
+                        )
+                      ).toFixed(2)
+                    : Number(
+                        formatInputNum(
+                          (
+                            (balance / 10 ** DECIMALS_PER_ASSET[token]) *
+                            getMarkPrice(token, false)
+                          ).toString(),
+                          3
+                        )
+                      ).toFixed(3);
+
                 return (
                   <tr
                     key={token}
@@ -47,21 +74,10 @@ const Balances = () => {
                       {IDS_TO_SYMBOLS[token]}
                     </td>
                     <td className="font-medium  dark:text-white text-fg_below_color">
-                      {(balance / 10 ** DECIMALS_PER_ASSET[token]).toFixed(3)}{" "}
-                      {IDS_TO_SYMBOLS[token]}
+                      {addCommasToNumber(bal)} {IDS_TO_SYMBOLS[token]}
                     </td>
                     <td className={classNames("pr-3 font-medium")}>
-                      {IDS_TO_SYMBOLS[token] == "USDC"
-                        ? addCommasToNumber(
-                            balance / 10 ** DECIMALS_PER_ASSET[token]
-                          ).toFixed(2)
-                        : addCommasToNumber(
-                            (
-                              (balance / 10 ** DECIMALS_PER_ASSET[token]) *
-                              getMarkPrice(token, false)
-                            ).toFixed(3)
-                          )}{" "}
-                      USD
+                      {addCommasToNumber(nominal)} USD
                     </td>
                   </tr>
                 );

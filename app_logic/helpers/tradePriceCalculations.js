@@ -247,20 +247,26 @@ function getMaxLeverage(token, amount) {
   return maxLev;
 }
 
-function getNewMaxLeverage(margin, indexPrice, token) {
+function getNewMaxLeverage(margin, indexPrice, token, orderSide) {
   let min_bound = LEVERAGE_BOUNDS_PER_ASSET[token][0];
 
-  let temp = (MAX_LEVERAGE * margin * min_bound) / Number(indexPrice);
+  let priceWithSlippage =
+    orderSide == "Long" ? Number(indexPrice) * 1.05 : Number(indexPrice) * 0.95;
+  let temp = (MAX_LEVERAGE * margin * min_bound) / Number(priceWithSlippage);
 
   let newMaxSize = Math.sqrt(temp);
-  let newMaxLeverage = getCurrentLeverage(indexPrice, newMaxSize, margin);
+  let newMaxLeverage = getCurrentLeverage(
+    priceWithSlippage,
+    newMaxSize,
+    margin
+  );
 
   if (newMaxLeverage > MAX_LEVERAGE) {
     newMaxLeverage = MAX_LEVERAGE;
-    newMaxSize = (MAX_LEVERAGE * margin) / Number(indexPrice);
+    newMaxSize = (MAX_LEVERAGE * margin) / Number(priceWithSlippage);
   } else if (newMaxLeverage < 1) {
     newMaxLeverage = 1;
-    newMaxSize = margin / Number(indexPrice);
+    newMaxSize = margin / Number(priceWithSlippage);
   }
 
   return { newMaxLeverage, newMaxSize };
@@ -275,8 +281,13 @@ function checkViableSizeAfterIncrease(position, added_size, added_price) {
 
   const maxLeverage = getMaxLeverage(position.synthetic_token, new_size);
 
+  let priceWithSlippage =
+    position.order_side == "Long"
+      ? Number(added_price) * 1.05
+      : Number(added_price) * 0.95;
+
   let scaledPrice =
-    Number(added_price) *
+    Number(priceWithSlippage) *
     10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
   let scaledSize =
     Number(added_size) * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
@@ -312,8 +323,13 @@ function checkViableSizeAfterFlip(position, added_size, added_price) {
     new_size
   );
 
+  let priceWithSlippage =
+    position.order_side == "Short"
+      ? Number(added_price) * 1.05
+      : Number(added_price) * 0.95;
+
   let leverage =
-    (new_size * added_price) /
+    (new_size * priceWithSlippage) /
     Number(position.margin / 10 ** COLLATERAL_TOKEN_DECIMALS);
 
   return leverage <= maxLeverage;

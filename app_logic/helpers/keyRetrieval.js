@@ -73,8 +73,6 @@ async function restoreKeyData(privateSeed, privSpendKey, privViewKey) {
 async function main() {
   let user = User.fromPrivKey(1234);
 
-  //   console.log(user);
-
   await restoreKeyData(user.privateSeed, user.privSpendKey, user.privViewKey);
 }
 

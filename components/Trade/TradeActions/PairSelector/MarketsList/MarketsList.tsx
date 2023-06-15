@@ -120,9 +120,16 @@ export default function MarketsList({
                   }}
                 >
                   <td className="py-2.5 pl-3  max-h-12 flex items-center gap-3 overflow-y-auto">
-                    <button>
-                      <HiOutlineStar className="w-3 h-3" />
-                    </button>
+                    {/* <button>
+                       <HiOutlineStar className="w-3 h-3" />
+                    </button> */}
+
+                    <img
+                      src={item.logo.src}
+                      alt="BTC Logo"
+                      className="logo_icon"
+                    />
+
                     <p className="text-sm dark:text-white text-fg_below_color">
                       {item.pairs}
                     </p>

@@ -144,15 +144,6 @@ export default class User {
       console.log
     );
 
-    // let depPKs = await fetchDeprecatedKeys(this.userId, this.privateSeed);
-    // let depKeyPairs =
-    //   depPKs.length > 0 ? depPKs.map((pk) => getKeyPair(pk)) : [];
-
-    // console.log(
-    //   "depKeyPairs",
-    //   depKeyPairs.map((kp) => kp.getPublic().getX().toString())
-    // );
-
     // ? Get Note Data ============================================
 
     let keyPairs =

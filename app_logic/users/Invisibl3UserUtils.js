@@ -87,8 +87,6 @@ function signMarginChange(
   position,
   positionPrivKey
 ) {
-  //
-
   if (direction == "Add") {
     let hashInputs = notesIn.map((note) => note.note.hash);
     hashInputs.push(refundNote ? refundNote.hash : 0n);
@@ -110,6 +108,7 @@ function signMarginChange(
     let changeAmount = P - BigInt(Math.abs(marginChange));
 
     let hashInputs = [changeAmount, closeOrderFields.hash(), position.hash];
+
     let hash = computeHashOnElements(hashInputs);
 
     let keyPair = getKeyPair(positionPrivKey);
