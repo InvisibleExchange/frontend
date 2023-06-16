@@ -145,7 +145,6 @@ export default class User {
     );
 
     // ? Get Note Data ============================================
-
     let keyPairs =
       userData.privKeys.length > 0
         ? userData.privKeys.map((pk) => getKeyPair(pk))
@@ -248,13 +247,13 @@ export default class User {
     }
     if (noActiveOrders) {
       for (let privKey of emptyPrivKeys) {
-        await removePrivKey(this.userId, privKey, false, this.privateSeed);
+        removePrivKey(this.userId, privKey, false, this.privateSeed);
       }
     }
     // ? If there are no perp orders than get rid of emptyPositionPrivKeys
     if (perpOrders.length == 0) {
       for (let privKey of emptyPositionPrivKeys) {
-        await removePrivKey(this.userId, privKey, true, this.privateSeed);
+        removePrivKey(this.userId, privKey, true, this.privateSeed);
       }
     }
 
@@ -317,7 +316,7 @@ export default class User {
       removeOrderId(this.userId, orderId, false, this.privateSeed);
 
       if (this.pfrKeys[orderId]) {
-        await handlePfrNoteData(
+        handlePfrNoteData(
           this.userId,
           this.pfrKeys[orderId],
           this.privateSeed,
@@ -330,7 +329,7 @@ export default class User {
       removeOrderId(this.userId, orderId, true, this.privateSeed);
 
       if (this.pfrKeys[orderId]) {
-        await handlePfrNoteData(
+        handlePfrNoteData(
           this.userId,
           this.pfrKeys[orderId],
           this.privateSeed,

@@ -552,6 +552,14 @@ function WalletProvider({ children }: Props) {
           });
           break;
 
+        case "SPOT_SWAP_ERROR":
+        case "PERP_SWAP_ERROR":
+          setToastMessage({
+            type: "error",
+            message: msg.error_message,
+          });
+          break;
+
         default:
           break;
       }
