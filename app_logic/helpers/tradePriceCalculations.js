@@ -247,12 +247,35 @@ function getMaxLeverage(token, amount) {
   return maxLev;
 }
 
-function getNewMaxLeverage(margin, indexPrice, token, orderSide) {
-  let min_bound = LEVERAGE_BOUNDS_PER_ASSET[token][0];
+function getPnl(position, indexPrice) {
+  let size =
+    Number(position.position_size) /
+    10 ** DECIMALS_PER_ASSET[position.synthetic_token];
 
+  let entryPrice =
+    Number(position.entry_price) /
+    10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+
+  let pnl = 0;
+  if (position.order_side == "Long") {
+    pnl = (indexPrice - entryPrice) * size;
+  } else {
+    pnl = (entryPrice - indexPrice) * size;
+  }
+
+  return pnl;
+}
+
+function getNewMaxLeverage(position, indexPrice) {
+  let min_bound = LEVERAGE_BOUNDS_PER_ASSET[position.synthetic_token][0];
+
+  let pnl = getPnl(position, indexPrice);
+  let margin = Number(position.margin) / 10 ** COLLATERAL_TOKEN_DECIMALS + pnl;
   let priceWithSlippage =
-    orderSide == "Long" ? Number(indexPrice) * 1.05 : Number(indexPrice) * 0.95;
-  let temp = (MAX_LEVERAGE * margin * min_bound) / Number(priceWithSlippage);
+    position.order_side == "Long"
+      ? Number(indexPrice) * 1.05
+      : Number(indexPrice);
+  let temp = (MAX_LEVERAGE * min_bound * margin) / Number(priceWithSlippage);
 
   let newMaxSize = Math.sqrt(temp);
   let newMaxLeverage = getCurrentLeverage(
@@ -326,11 +349,13 @@ function checkViableSizeAfterFlip(position, added_size, added_price) {
   let priceWithSlippage =
     position.order_side == "Short"
       ? Number(added_price) * 1.05
-      : Number(added_price) * 0.95;
+      : Number(added_price);
 
   let leverage =
     (new_size * priceWithSlippage) /
     Number(position.margin / 10 ** COLLATERAL_TOKEN_DECIMALS);
+
+  console.log(leverage, maxLeverage);
 
   return leverage <= maxLeverage;
 }

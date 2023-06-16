@@ -162,50 +162,50 @@ const _renderBuyButton = (
             // If "Modify"  order
             if (positionData) {
               // if increasing position size
-              if (positionData.order_side == "Long") {
-                if (
-                  !checkValidSizeIncrease(
-                    user,
-                    true,
-                    positionData,
-                    token,
-                    baseAmount,
-                    price
-                  )
-                ) {
-                  setToastMessage({
-                    type: "error",
-                    message:
-                      "Increase size too large for current margin (Add margin or close other open orders)",
-                  });
+              // if (positionData.order_side == "Long") {
+              //   if (
+              //     !checkValidSizeIncrease(
+              //       user,
+              //       true,
+              //       positionData,
+              //       token,
+              //       baseAmount,
+              //       price
+              //     )
+              //   ) {
+              //     setToastMessage({
+              //       type: "error",
+              //       message:
+              //         "Increase size too large for current margin (Add margin or close other open orders)",
+              //     });
 
-                  setIsLoading(false);
-                  return;
-                }
-              }
+              //     setIsLoading(false);
+              //     return;
+              //   }
+              // }
 
               // if decreasing/flipping position side
-              if (positionData.order_side == "Short") {
-                if (
-                  !checkValidSizeFlip(
-                    user,
-                    false,
-                    positionData,
-                    token,
-                    baseAmount,
-                    price
-                  )
-                ) {
-                  setToastMessage({
-                    type: "error",
-                    message:
-                      "Increase size too large for current margin (Add margin or close other open orders)",
-                  });
+              // if (positionData.order_side == "Short") {
+              //   if (
+              //     !checkValidSizeFlip(
+              //       user,
+              //       false,
+              //       positionData,
+              //       token,
+              //       baseAmount,
+              //       price
+              //     )
+              //   ) {
+              //     setToastMessage({
+              //       type: "error",
+              //       message:
+              //         "Increase size too large for current margin (Add margin or close other open orders)",
+              //     });
 
-                  setIsLoading(false);
-                  return;
-                }
-              }
+              //     setIsLoading(false);
+              //     return;
+              //   }
+              // }
             } else {
               let leverage = getCurrentLeverage(price, baseAmount, quoteAmount);
               let maxLeverage = getMaxLeverage(
@@ -373,50 +373,47 @@ const _renderAskButton = (
             // If "Modify"  order
             if (positionData) {
               // if increasing position size
-              if (positionData.order_side == "Short") {
-                if (
-                  !checkValidSizeIncrease(
-                    user,
-                    false,
-                    positionData,
-                    token,
-                    baseAmount,
-                    price
-                  )
-                ) {
-                  setToastMessage({
-                    type: "error",
-                    message:
-                      "Increase size too large for current margin (Add margin or close other open orders)",
-                  });
-
-                  setIsLoading(false);
-                  return;
-                }
-              }
-
+              // if (positionData.order_side == "Short") {
+              //   if (
+              //     !checkValidSizeIncrease(
+              //       user,
+              //       false,
+              //       positionData,
+              //       token,
+              //       baseAmount,
+              //       price
+              //     )
+              //   ) {
+              //     setToastMessage({
+              //       type: "error",
+              //       message:
+              //         "Increase size too large for current margin (Add margin or close other open orders)",
+              //     });
+              //     setIsLoading(false);
+              //     return;
+              //   }
+              // }
               // if decreasing/flipping position side
-              if (positionData.order_side == "Long") {
-                if (
-                  !checkValidSizeFlip(
-                    user,
-                    true,
-                    positionData,
-                    token,
-                    baseAmount,
-                    price
-                  )
-                ) {
-                  setToastMessage({
-                    type: "error",
-                    message:
-                      "Increase size too large for current margin (Add margin or close other open orders)",
-                  });
-
-                  setIsLoading(false);
-                  return;
-                }
-              }
+              // if (positionData.order_side == "Long") {
+              //   if (
+              //     !checkValidSizeFlip(
+              //       user,
+              //       true,
+              //       positionData,
+              //       token,
+              //       baseAmount,
+              //       price
+              //     )
+              //   ) {
+              //     setToastMessage({
+              //       type: "error",
+              //       message:
+              //         "Increase size too large for current margin (Add margin or close other open orders)",
+              //     });
+              //     setIsLoading(false);
+              //     return;
+              //   }
+              // }
             } else {
               let leverage = getCurrentLeverage(price, baseAmount, quoteAmount);
               let maxLeverage = getMaxLeverage(

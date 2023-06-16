@@ -119,6 +119,11 @@ const TradeForm = ({
   // * Form input handles
   function handlePriceChange(e: any) {
     let price = formatInputNum(e.target.value, 2);
+
+    newMinMaxLeverage = positionData
+      ? getMinMaxLeverage(positionData, token, action, Number(price))
+      : null;
+
     _handlePriceChange(
       setPrice,
       baseAmount,
@@ -384,13 +389,7 @@ function getMinMaxLeverage(
   price: number
 ) {
   if (positionData) {
-    let { newMaxLeverage, newMaxSize } = getNewMaxLeverage(
-      positionData.margin / 10 ** COLLATERAL_TOKEN_DECIMALS,
-      price,
-      SYMBOLS_TO_IDS[token],
-      positionData.order_side,
-      side
-    );
+    let { newMaxLeverage, newMaxSize } = getNewMaxLeverage(positionData, price);
     newMaxLeverage = Math.ceil(newMaxLeverage * 10) / 10;
 
     // getCurrentLeverage(indexPrice, size, margin)
