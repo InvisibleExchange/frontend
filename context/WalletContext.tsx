@@ -36,13 +36,16 @@ const User = require("../app_logic/users/Invisibl3User").default;
 const { trimHash } = require("../app_logic/users/Notes");
 const { fetchLatestFills } = require("../app_logic/helpers/firebaseConnection");
 
+const axios = require("axios");
+
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`; // process.env.EXPRESS_APP_URL;
+
 import {
   NETWORKS,
   isValidNetwork,
   NetworkType,
   NETWORK,
 } from "../data/networks";
-import { ZZToken } from "../data/zzTypes";
 import { TradeType } from "../components/Trade/BookTrades/BookTrades";
 import { marketList, token2Market } from "../data/markets";
 
@@ -94,6 +97,11 @@ export type WalletContextType = {
   };
   getMarkPrice: (token: number, isPerp: boolean) => any;
 
+  priceChange24h: any;
+  spot24hInfo: any;
+  perp24hInfo: any;
+  tokenFundingInfo: any;
+
   toastMessage: { type: string; message: string } | null;
   setToastMessage: any;
 
@@ -137,6 +145,11 @@ export const WalletContext = createContext<WalletContextType>({
   fills: {},
   perpFills: {},
   getMarkPrice: (token: number, isPerp: boolean) => 0,
+
+  priceChange24h: {},
+  spot24hInfo: null,
+  perp24hInfo: null,
+  tokenFundingInfo: null,
 
   toastMessage: null,
   setToastMessage: null,
@@ -239,6 +252,11 @@ function WalletProvider({ children }: Props) {
     return position;
   }
 
+  const [priceChange24h, setPriceChange24h] = useState<any>({});
+  const [spot24hInfo, setSpot24hInfo] = useState<any>({});
+  const [perp24hInfo, setPerp24hInfo] = useState<any>({});
+  const [tokenFundingInfo, setTokenFundingInfo] = useState<any>({});
+
   const [toastMessage, setToastMessage] = useState<{
     type: string;
     message: string;
@@ -282,6 +300,45 @@ function WalletProvider({ children }: Props) {
       Object.keys(perpFills).length == 0 ? initPerpFills : perpFills;
     let fills_ = Object.keys(fills).length == 0 ? initFills : fills;
     handleFillResult(user, msg, fills_, setFills, perpFills_, setPerpFills);
+  }
+
+  function update24hPrices(msg: any) {
+    let changes = JSON.parse(msg.price_changes);
+
+    setPriceChange24h(changes);
+  }
+
+  async function fetchMarketinfo() {
+    await axios.post(`${EXPRESS_APP_URL}/get_market_info`, {}).then((res) => {
+      let {
+        fundingPrices,
+        fundingRates,
+        spot24hVolumes,
+        spot24hTrades,
+        perp24hVolumes,
+        perp24hTrades,
+      } = res.data.response;
+
+      setTokenFundingInfo({ fundingPrices, fundingRates });
+
+      let spot24hInfo_ = {};
+      for (let token of Object.keys(spot24hVolumes)) {
+        spot24hInfo_[token] = {
+          volume: spot24hVolumes[token],
+          trades: spot24hTrades[token],
+        };
+      }
+      setSpot24hInfo(spot24hInfo_);
+
+      let perp24hInfo_ = {};
+      for (let token of Object.keys(perp24hVolumes)) {
+        perp24hInfo_[token] = {
+          volume: perp24hVolumes[token],
+          trades: perp24hTrades[token],
+        };
+      }
+      setPerp24hInfo(perp24hInfo_);
+    });
   }
 
   const walletsSub = onboard.state.select("wallets");
@@ -345,7 +402,6 @@ function WalletProvider({ children }: Props) {
   const updateWallet = (wallet: WalletState) => {
     const { accounts, chains, provider } = wallet;
     setUserAddress(accounts[0].address.toLowerCase());
-    // console.log(accounts[0])
     if (accounts[0].ens?.name) setUsername(accounts[0].ens?.name);
 
     const network = parseInt(chains[0].id, 16);
@@ -405,7 +461,11 @@ function WalletProvider({ children }: Props) {
     let bidLiq, askLiq;
     if (isPerp) {
       // Todo: Fetch it from cryptowatch
-      if (!perpLiquidity[token]) return 1000;
+      if (!perpLiquidity[token]) {
+        if (priceChange24h[IDS_TO_SYMBOLS[token]])
+          return priceChange24h[IDS_TO_SYMBOLS[token]].price;
+        else return 0;
+      }
 
       let { bidQueue, askQueue } = perpLiquidity[token];
 
@@ -413,7 +473,11 @@ function WalletProvider({ children }: Props) {
       askLiq = askQueue;
     } else {
       // Todo: Fetch it from cryptowatch
-      if (!liquidity[token]) return 1000;
+      if (!liquidity[token]) {
+        if (priceChange24h[IDS_TO_SYMBOLS[token]])
+          return priceChange24h[IDS_TO_SYMBOLS[token]].price;
+        else return 0;
+      }
 
       let { bidQueue, askQueue } = liquidity[token];
 
@@ -422,10 +486,14 @@ function WalletProvider({ children }: Props) {
     }
 
     let topBidPrice = bidLiq[0]?.price;
-    let topAskPrice = askLiq[askLiq.length - 1]?.price;
+    let topAskPrice = askLiq[askLiq.length - 1]?.price ?? 0;
 
     // Todo: Fetch it from cryptowatch
-    if (!topBidPrice || !topAskPrice) return 1000;
+    if (!topBidPrice || !topAskPrice) {
+      if (priceChange24h[IDS_TO_SYMBOLS[token]])
+        return priceChange24h[IDS_TO_SYMBOLS[token]].price;
+      else return 0;
+    }
 
     let markPrice = (topBidPrice + topAskPrice) / 2;
 
@@ -442,6 +510,8 @@ function WalletProvider({ children }: Props) {
     initialized_ = true;
 
     await init();
+
+    await fetchMarketinfo();
 
     if (Object.keys(liquidity).length && Object.keys(perpLiquidity).length)
       return;
@@ -605,7 +675,10 @@ function WalletProvider({ children }: Props) {
 
         case "SWAP_FILLED":
           updateFills(msg);
+          break;
 
+        case "24H_PRICE_UPDATE":
+          update24hPrices(msg);
           break;
 
         default:
@@ -654,6 +727,11 @@ function WalletProvider({ children }: Props) {
         perpFills: perpFills,
 
         getMarkPrice: getMarkPrice,
+
+        priceChange24h,
+        spot24hInfo,
+        perp24hInfo,
+        tokenFundingInfo,
 
         toastMessage,
         setToastMessage,

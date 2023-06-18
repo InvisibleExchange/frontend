@@ -25,8 +25,13 @@ const {
 } = require("../../../../app_logic/helpers/tradePriceCalculations");
 
 const Positions = () => {
-  let { user, getMarkPrice, setSelectedPosition, setToastMessage } =
-    useContext(WalletContext);
+  let {
+    user,
+    getMarkPrice,
+    setSelectedPosition,
+    setToastMessage,
+    tokenFundingInfo,
+  } = useContext(WalletContext);
 
   let positions: any[] = [];
   if (user && user.userId) {
@@ -78,6 +83,15 @@ const Positions = () => {
                 let symbolColor =
                   pos.order_side == "Long" ? "text-green_lighter" : "text-red";
                 let pnlColor = pnl >= 0 ? "text-green_lighter" : "text-red";
+
+                let { fundingPrices, fundingRates } = tokenFundingInfo;
+
+                let fundingPnl = calculateFundingPnl(
+                  pos,
+                  fundingRates[pos.synthetic_token],
+                  fundingPrices[pos.synthetic_token]
+                );
+                let fundingPnlPercent = (fundingPnl / margin) * 100;
 
                 let logo;
                 switch (pos.synthetic_token) {
@@ -201,8 +215,10 @@ const Positions = () => {
                         fontStyle: "italic",
                       }}
                     >
-                      <p>{pnl.toFixed(2)} USD</p>
-                      <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
+                      <p>{fundingPnl.toFixed(2)} USD</p>
+                      <p className="text-[12px]">
+                        ({fundingPnlPercent.toFixed(2)}%)
+                      </p>
                     </td>
                     {/* Close Button */}
                     <td className={classNames("pr-3")}>
@@ -222,3 +238,27 @@ const Positions = () => {
 };
 
 export default Positions;
+
+function calculateFundingPnl(positionData, fundingRates, prices) {
+  let applicableFundingRates = fundingRates.slice(
+    positionData.last_funding_index
+  );
+  let applicablePrices = prices.slice(positionData.last_funding_index);
+  let size =
+    positionData.position_size /
+    10 ** DECIMALS_PER_ASSET[positionData.synthetic_token];
+
+  let fundingSum = 0;
+  for (let i = 0; i < applicableFundingRates.length; i++) {
+    let fundingRate = applicableFundingRates[i] / 100_000;
+    let fundingPrice =
+      applicablePrices[i] /
+      10 ** PRICE_DECIMALS_PER_ASSET[positionData.synthetic_token];
+
+    let funding = size * fundingRate;
+    let fundingInUsd = funding * fundingPrice;
+    fundingSum += fundingInUsd;
+  }
+
+  return fundingSum;
+}

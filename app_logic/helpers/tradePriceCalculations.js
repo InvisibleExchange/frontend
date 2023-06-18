@@ -355,8 +355,6 @@ function checkViableSizeAfterFlip(position, added_size, added_price) {
     (new_size * priceWithSlippage) /
     Number(position.margin / 10 ** COLLATERAL_TOKEN_DECIMALS);
 
-  console.log(leverage, maxLeverage);
-
   return leverage <= maxLeverage;
 }
 

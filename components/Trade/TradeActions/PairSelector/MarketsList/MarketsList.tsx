@@ -1,9 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 // import useFavoriteMarkets from "../../../../../hooks/useFavoriteMarkets/useFavoriteMarkets";
 
 import classNames from "classnames";
 import { HiStar, HiOutlineStar } from "react-icons/hi2";
 import { FiSearch } from "react-icons/fi";
+import { WalletContext } from "../../../../../context/WalletContext";
+import { addCommasToNumber } from "../../ActionPanel/TradeFormHelpers/FormHelpers";
+
+const { SYMBOLS_TO_IDS } = require("../../../../../app_logic/helpers/utils");
 
 interface Props {
   close: () => void;
@@ -33,7 +37,13 @@ export default function MarketsList({
   setCurrentMarket,
   isCurrentMarket,
 }: Props) {
-  // const { favorites, addFavorite, removeFavorite } = useFavoriteMarkets();
+  let {
+    getMarkPrice,
+    priceChange24h,
+    spot24hInfo,
+    perp24hInfo,
+    tokenFundingInfo,
+  } = useContext(WalletContext);
 
   const [query, setQuery] = useState("");
   const [coinQuery, setCoinQuery] = useState("");
@@ -108,6 +118,15 @@ export default function MarketsList({
           </thead>
           <tbody className="overflow-y-auto max-h-24">
             {filteredMarkets.map((item: any, index: any) => {
+              let token = item.pairs.split("/")[0];
+
+              let marketPrice = getMarkPrice(SYMBOLS_TO_IDS[token], false);
+
+              let colorStyle =
+                priceChange24h[token]?.absolute > 0
+                  ? "text-green_lighter"
+                  : "text-red";
+
               return (
                 <tr
                   key={index}
@@ -119,31 +138,41 @@ export default function MarketsList({
                     setCurrentMarket(item);
                   }}
                 >
-                  <td className="py-2.5 pl-3  max-h-12 flex items-center gap-3 overflow-y-auto">
-                    {/* <button>
-                       <HiOutlineStar className="w-3 h-3" />
-                    </button> */}
-
+                  <td
+                    style={{
+                      width: "150%",
+                    }}
+                    className="py-2.5 pl-3  max-h-12 flex items-center gap-3 overflow-y-auto"
+                  >
                     <img
                       src={item.logo.src}
                       alt="BTC Logo"
                       className="logo_icon"
                     />
-
                     <p className="text-sm dark:text-white text-fg_below_color">
                       {item.pairs}
                     </p>
+
+                    {/* <button
+                      onClick={() => {
+                        // Marked as favorite
+                      }}
+                    >
+                      <HiOutlineStar className="w-4 h-4" />
+                      <HiStar className="w-4 h-4" />
+                    </button> */}
                   </td>
+
                   <td className="text-sm text-right dark:text-white text-fg_below_color max-h-12">
-                    {item.lastPrice}
+                    {marketPrice.toFixed(2)}
                   </td>
                   <td
                     className={classNames(
                       "pr-3 text-sm text-right max-h-12",
-                      item.change > 0 ? "text-green_lighter" : "text-red"
+                      colorStyle
                     )}
                   >
-                    {item.change > 0 ? `+${item.change}` : item.change}%
+                    {priceChange24h[token]?.percentage.toFixed(2)}%
                   </td>
                 </tr>
               );
