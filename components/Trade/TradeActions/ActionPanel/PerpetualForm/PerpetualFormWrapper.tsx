@@ -20,7 +20,10 @@ const PerpetualFormWrapper = ({ token }: any) => {
 
   let selectedPosition = getSelectedPosition();
   let positionData;
-  if (selectedPosition) {
+  if (
+    selectedPosition &&
+    positionData.synthetic_token == SYMBOLS_TO_IDS[token]
+  ) {
     positionData = selectedPosition;
   } else if (user && user.userId) {
     let posData = user.positionData[SYMBOLS_TO_IDS[token]];
@@ -54,6 +57,10 @@ const PerpetualFormWrapper = ({ token }: any) => {
       }
     }
   }, [formInputs]);
+
+  useEffect(() => {
+    setRerenderCount(rerenderCount + 1);
+  }, [token]);
 
   return (
     <div>

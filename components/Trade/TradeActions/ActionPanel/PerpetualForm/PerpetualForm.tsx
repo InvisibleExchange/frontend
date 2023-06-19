@@ -51,7 +51,7 @@ const TradeForm = ({
   action_,
   positionData,
   formInputs,
-}: props) => {
+}: props) => { 
   let {
     user,
     userAddress,
@@ -113,8 +113,6 @@ const TradeForm = ({
   function percentFormatter(v: any) {
     return `${v}`;
   }
-
-  // do somethin when the component is destroyed
 
   // * Form input handles
   function handlePriceChange(e: any) {
