@@ -217,45 +217,6 @@ function getCurrentLeverage(indexPrice, size, margin) {
   return currentLeverage;
 }
 
-// pub fn get_current_leverage(&self, index_price: u64) -> Result<u64, PerpSwapExecutionError> {
-//   // ? Make sure the index price is not 0
-//   if index_price == 0 {
-//       return Err(send_perp_swap_error(
-//           "Index price cannot be 0".to_string(),
-//           None,
-//           None,
-//       ));
-//   }
-
-//   let pnl: i64 = self.get_pnl(index_price);
-
-//   let synthetic_decimals: &u8 = DECIMALS_PER_ASSET
-//       .get(self.synthetic_token.to_string().as_str())
-//       .unwrap();
-
-//   let synthetic_price_decimals: &u8 = PRICE_DECIMALS_PER_ASSET
-//       .get(self.synthetic_token.to_string().as_str())
-//       .unwrap();
-
-//   let decimal_conversion = *synthetic_decimals + *synthetic_price_decimals
-//       - (COLLATERAL_TOKEN_DECIMALS + LEVERAGE_DECIMALS);
-//   let multiplier = 10_u128.pow(decimal_conversion as u32);
-
-//   if pnl < 0 && pnl.abs() as u64 > self.margin {
-//       return Err(send_perp_swap_error(
-//           "Position is liquidatable".to_string(),
-//           None,
-//           Some("position is liquidatable".to_string()),
-//       ));
-//   }
-
-//   let current_leverage: u64 = ((index_price as u128 * self.position_size as u128)
-//       / ((self.margin as i64 + pnl) as u128 * multiplier))
-//       as u64;
-
-//   return Ok(current_leverage);
-// }
-
 function getMinViableMargin(position, indexPrice) {
   let size =
     Number(position.position_size) /
@@ -286,7 +247,7 @@ function getMaxLeverage(token, amount) {
   return maxLev;
 }
 
-function getPnl(position, indexPrice) {
+function getPnl(position, indexPrice, slippage = 0) {
   let size =
     Number(position.position_size) /
     10 ** DECIMALS_PER_ASSET[position.synthetic_token];
@@ -297,28 +258,29 @@ function getPnl(position, indexPrice) {
 
   let pnl = 0;
   if (position.order_side == "Long") {
-    pnl = (indexPrice - entryPrice) * size;
+    pnl = (indexPrice * (1 - slippage) - entryPrice) * size;
   } else {
-    pnl = (entryPrice - indexPrice) * size;
+    pnl = (entryPrice - indexPrice * (1 + slippage)) * size;
   }
 
-  return pnl;
+  return Number(pnl);
 }
 
 function getNewMaxLeverage(position, indexPrice) {
   indexPrice = Number(indexPrice);
   let min_bound = LEVERAGE_BOUNDS_PER_ASSET[position.synthetic_token][0];
 
-  let pnl = getPnl(position, indexPrice);
+  let pnl = getPnl(position, indexPrice, 0.0);
   let margin = Number(position.margin) / 10 ** COLLATERAL_TOKEN_DECIMALS + pnl;
+  margin = margin * (1 - 0.0007);
   let temp = (MAX_LEVERAGE * min_bound * margin) / indexPrice;
 
-  let newMaxSize = Math.sqrt(temp) * 0.97;
+  let newMaxSize = Math.sqrt(temp) * 0.99;
   let newMaxLeverage = getCurrentLeverage(indexPrice, newMaxSize, margin);
 
   if (newMaxLeverage > MAX_LEVERAGE) {
     newMaxLeverage = MAX_LEVERAGE;
-    newMaxSize = (MAX_LEVERAGE * margin) / indexPrice;
+    newMaxSize = (MAX_LEVERAGE * margin * 0.99) / indexPrice;
   } else if (newMaxLeverage < 1) {
     newMaxLeverage = 1;
     newMaxSize = margin / indexPrice;

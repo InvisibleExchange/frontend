@@ -4,7 +4,9 @@ import { WalletContext } from "../../../../context/WalletContext";
 import LoadingSpinner from "../../../Layout/LoadingSpinner/LoadingSpinner";
 
 //
-import { FaTrashAlt } from "react-icons/fa";
+import { FaEdit, FaTrashAlt } from "react-icons/fa";
+import { BsFillCheckCircleFill } from "react-icons/bs";
+import { FcCancel } from "react-icons/fc";
 
 const {
   IDS_TO_SYMBOLS,
@@ -29,8 +31,6 @@ const OpenOrders = () => {
     isPerp: boolean,
     token: any
   ) => {
-    setCancelling(true);
-
     let marketId: any;
     if (isPerp) {
       marketId = PERP_MARKET_IDS[token];
@@ -101,6 +101,11 @@ const OpenOrders = () => {
                 ? order.base_asset
                 : order.quote_asset;
 
+              let [edittingPrice, setEditingPrice] = React.useState(false);
+              let [newPrice, setNewPrice] = React.useState<number | null>(
+                Number(order.price)
+              );
+
               let color = !order.order_side ? "text-red" : "text-green_lighter";
               return (
                 <tbody key={idx} className="overflow-y-auto max-h-24">
@@ -138,6 +143,64 @@ const OpenOrders = () => {
                     {/* Price */}
                     <td className={classNames("pr-3 font-medium")}>
                       {Number(order.price).toFixed(2)} USD
+                      {/* {edittingPrice ? (
+                        <div className="flex items-center">
+                          <input
+                            name="amount"
+                            className="py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
+                            type="number"
+                            step={0.001}
+                            style={{ width: "7rem" }}
+                            value={newPrice ? newPrice : ""}
+                            onChange={(e) => {
+                              setNewPrice(
+                                e.target.value ? Number(e.target.value) : null
+                              );
+                            }}
+                          />
+
+                          <button
+                            type="button"
+                            onClick={() => console.log("submit")}
+                            className="ml-3 rounded-m hover:opacity-75"
+                          >
+                            <BsFillCheckCircleFill
+                              style={{
+                                color: "#00ff00",
+                                fontSize: "1.2rem",
+                                marginLeft: "0.5rem",
+                                marginRight: "0.1em",
+                              }}
+                            />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewPrice(Number(order.price));
+                              setEditingPrice(false);
+                            }}
+                            className="ml-3 rounded-m hover:opacity-75"
+                          >
+                            <FcCancel
+                              style={{
+                                color: "red",
+                                fontSize: "1.5rem",
+                              }}
+                            />
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          {Number(order.price).toFixed(2)} USD
+                          <button
+                            type="button"
+                            onClick={() => setEditingPrice(true)}
+                            className="ml-3 rounded-m hover:opacity-75"
+                          >
+                            <FaEdit className="w-5 h-4" />
+                          </button>
+                        </div>
+                      )} */}
                     </td>
                     {/* Amount */}
                     <td className={classNames("pr-3 font-medium ")}>
@@ -253,3 +316,5 @@ async function cancelAllOrders(user, orders) {
     );
   }
 }
+
+async function Order(order: any, idx: number) {}

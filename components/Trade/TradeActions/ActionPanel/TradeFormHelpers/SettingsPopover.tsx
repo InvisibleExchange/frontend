@@ -51,7 +51,7 @@ const SettingsPopover = ({
             ref={setPopperElement}
             style={styles.popper}
             {...attributes.popper}
-            className="popover w-60 mt-10 mr-2 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color"
+            className=" popover w-60 mt-10 mr-2 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color"
           >
             <div className="px-4 py-2">
               <div className="relative mt-1 ">
@@ -64,7 +64,7 @@ const SettingsPopover = ({
                   placeholder="Expiration time"
                 />
                 <p style={{ fontSize: "12px" }} className="pl-2">
-                  Default: 4 weeks ~ 100hours
+                  Default: 4 weeks
                 </p>
                 <div className="absolute top-0 right-0 w-16 px-3 text-base font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
                   Hours
@@ -74,25 +74,27 @@ const SettingsPopover = ({
 
             {/* =================== */}
 
-            <div className="px-4 py-2">
-              <div className="relative mt-1">
-                <input
-                  className="w-full  pl-2 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
-                  type="number"
-                  step={0.1}
-                  value={maxSlippage}
-                  onChange={handleMaxSlipChange}
-                  placeholder="Max Slippage"
-                  disabled={!isMarket}
-                />
-                <p style={{ fontSize: "12px" }} className="pl-2">
-                  Default: 5% (*market orders only)
-                </p>
-                <div className="absolute top-0 right-0 w-16 px-3 text-base  font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
-                  %
+            {isMarket ? (
+              <div className="px-4 py-2">
+                <div className="relative mt-1">
+                  <input
+                    className="w-full  pl-2 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color"
+                    type="number"
+                    step={0.1}
+                    value={maxSlippage}
+                    onChange={handleMaxSlipChange}
+                    placeholder="Max Slippage"
+                    disabled={!isMarket}
+                  />
+                  <p style={{ fontSize: "12px" }} className="pl-2">
+                    Default: 3% (*market orders only)
+                  </p>
+                  <div className="absolute top-0 right-0 w-16 px-3 text-base  font-light text-center dark:font-medium font-overpass text-fg_below_color dark:text-white bg-border_color rounded-r-md">
+                    %
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : null}
           </div>
         )}
       </div>

@@ -602,6 +602,160 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
 }
 
 // * =====================================================================================================================================
+
+/**
+ * Sends an amend order request to the server
+ * ## Params:
+ * @param orderId order id of order to cancel
+ * @param orderSide "Buy"/"Sell"
+ * @param isPerp
+ * @param marketId market id of the order
+ * @param newPrice new price of the order
+ * @param newExpirationTime new expiration time in seconds
+ * @param match_only true if order should be matched only, false if matched and amended
+ * @returns true if order should be removed, false otherwise
+ */
+
+async function sendAmendOrder(
+  user,
+  orderId,
+  order_side,
+  isPerp,
+  marketId,
+  newPrices,
+  newExpirationTime
+) {
+  let ts = new Date().getTime() / 1000; // number of seconds since epoch
+  let expirationTimestamp = Number.parseInt(ts.toString()) + newExpirationTime;
+
+  if (
+    !(isPerp === true || isPerp === false) ||
+    !marketId ||
+    !orderId ||
+    !newPrices ||
+    !newExpirationTime ||
+    (order_side !== "Buy" && order_side !== "Sell")
+  )
+    return;
+
+  newPrices = newPrices.map((p) => Number(p));
+
+  let order;
+  let signature;
+  if (isPerp) {
+    let ord = user.perpetualOrders.filter((o) => o.order_id == orderId)[0];
+
+    
+      // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
+
+    let newCollateralAmount = getQuoteQty(
+      ord.synthetic_amount,
+      newPrices[0],
+      ord.synthetic_token,
+      COLLATERAL_TOKEN,
+      null
+    );
+
+    ord.collateral_amount = newCollateralAmount;
+    ord.expiration_timestamp = expirationTimestamp;
+
+    if (ord.position_effect_type == "Open") {
+      // open order
+      let privKeys = ord.open_order_fields.notes_in.map(
+        (note) => user.notePrivKeys[note.address.getX().toString()]
+      );
+
+      let sig = ord.signOrder(privKeys, null);
+      signature = sig;
+    } else {
+      let position_priv_key =
+        user.positionPrivKeys[ord.position.position_address];
+
+      let sig = ord.signOrder(null, position_priv_key);
+      signature = sig;
+    }
+
+    order = ord;
+  } else {
+    let ord = user.orders.filter((o) => o.order_id == orderId)[0];
+
+     // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
+
+    if (order_side == "Buy") {
+      let newAmountReceived = getQtyFromQuote(
+        ord.amount_spent,
+        newPrices[0],
+        ord.token_received,
+        ord.token_spent
+      );
+
+      ord.amount_received = newAmountReceived;
+      ord.expiration_timestamp = expirationTimestamp;
+    } else {
+      let newAmountReceived = getQuoteQty(
+        ord.amount_spent,
+        newPrices[0],
+        ord.token_spent,
+        ord.token_received,
+        null
+      );
+
+      ord.amount_received = newAmountReceived;
+      ord.expiration_timestamp = expirationTimestamp;
+    }
+
+    let privKeys = ord.notes_in.map(
+      (note) => user.notePrivKeys[note.address.getX().toString()]
+    );
+
+    let sig = ord.signOrder(privKeys);
+
+    signature = sig;
+    order = ord;
+  }
+
+  let amendReq = {
+    market_id: marketId,
+    order_id: orderId.toString(),
+    order_side: order_side == "Buy",
+    new_prices: newPrices,
+    new_expiration: expirationTimestamp,
+    signature: { r: signature[0].toString(), s: signature[1].toString() },
+    user_id: trimHash(user.userId, 64).toString(),
+    is_perp: isPerp,
+    match_only: false,
+  };
+
+  return axios.post(`${EXPRESS_APP_URL}/amend_order`, amendReq).then((res) => {
+    let order_response = res.data.response;
+
+    if (order_response.successful) {
+      if (isPerp) {
+        for (let i = 0; i < user.perpetualOrders.length; i++) {
+          let ord = user.perpetualOrders[i];
+
+          if (ord.order_id == orderId.toString()) {
+            user.perpetualOrders[i] = order;
+          }
+        }
+      } else {
+        for (let i = 0; i < user.orders.length; i++) {
+          let ord = user.orders[i];
+
+          if (ord.order_id == orderId.toString()) {
+            user.orders[i] = order;
+          }
+        }
+      }
+    } else {
+      let msg =
+        "Amend order failed with error: \n" + order_response.error_message;
+      console.log(msg);
+    }
+  });
+}
+
+// * =====================================================================================================================================
 // * =====================================================================================================================================
 // * =====================================================================================================================================
 
