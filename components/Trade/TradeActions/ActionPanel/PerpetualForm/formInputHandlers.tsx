@@ -205,7 +205,6 @@ const _handleSliderChange = (
   } else {
     if (price && quoteAmount) {
       let baseAmount_ = (Number(quoteAmount) * leverage_) / Number(price);
-      baseAmount_ = Math.min(baseAmount_, newMinMaxLeverage?.newMaxSize);
 
       setBaseAmount(formatInputNum(baseAmount_.toString(), 4));
     }

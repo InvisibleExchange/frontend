@@ -101,10 +101,10 @@ const OpenOrders = () => {
                 ? order.base_asset
                 : order.quote_asset;
 
-              let [edittingPrice, setEditingPrice] = React.useState(false);
-              let [newPrice, setNewPrice] = React.useState<number | null>(
-                Number(order.price)
-              );
+              // let [edittingPrice, setEditingPrice] = React.useState(false);
+              // let [newPrice, setNewPrice] = React.useState<number | null>(
+              //   Number(order.price)
+              // );
 
               let color = !order.order_side ? "text-red" : "text-green_lighter";
               return (
