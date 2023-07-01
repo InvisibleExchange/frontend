@@ -510,9 +510,9 @@ async function sendCancelOrder(user, orderId, orderSide, isPerp, marketId) {
     throw new Error("Invalid parameters");
   }
 
-  if (orderSide === 1 || orderSide === false) {
+  if (orderSide === 0 || orderSide === false || orderSide == "Short") {
     orderSide = false;
-  } else if (orderSide === 0 || orderSide === true) {
+  } else if (orderSide === 1 || orderSide === true || orderSide == "Long") {
     orderSide = true;
   } else {
     throw new Error("Invalid order side");
@@ -645,8 +645,7 @@ async function sendAmendOrder(
   if (isPerp) {
     let ord = user.perpetualOrders.filter((o) => o.order_id == orderId)[0];
 
-    
-      // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
+    // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
 
     let newCollateralAmount = getQuoteQty(
       ord.synthetic_amount,
@@ -679,7 +678,7 @@ async function sendAmendOrder(
   } else {
     let ord = user.orders.filter((o) => o.order_id == orderId)[0];
 
-     // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
+    // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
 
     if (order_side == "Buy") {
       let newAmountReceived = getQtyFromQuote(
