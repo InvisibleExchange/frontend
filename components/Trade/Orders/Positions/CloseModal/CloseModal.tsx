@@ -40,6 +40,11 @@ const CloseModal = ({ position, setToastMessage }: any) => {
   let [price, setPrice] = useState<number | null>(null);
   let [amount, setAmount] = useState(0);
 
+  let [percent, setPercent] = useState(0);
+
+  let positionSize =
+    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+
   function closeModal() {
     setIsOpen(false);
   }
@@ -54,8 +59,13 @@ const CloseModal = ({ position, setToastMessage }: any) => {
     setAmount(closeAmount);
   }
 
-  let positionSize =
-    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+  function handleAmountChange(amount: number) {
+    setAmount(amount);
+
+    let closePercent = (amount / positionSize) * 100;
+
+    setPercent(closePercent);
+  }
 
   return (
     <div>
@@ -222,6 +232,7 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                             }}
                             tipProps={{ overlayClassName: "foo" }}
                             onChange={handleSliderChange}
+                            value={percent}
                           />
                         </div>
                       </div>

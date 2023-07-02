@@ -29,6 +29,7 @@ const {
   SYMBOLS_TO_IDS,
   COLLATERAL_TOKEN,
   DECIMALS_PER_ASSET,
+  PRICE_DECIMALS_PER_ASSET,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -51,7 +52,7 @@ const TradeForm = ({
   action_,
   positionData,
   formInputs,
-}: props) => { 
+}: props) => {
   let {
     user,
     userAddress,
@@ -69,6 +70,7 @@ const TradeForm = ({
     setAction(action_);
   }, [user, action_]);
 
+  let initLev = 1;
   let price_, baseAmount_, quoteAmount_;
   if (
     formInputs &&
@@ -78,12 +80,30 @@ const TradeForm = ({
     price_ = formInputs.price
       ? formatInputNum(formInputs.price.toString(), 2)
       : null;
+
     baseAmount_ = formInputs.amount
       ? formatInputNum(formInputs.amount.toString(), 4)
       : null;
+
+    if (!positionData && user) {
+      formInputs.quoteAmount = Math.min(
+        Number(formInputs.quoteAmount),
+        user.getAvailableAmount(COLLATERAL_TOKEN) /
+          10 ** COLLATERAL_TOKEN_DECIMALS
+      );
+    }
     quoteAmount_ = formInputs.quoteAmount
       ? formatInputNum(formInputs.quoteAmount.toString(), 2)
       : null;
+
+    if (price_ && baseAmount_) {
+      if (!positionData) {
+        initLev = (baseAmount_ * price_) / quoteAmount_;
+      } else {
+        // let average_entry_price =
+        //     (prev_nominal_usd + added_nominal_usd) / (self.position_size + added_size) as u128;
+      }
+    }
   }
 
   let markPrice = getMarkPrice(SYMBOLS_TO_IDS[token], true);
@@ -207,7 +227,7 @@ const TradeForm = ({
     return _renderLoginButton(isLoading, setIsLoading, login, forceRerender);
   }
 
-  const [leverage, setLeverage] = useState(1);
+  const [leverage, setLeverage] = useState(initLev);
   const [maxLeverage, setMaxLeverage] = useState(MAX_LEVERAGE);
 
   const [price, setPrice] = useState<string | null>(
@@ -215,6 +235,7 @@ const TradeForm = ({
       ? getMarkPrice(SYMBOLS_TO_IDS[token], true).toFixed(2) ?? "0.00"
       : price_
   );
+
   const [baseAmount, setBaseAmount] = useState<string | null>(baseAmount_);
   const [quoteAmount, setQuoteAmount] = useState<string | null>(quoteAmount_);
 

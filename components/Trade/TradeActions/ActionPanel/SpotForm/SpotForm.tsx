@@ -81,12 +81,38 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
     price_ = formInputs.price
       ? formatInputNum(formInputs.price.toString(), 2)
       : null;
-    baseAmount_ = formInputs.amount
-      ? formatInputNum(formInputs.amount.toString(), 4)
-      : null;
-    quoteAmount_ = formInputs.quoteAmount
-      ? formatInputNum(formInputs.quoteAmount.toString(), 2)
-      : null;
+
+    if (action === "buy") {
+      formInputs.quoteAmount = Math.min(
+        Number(formInputs.quoteAmount),
+        user.getAvailableAmount(COLLATERAL_TOKEN) /
+          10 ** COLLATERAL_TOKEN_DECIMALS
+      );
+      quoteAmount_ = formInputs.quoteAmount
+        ? formatInputNum(formInputs.quoteAmount.toString(), 2)
+        : null;
+
+      if (quoteAmount_ > 0) {
+        baseAmount_ = Number((quoteAmount_ / price_).toFixed(4));
+      }
+    } else {
+      formInputs.amount = Math.min(
+        Number(formInputs.amount),
+        user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
+          10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+      );
+      baseAmount_ = formInputs.amount
+        ? formatInputNum(formInputs.amount.toString(), 4)
+        : null;
+
+      if (baseAmount_ > 0) {
+        quoteAmount_ = Number((baseAmount_ * price_).toFixed(2));
+      }
+    }
+
+    // ---------------------------------------------------------------
+
+    // ---------------------------------------------------------------
   }
 
   function percentFormatter(v: any) {
