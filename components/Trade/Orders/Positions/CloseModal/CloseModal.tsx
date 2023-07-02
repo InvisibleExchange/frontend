@@ -57,6 +57,7 @@ const CloseModal = ({ position, setToastMessage }: any) => {
     let closeAmount = positionSize * (val / 100);
 
     setAmount(closeAmount);
+    setPercent(Number(val));
   }
 
   function handleAmountChange(amount: number) {
@@ -206,7 +207,9 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                             Max:{" "}
                             <span
                               className="dark:text-white cursor-pointer"
-                              onClick={() => setAmount(Number(positionSize))}
+                              onClick={() =>
+                                handleAmountChange(Number(positionSize))
+                              }
                             >
                               {positionSize}{" "}
                               {IDS_TO_SYMBOLS[position.synthetic_token]}
@@ -221,7 +224,9 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                             }}
                             className="w-full py-1.5 pl-4 font-light tracking-wider  rounded-md outline-none ring-1 dark:bg-fg_below_color ring-border_color disabled:opacity-75 no-arrows"
                             value={amount.toFixed(3)}
-                            onChange={(e) => setAmount(Number(e.target.value))}
+                            onChange={(e) =>
+                              handleAmountChange(Number(e.target.value))
+                            }
                           />
                         </div>
 
