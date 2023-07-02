@@ -308,11 +308,15 @@ async function sendPerpOrder(
     initial_margin
   );
 
+
+
   user.awaittingOrder = true;
 
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
+
+ 
 
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)

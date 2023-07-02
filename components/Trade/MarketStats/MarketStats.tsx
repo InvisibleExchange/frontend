@@ -98,7 +98,7 @@ export default function MarketStats() {
       </div>
       {selectedType == "perpetual" ? (
         <div className={styles.twentyfour_trades}>
-          <div className={styles.label}>8h Funding</div>
+          <div className={styles.label}>1h Funding</div>
           <div className={`${styles.value} ${styles.positive} `}>
             {latestFundingRate}%
           </div>

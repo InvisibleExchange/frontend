@@ -1,4 +1,4 @@
-import { LiquidationOrder } from "../transactions/LiquidationOrder";
+const { LiquidationOrder } = require("../transactions/LiquidationOrder");
 
 const bigInt = require("big-integer");
 const { pedersen, computeHashOnElements } = require("../helpers/pedersen");

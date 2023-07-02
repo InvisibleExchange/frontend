@@ -40,7 +40,6 @@ const OpenOrders = () => {
 
     setCancelling(true);
 
-    console.log("canceling order", orderId, orderSide, isPerp, marketId);
     await sendCancelOrder(user, orderId, orderSide, isPerp, marketId);
 
     setCancelling(false);
