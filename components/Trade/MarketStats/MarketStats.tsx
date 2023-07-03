@@ -35,8 +35,9 @@ export default function MarketStats() {
     selectedType == "perpetual"
   );
 
+
   let colorStyle =
-    priceChange24h[SYMBOLS_TO_IDS[token]]?.absolute > 0
+    priceChange24h[token]?.absolute > 0
       ? styles.positive
       : styles.negative;
 
@@ -80,7 +81,7 @@ export default function MarketStats() {
         <div className={styles.label}>24h Change</div>
         <div className={`${styles.value} ${colorStyle}`}>
           {priceChange24h[token]?.absolute.toFixed(2)} (
-          {priceChange24h[token]?.percentage.toFixed(2)}%)
+          {(priceChange24h[token]?.percentage * 100).toFixed(2)}%)
         </div>
       </div>
       <div className={styles.twentyfour_volume}>

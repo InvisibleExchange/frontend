@@ -40,7 +40,7 @@ const DepositPanel = ({ showToast }: any) => {
   return (
     <div>
       <TokenSelector tokens={tokens} selected={token} onSelect={setToken} />
-      <AmountInput selected={token} setAmount={setAmount} user={user} />
+      <AmountInput selected={token} setAmount={setAmount} amount={amount} />
 
       {userAddress ? (
         user && user.userId ? (

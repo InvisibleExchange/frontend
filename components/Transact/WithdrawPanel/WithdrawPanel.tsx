@@ -11,11 +11,12 @@ const tokens = [
 
 const WithdrawPanel = () => {
   const [token, setToken] = useState(tokens[0]);
+  const [amount, setAmount] = useState(null);
 
   return (
     <div>
       <TokenSelector tokens={tokens} selected={token} onSelect={setToken} />
-      <AmountInput selected={token} />
+      <AmountInput selected={token} setAmount={setAmount} amount={amount} />
       <div className="mt-5">
         <p className="text-sm">Ethereum Address</p>
         <input

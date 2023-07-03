@@ -1,20 +1,21 @@
 import React from "react";
+import { formatInputNum } from "../Trade/TradeActions/ActionPanel/TradeFormHelpers/FormHelpers";
 
-const AmountInput = ({ selected, setAmount, user }: any) => {
-
+const AmountInput = ({ selected, setAmount, amount }: any) => {
   return (
     <div className="mt-5 ">
       <div className="flex items-center justify-end gap-2">
         <p className="text-sm">Available balance:</p>
-        <p>0.0025 ETH</p>
+        <p>0.0 {selected.name}</p>
       </div>
       <div className="relative mt-2 rounded-lg hover:ring-1 hover:dark:ring-fg_below_color">
         <input
           className="w-full py-3 pl-5 rounded-lg bg-border_color focus:outline-none"
           type="text"
           onChange={(e) => {
-            setAmount(e.target.value);
+            setAmount(formatInputNum(e.target.value, 4));
           }}
+          value={amount}
         />
         <button className="absolute text-sm dark:text-yellow text-blue right-20 top-3 hover:opacity-70">
           Max

@@ -13,7 +13,7 @@ const {
 const PendingPanel = ({ type, user, showToast }: any) => {
   let deposits: any[] = [];
 
-  let amounts = { ETH: 5, USDC: 15_000, BTC: 1 };
+  let amounts = { ETH: 5, USDC: 15_000, BTC: 0.5 };
   if (user?.userId) {
     for (let token_ of ["ETH", "USDC", "BTC"]) {
       let token = SYMBOLS_TO_IDS[token_];
@@ -32,7 +32,15 @@ const PendingPanel = ({ type, user, showToast }: any) => {
 
   return (
     <div>
-      <p className="uppercase">Claim {type}s: </p>
+      <p className="uppercase">
+        <strong>Claim {type}s:</strong>{" "}
+      </p>
+      {type == "Deposit" ? (
+        <em>
+          ** For ease of testing, we don't require you to have goerli eth given
+          its scarcity, so you can mint yourself some test funds below. **
+        </em>
+      ) : null}
       {deposits?.length ? (
         deposits.map((deposit) => {
           return (
