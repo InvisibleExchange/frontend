@@ -30,17 +30,15 @@ const PendingPanel = ({ type, user, showToast }: any) => {
     }
   }
 
+  let helperMessage =
+    "** For ease of testing, we don't require you to have goerli eth given its scarcity, so you can mint yourself some test funds below. **";
+
   return (
     <div>
       <p className="uppercase">
         <strong>Claim {type}s:</strong>{" "}
       </p>
-      {type == "Deposit" ? (
-        <em>
-          ** For ease of testing, we don't require you to have goerli eth given
-          its scarcity, so you can mint yourself some test funds below. **
-        </em>
-      ) : null}
+      {type == "Deposit" ? <em>{helperMessage}</em> : null}
       {deposits?.length ? (
         deposits.map((deposit) => {
           return (
