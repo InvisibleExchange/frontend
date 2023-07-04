@@ -37,7 +37,8 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+// const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
 
 /// Things we keep track of
 /// Index prices
