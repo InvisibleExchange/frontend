@@ -35,11 +35,8 @@ export default function MarketStats() {
     selectedType == "perpetual"
   );
 
-
   let colorStyle =
-    priceChange24h[token]?.absolute > 0
-      ? styles.positive
-      : styles.negative;
+    priceChange24h[token]?.absolute > 0 ? styles.positive : styles.negative;
 
   let nominalVolume = 0;
   let trades = 0;
@@ -101,7 +98,7 @@ export default function MarketStats() {
         <div className={styles.twentyfour_trades}>
           <div className={styles.label}>1h Funding</div>
           <div className={`${styles.value} ${styles.positive} `}>
-            {latestFundingRate}%
+            {latestFundingRate ? latestFundingRate : 0}%
           </div>
         </div>
       ) : null}

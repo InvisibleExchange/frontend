@@ -22,7 +22,7 @@ const PendingPanel = ({ type, user, showToast }: any) => {
       let bal = user.getAvailableAmount(token);
       if (bal < DUST_AMOUNT_PER_ASSET[token]) {
         deposits.push({
-          depositId: CHAIN_IDS["L1"] * 2 ** 32 + 12345,
+          depositId: 112412412412, //CHAIN_IDS["L1"] * 2 ** 32 + 12345,
           amount: amounts[token_],
           token: token_,
           pubKey: 1234,
