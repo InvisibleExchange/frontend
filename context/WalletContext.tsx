@@ -567,7 +567,7 @@ function WalletProvider({ children }: Props) {
   const listenToServerWebSocket = (user: any) => {
     // * SERVER WEBSOCKET (listens for fills, swaps, perp_swaps)
     let W3CWebSocket = require("websocket").w3cwebsocket;
-    let serverClient = new W3CWebSocket(`wss://${SERVER_URL}:50053`);
+    let serverClient = new W3CWebSocket(`wss://invisible.zigzag.exchange/ws2`);
 
     serverClient.onopen = function () {
       const ID = trimHash(user.userId, 64).toString();
@@ -643,14 +643,12 @@ function WalletProvider({ children }: Props) {
     // * RELAY WEBSOCKET (listens for liquidity)
 
     let W3CWebSocket = require("websocket").w3cwebsocket;
-    let relayClient = new W3CWebSocket(`wss://${SERVER_URL}:4040`);
+    let relayClient = new W3CWebSocket(`wss://invisible.zigzag.exchange/ws1`);
 
     relayClient.onopen = function () {};
 
     relayClient.onmessage = function (e: any) {
       let msg = JSON.parse(e.data);
-
-      console.log(msg);
 
       // 1.)
       // "message_id": LIQUIDITY_UPDATE,

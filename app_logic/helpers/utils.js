@@ -16,6 +16,12 @@ const IDS_TO_SYMBOLS = {
   55555: "USDC",
 };
 
+const CHAIN_IDS = {
+  L1: 9090909,
+  starknet: 7878787,
+  zkSync: 5656565,
+};
+
 const DECIMALS_PER_ASSET = {
   12345: 9, // BTC
   54321: 9, // ETH

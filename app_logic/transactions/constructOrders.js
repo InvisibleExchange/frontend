@@ -14,6 +14,7 @@ const {
   PRICE_DECIMALS_PER_ASSET,
   handleNoteSplit,
   DUST_AMOUNT_PER_ASSET,
+  CHAIN_IDS,
 } = require("../helpers/utils");
 const {
   _getBankruptcyPrice,
@@ -23,7 +24,7 @@ const {
 // const path = require("path");
 // require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
-const EXPRESS_APP_URL =  "https://invisible.zigzag.exchange/api"; // `http://${SERVER_URL}:4000`; // process.env.EXPRESS_APP_URL;
+const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api"; // `http://${SERVER_URL}:4000`; // process.env.EXPRESS_APP_URL;
 
 // TODO: Remove notes only after order is confirmed
 
@@ -308,15 +309,11 @@ async function sendPerpOrder(
     initial_margin
   );
 
-
-
   user.awaittingOrder = true;
 
   let orderJson = perpOrder.toGrpcObject();
   orderJson.user_id = trimHash(user.userId, 64).toString();
   orderJson.is_market = isMarket;
-
- 
 
   await axios
     .post(`${EXPRESS_APP_URL}/submit_perpetual_order`, orderJson)
@@ -802,8 +799,14 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
 
 // * ======================================================================
 
-async function sendWithdrawal(user, amount, token, starkKey) {
-  if (!user || !amount || !token || !starkKey) {
+async function sendWithdrawal(
+  user,
+  withdrawalChainId,
+  amount,
+  token,
+  starkKey
+) {
+  if (!user || !amount || !withdrawalChainId || !token || !starkKey) {
     throw new Error("Invalid input");
   }
 

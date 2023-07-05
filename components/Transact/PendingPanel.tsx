@@ -8,6 +8,7 @@ const {
 const {
   SYMBOLS_TO_IDS,
   DUST_AMOUNT_PER_ASSET,
+  CHAIN_IDS,
 } = require("../../app_logic/helpers/utils");
 
 const PendingPanel = ({ type, user, showToast }: any) => {
@@ -21,7 +22,7 @@ const PendingPanel = ({ type, user, showToast }: any) => {
       let bal = user.getAvailableAmount(token);
       if (bal < DUST_AMOUNT_PER_ASSET[token]) {
         deposits.push({
-          depositId: 1,
+          depositId: CHAIN_IDS["L1"] * 2 ** 32 + 12345,
           amount: amounts[token_],
           token: token_,
           pubKey: 1234,
