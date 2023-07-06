@@ -30,7 +30,7 @@ const SettingsPopover = ({
   }, [popperElement]);
 
   const handleExpTimeChange = (e: any) => {
-    setExpirationTime(formatInputNum(e.target.value, 0));
+    setExpirationTime(Number(e.target.value).toFixed(0));
   };
   const handleMaxSlipChange = (e: any) => {
     setMaxSlippage(formatInputNum(e.target.value, 1));

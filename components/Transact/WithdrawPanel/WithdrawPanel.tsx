@@ -30,17 +30,23 @@ const tokens = [
 ];
 
 const chains = [
-  { id: 1, name: "ETH Mainnet", icon: ethMainnet },
-  { id: 2, name: "Starknet", icon: starknet },
-  { id: 3, name: "ZkSync", icon: zksync },
+  { id: 1, name: "ETH Mainnet", icon: ethMainnet, networkId: 1 },
+  { id: 2, name: "Starknet", icon: starknet, networkId: 0 },
+  { id: 3, name: "ZkSync", icon: zksync, networkId: 324 },
 ];
 
 const WithdrawPanel = () => {
-  let { userAddress, signer, connect } = useContext(WalletContext);
+  let { userAddress, signer, connect, switchNetwork } =
+    useContext(WalletContext);
   let { user, login, forceRerender } = useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
-  const [chain, setChain] = useState(chains[0]);
+  const [chain, setChain_] = useState(chains[0]);
+  function setChain(chain_) {
+    setChain_(chain_);
+    switchNetwork(chain_.networkId);
+  }
+
   const [amount, setAmount] = useState(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);

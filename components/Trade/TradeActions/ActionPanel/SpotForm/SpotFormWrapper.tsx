@@ -37,6 +37,10 @@ const SpotFormWrapper = ({ token }: any) => {
     }
   }, [formInputs]);
 
+  useEffect(() => {
+    setRerenderCount(rerenderCount + 1);
+  }, [token]);
+
   return (
     <div>
       {/* BUY / SELL ORDER SELECTOR */}

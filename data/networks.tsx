@@ -69,11 +69,14 @@ export type NetworkType = {
 };
 
 export const NETWORK = {
-  arbitrum: 42161,
+  "ETH Mainnet": 324,
+  Starknet: 0,
+  ZkSync: 324,
+  Arbitrum: 42161,
 };
 
 type NetworkObject = {
-  [key: number]: NetworkType;
+  [key: number]: any; //NetworkType;
 };
 
 export const NETWORKS: NetworkObject = {
@@ -82,7 +85,7 @@ export const NETWORKS: NetworkObject = {
     networkId: 42161,
     explorerUrl: "https://arbiscan.io/",
     rpcUrl: "https://arb1.arbitrum.io/rpc",
-    backendUrl: "https://api.arbitrum.zigzag.exchange",
+    // backendUrl: "https://api.arbitrum.zigzag.exchange",
     icon: ARBITRUM_ICON,
     nativeCurrency: {
       name: "Ethereum",
@@ -97,6 +100,42 @@ export const NETWORKS: NetworkObject = {
     offChainOracle: "0x735247fb0a604c0adC6cab38ACE16D0DbA31295F",
     usdcToken: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
   },
+
+  // 1: {
+  //   name: "Ethereum Mainnet",
+  //   networkId: 1,
+  //   explorerUrl: "https://etherscan.io/",
+  //   rpcUrl: "https://mainnet.infura.io/v3/",
+  //   provider: new ethers.providers.JsonRpcProvider(
+  //     "https://mainnet.infura.io/v3/"
+  //   ),
+  //   nativeCurrency: {
+  //     name: "Ethereum",
+  //     symbol: "ETH",
+  //     decimals: 18,
+  //     address: ethers.constants.AddressZero,
+  //   },
+  //   wethContractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  //   usdcToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  // },
+
+  // 324: {
+  //   name: "zkSync Era Mainnet",
+  //   networkId: 324,
+  //   explorerUrl: "https://etherscan.io/",
+  //   rpcUrl: "https://mainnet.era.zksync.io",
+  //   provider: new ethers.providers.JsonRpcProvider(
+  //     "https://mainnet.era.zksync.io"
+  //   ),
+  //   nativeCurrency: {
+  //     name: "Ethereum",
+  //     symbol: "ETH",
+  //     decimals: 18,
+  //     address: ethers.constants.AddressZero,
+  //   },
+  //   wethContractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+  //   usdcToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  // },
 };
 
 export function isValidNetwork(networkId: number) {

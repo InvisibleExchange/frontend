@@ -9,6 +9,8 @@ import {
 
 import { BigNumber, ethers, utils } from "ethers";
 
+import zzLogo from "../public/tokenIcons/kjpL6Cnx_400x400 (3).png";
+
 import Onboard, { WalletState } from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
 import walletConnectModule from "@web3-onboard/walletconnect/dist";
@@ -100,17 +102,20 @@ const chains = Object.keys(NETWORKS).map((key: string) => {
 const onboard = Onboard({
   wallets,
   chains,
+
   appMetadata: {
-    name: "ZigZag Exchange",
+    name: "Invisible Exchange",
     // icon: logo.src,
     // logo: logo.src,
-    icon: "/tokenIcons/zz.svg",
-    logo: "/tokenIcons/zz.svg",
-    description: "ZigZag Exchange",
+    icon: zzLogo.src,
+    logo: zzLogo.src,
+
+    description: "Invisible Exchange",
     recommendedInjectedWallets: [
       { name: "MetaMask", url: "https://metamask.io" },
     ],
   },
+
   accountCenter: {
     desktop: {
       enabled: false,
@@ -225,11 +230,13 @@ function WalletProvider({ children }: Props) {
 
   const disconnectWallet = async () => {
     const [primaryWallet] = onboard.state.get().wallets;
-    if (!primaryWallet) return;
-    await onboard.disconnectWallet({ label: primaryWallet.label });
+
     setUserAddress(null);
     setNetwork(_getDefaultNetwork());
     setEthersProvider(_getDefaultProvider());
+
+    if (!primaryWallet) return;
+    await onboard.disconnectWallet({ label: primaryWallet.label });
   };
 
   const updateWalletBalance = (tokenAddressList: string[]) => {
@@ -271,7 +278,7 @@ function WalletProvider({ children }: Props) {
 export default WalletProvider;
 
 function _getDefaultNetwork(): NetworkType {
-  return NETWORKS[NETWORK["arbitrum"]];
+  return NETWORKS[NETWORK["Arbitrum"]];
 }
 
 function _getDefaultProvider(): ethers.providers.BaseProvider {

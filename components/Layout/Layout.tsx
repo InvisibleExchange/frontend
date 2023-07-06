@@ -1,11 +1,11 @@
 import { ReactNode, useContext } from "react";
-import ConnectWallet from "./ConnectWallet/ConnectWallet";
-import LanguageSelector from "./LanguageSelector/LanguageSelector";
+import ConnectWallet from "./Navbar/ConnectWallet";
+import LanguageSelector from "./Navbar/LanguageSelector";
 import { ThemeContext, themes } from "../../context/ThemeContext";
 
 import Logo from "./Logo/Logo";
-import Nav from "./Nav/Nav";
-import ThemeSelector from "./ThemeSelector/ThemeSelector";
+import Nav from "./Navbar/Nav";
+import ThemeSelector from "./Navbar/ThemeSelector";
 import classNames from "classnames";
 
 interface Props {
