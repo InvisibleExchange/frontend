@@ -6,6 +6,16 @@ import LoadingSpinner from "../../../Layout/LoadingSpinner/LoadingSpinner";
 import { FaTrashAlt } from "react-icons/fa";
 import { UserContext } from "../../../../context/UserContext";
 
+import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
+import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
+import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
+
+const tokenLogos = {
+  54321: ethLogo,
+  12345: btcLogo,
+  55555: usdcLogo,
+};
+
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
@@ -114,23 +124,31 @@ const OpenOrders = () => {
                       "border-t cursor-pointer border-border_color hover:bg-border_color text-sm"
                     )}
                   >
-                    {/* SYMBOL */}
+                    {/* SYMBOL  ==================*/}
                     <td
                       className={classNames(
                         "gap-3 py-1 pl-5 font-medium " + color
                       )}
                     >
-                      <p className="font-bold">
-                        {IDS_TO_SYMBOLS[baseAsset]}
-                        {isPerp ? "-PERP" : "/USDC"}
-                      </p>
+                      <div className="flex">
+                        <img
+                          src={tokenLogos[baseAsset].src}
+                          alt="Currency Logo"
+                          className="logo_icon"
+                        />
+                        <p className="font-bold">
+                          {IDS_TO_SYMBOLS[baseAsset]}
+                          {isPerp ? "-PERP" : "/USDC"}
+                        </p>
+                      </div>
+
                       {/* <p className="text-[12px]">(Perpetual)</p> */}
                     </td>
-                    {/* Market type */}
+                    {/* Market type  ============*/}
                     <td className="font-medium">
                       {isPerp ? "PERPETUAL" : "SPOT"}
                     </td>
-                    {/* Buy sell */}
+                    {/* Buy sell  ============*/}
                     <td className={classNames("pr-3 font-medium")}>
                       {!order.order_side
                         ? isPerp
@@ -140,7 +158,7 @@ const OpenOrders = () => {
                         ? "Long"
                         : "Buy"}
                     </td>
-                    {/* Price */}
+                    {/* Price ============= */}
                     <td className={classNames("pr-3 font-medium")}>
                       {Number(order.price).toFixed(2)} USD
                       {/* {edittingPrice ? (
@@ -202,7 +220,7 @@ const OpenOrders = () => {
                         </div>
                       )} */}
                     </td>
-                    {/* Amount */}
+                    {/* Amount  =============*/}
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
                         Number(order.qty_left) /
@@ -211,7 +229,7 @@ const OpenOrders = () => {
                       {IDS_TO_SYMBOLS[receivedToken]}
                     </td>
 
-                    {/* Action */}
+                    {/* Action ============= */}
                     <td className={classNames("pr-3 font-medium ")}>
                       <div className="flex items-center gap-2">
                         <div>
@@ -223,14 +241,14 @@ const OpenOrders = () => {
                         </div>
                       </div>
                     </td>
-                    {/* Expiry */}
+                    {/* Expiry  =============*/}
                     <td className={classNames("pr-3 font-medium ")}>
                       <p>{expiry.toLocaleDateString()}</p>
                       <p className="text-[12px]">
                         {expiry.toLocaleTimeString()}
                       </p>
                     </td>
-                    {/* Fee Limit */}
+                    {/* Fee Limit =================*/}
                     <td className={classNames("pr-3 font-medium ")}>
                       {order.fee_limit /
                         10 **
@@ -243,7 +261,7 @@ const OpenOrders = () => {
                         ]
                       }
                     </td>
-                    {/* Cancel order */}
+                    {/* Cancel order ==================*/}
                     <td className={classNames("pl-3 font-medium ")}>
                       {!cancelling ? (
                         <button

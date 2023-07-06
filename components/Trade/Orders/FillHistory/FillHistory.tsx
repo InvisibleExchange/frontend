@@ -2,6 +2,16 @@ import React, { useContext, useEffect } from "react";
 import classNames from "classnames";
 import { UserContext } from "../../../../context/UserContext";
 
+import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
+import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
+import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
+
+const tokenLogos = {
+  54321: ethLogo,
+  12345: btcLogo,
+  55555: usdcLogo,
+};
+
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
@@ -46,9 +56,20 @@ const FillHistory = () => {
                           color
                       )}
                     >
-                      {fill.isPerp
-                        ? IDS_TO_SYMBOLS[fill.base_token].toString() + "-PERP"
-                        : IDS_TO_SYMBOLS[fill.base_token].toString() + "/USDC"}
+                      <div className="flex">
+                        <img
+                          src={tokenLogos[fill.base_token].src}
+                          alt="Currency Logo"
+                          className="logo_icon"
+                        />
+                        <p className="pt-1">
+                          {fill.isPerp
+                            ? IDS_TO_SYMBOLS[fill.base_token].toString() +
+                              "-PERP"
+                            : IDS_TO_SYMBOLS[fill.base_token].toString() +
+                              "/USDC"}
+                        </p>
+                      </div>
                     </td>
                     <td className="font-medium text-left dark:text-white text-fg_below_color">
                       {fill.side}
