@@ -7,7 +7,7 @@ import { FaEdit } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 import { ThemeContext } from "../../../../../context/ThemeContext";
 import classNames from "classnames";
-import { WalletContext } from "../../../../../context/dep";
+import { UserContext } from "../../../../../context/UserContext";
 
 const {
   IDS_TO_SYMBOLS,
@@ -32,7 +32,7 @@ const types = [{ name: "Add" }, { name: "Remove" }];
 const AdjustMarginModal = ({ position }: any) => {
   const { theme } = useContext(ThemeContext);
   const { user, forceRerender, setToastMessage, getMarkPrice } =
-    useContext(WalletContext);
+    useContext(UserContext);
 
   useEffect(() => {
     setSelected(types[0]);

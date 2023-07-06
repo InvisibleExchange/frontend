@@ -11,7 +11,7 @@ type props = {
   label: string;
 };
 
-const DepositPanel = ({ selected, onSelect, options, label }: props) => {
+const TokenSelector = ({ selected, onSelect, options, label }: props) => {
   return (
     <div className=" mt-5">
       <p className="text-sm ml-3">{label}</p>
@@ -99,4 +99,4 @@ const DepositPanel = ({ selected, onSelect, options, label }: props) => {
   );
 };
 
-export default DepositPanel;
+export default TokenSelector;
