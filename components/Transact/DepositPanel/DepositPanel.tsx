@@ -4,7 +4,16 @@ import TokenSelector from "../TokenSelector";
 import AmountInput from "../AmountInput";
 import PendingPanel from "../PendingPanel";
 
+import btcLogo from "../../../public/tokenIcons/bitcoin.png";
+import ethLogo from "../../../public/tokenIcons/ethereum-eth-logo.png";
+import usdcLogo from "../../../public/tokenIcons/usdc-logo.png";
+
+import ethMainnet from "../../../public/tokenIcons/eth-mainnet.png";
+import starknet from "../../../public/tokenIcons/starknet.png";
+import zksync from "../../../public/tokenIcons/zksync.png";
+
 import { WalletContext } from "../../../context/WalletContext";
+import { UserContext } from "../../../context/UserContext";
 
 const {
   _renderConnectButton,
@@ -12,17 +21,26 @@ const {
 } = require("../../Trade/TradeActions/ActionPanel/TradeFormHelpers/FormButtons");
 
 const tokens = [
-  { id: 1, name: "ETH" },
-  { id: 2, name: "BTC" },
+  { id: 1, name: "ETH", icon: ethLogo },
+  { id: 2, name: "BTC", icon: btcLogo },
+  { id: 3, name: "USDC", icon: usdcLogo },
+];
+
+const chains = [
+  { id: 1, name: "ETH Mainnet", icon: ethMainnet },
+  { id: 2, name: "Starknet", icon: starknet },
+  { id: 3, name: "ZkSync", icon: zksync },
 ];
 
 const DepositPanel = ({ showToast }: any) => {
-  let { user, userAddress, login, connect, forceRerender } =
+  let { userAddress, connect, signer, forceRerender } =
     useContext(WalletContext);
+  let { user, login } = useContext(UserContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [token, setToken] = useState(tokens[0]);
+  const [chain, setChain] = useState(chains[0]);
   const [amount, setAmount] = useState(null);
 
   const makeDeposit = async () => {
@@ -34,12 +52,46 @@ const DepositPanel = ({ showToast }: any) => {
   }
 
   function renderLoginButton() {
-    return _renderLoginButton(isLoading, setIsLoading, login, forceRerender);
+    return _renderLoginButton(
+      isLoading,
+      setIsLoading,
+      signer,
+      login,
+      forceRerender
+    );
   }
 
   return (
     <div>
-      <TokenSelector tokens={tokens} selected={token} onSelect={setToken} />
+      <div className="w-full flex ">
+        <div
+          style={{
+            width: "50%",
+            marginRight: "5%",
+          }}
+        >
+          <TokenSelector
+            options={tokens}
+            selected={token}
+            onSelect={setToken}
+            label={"Select an asset: "}
+          />
+        </div>
+
+        <div
+          style={{
+            width: "50%",
+          }}
+        >
+          <TokenSelector
+            options={chains}
+            selected={chain}
+            onSelect={setChain}
+            label={"Select chain: "}
+          />
+        </div>
+      </div>
+
       <AmountInput selected={token} setAmount={setAmount} amount={amount} />
 
       {userAddress ? (

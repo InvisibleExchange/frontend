@@ -1,12 +1,10 @@
 import React, { useContext } from "react";
 import classNames from "classnames";
-import { WalletContext } from "../../../../context/WalletContext";
 import LoadingSpinner from "../../../Layout/LoadingSpinner/LoadingSpinner";
 
 //
-import { FaEdit, FaTrashAlt } from "react-icons/fa";
-import { BsFillCheckCircleFill } from "react-icons/bs";
-import { FcCancel } from "react-icons/fc";
+import { FaTrashAlt } from "react-icons/fa";
+import { UserContext } from "../../../../context/UserContext";
 
 const {
   IDS_TO_SYMBOLS,
@@ -21,7 +19,7 @@ const {
 } = require("../../../../app_logic/transactions/constructOrders");
 
 const OpenOrders = () => {
-  const { user, forceRerender } = useContext(WalletContext);
+  const { user, forceRerender } = useContext(UserContext);
 
   let [cancelling, setCancelling] = React.useState(false);
 

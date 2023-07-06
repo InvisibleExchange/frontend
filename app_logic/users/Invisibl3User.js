@@ -820,7 +820,7 @@ export default class User {
     let noteCount2 = this.noteCounts[tokenReceived] ?? 0;
 
     // ? Update the note count
-    this.noteCounts[tokenReceived] = (noteCount2 + 1) % 50;
+    this.noteCounts[tokenReceived] = (noteCount2 + 1) % 32;
 
     // ? Generate a new address and private key pair
     let koR = this.oneTimeAddressPrivKey(noteCount2, tokenReceived);
@@ -869,7 +869,7 @@ export default class User {
   getPositionAddress(syntheticToken) {
     let posCount = this.positionCounts[syntheticToken] ?? 0;
 
-    this.positionCounts[syntheticToken] = (posCount + 1) % 50;
+    this.positionCounts[syntheticToken] = (posCount + 1) % 16;
 
     let positionPrivKey = this.oneTimeAddressPrivKey(posCount, syntheticToken);
     let positionAddress = getKeyPair(positionPrivKey).getPublic();

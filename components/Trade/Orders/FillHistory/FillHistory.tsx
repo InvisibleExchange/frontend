@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from "react";
 import classNames from "classnames";
-import { WalletContext } from "../../../../context/WalletContext";
+import { UserContext } from "../../../../context/UserContext";
 
 const {
   IDS_TO_SYMBOLS,
@@ -9,7 +9,7 @@ const {
 } = require("../../../../app_logic/helpers/utils");
 
 const FillHistory = () => {
-  const { user } = useContext(WalletContext);
+  const { user } = useContext(UserContext);
 
   return (
     <div className="block footer-table-wrp">

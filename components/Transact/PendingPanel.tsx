@@ -1,20 +1,21 @@
-import React, { useContext } from "react";
+import React from "react";
 
-const {
-  sendDeposit,
-  sendWithdrawal,
-} = require("../../app_logic/transactions/constructOrders");
+import btcLogo from "../../public/tokenIcons/bitcoin.png";
+import ethLogo from "../../public/tokenIcons/ethereum-eth-logo.png";
+import usdcLogo from "../../public/tokenIcons/usdc-logo.png";
+
+const { sendDeposit } = require("../../app_logic/transactions/constructOrders");
 
 const {
   SYMBOLS_TO_IDS,
   DUST_AMOUNT_PER_ASSET,
-  CHAIN_IDS,
 } = require("../../app_logic/helpers/utils");
 
 const PendingPanel = ({ type, user, showToast }: any) => {
   let deposits: any[] = [];
 
   let amounts = { ETH: 5, USDC: 15_000, BTC: 0.5 };
+  let icons = { ETH: ethLogo, USDC: usdcLogo, BTC: btcLogo };
   if (user?.userId) {
     for (let token_ of ["ETH", "USDC", "BTC"]) {
       let token = SYMBOLS_TO_IDS[token_];
@@ -47,9 +48,17 @@ const PendingPanel = ({ type, user, showToast }: any) => {
               key={deposit.depositId}
               className="flex items-center w-full mt-5 rounded-l-lg bg-border_color"
             >
-              <p className="w-full py-2.5 pl-5 text-gray_light">
-                {deposit.amount.toFixed(2)} {deposit.token}
-              </p>
+              <div className="w-full flex py-2.5 pl-5 text-gray_light">
+                <p> {deposit.amount.toFixed(2)}</p>
+
+                <p className="ml-3"> {deposit.token}</p>
+
+                {/* <img
+                  src={icons[deposit.token].src}
+                  alt="Currency Logo"
+                  className="logo_icon"
+                /> */}
+              </div>
               <button
                 onClick={async () => {
                   if (type == "Deposit") {

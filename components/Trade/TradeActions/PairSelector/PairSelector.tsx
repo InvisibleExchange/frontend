@@ -10,13 +10,13 @@ import { useDispatch } from "react-redux";
 
 import { setSelectTradeType } from "../../../../lib/store/features/apiSlice";
 import { marketList } from "../../../../data/markets";
-import { WalletContext } from "../../../../context/WalletContext";
+import { UserContext } from "../../../../context/UserContext";
 
 const types = [{ name: "PERPETUAL" }, { name: "SPOT" }];
 
 export default function PairSelector() {
   const { selectedType, setSelectedType, selectedMarket, setSelectedMarket } =
-    useContext(WalletContext);
+    useContext(UserContext);
 
   useEffect(() => {}, [selectedMarket, selectedType]);
 

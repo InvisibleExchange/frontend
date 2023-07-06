@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import classNames from "classnames";
-import { WalletContext } from "../../../../context/WalletContext";
+import { UserContext } from "../../../../context/UserContext";
 import {
   addCommasToNumber,
   formatInputNum,
@@ -13,7 +13,7 @@ const {
 } = require("../../../../app_logic/helpers/utils");
 
 const Balances = () => {
-  const { user, getMarkPrice } = useContext(WalletContext);
+  const { user, getMarkPrice } = useContext(UserContext);
 
   let userBalances: { token: any; balance: any }[] = [];
   if (user && user.userId) {

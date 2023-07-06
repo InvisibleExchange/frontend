@@ -7,7 +7,7 @@ import { FaEdit } from "react-icons/fa";
 import { IoIosArrowDown } from "react-icons/io";
 import { ThemeContext } from "../../../../../context/ThemeContext";
 import classNames from "classnames";
-import { WalletContext } from "../../../../../context/WalletContext";
+import { WalletContext } from "../../../../../context/dep";
 
 const {
   IDS_TO_SYMBOLS,

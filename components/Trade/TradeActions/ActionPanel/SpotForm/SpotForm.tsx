@@ -1,18 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { WalletContext } from "../../../../../context/WalletContext";
-import { tradeTypeSelector } from "../../../../../lib/store/features/apiSlice";
 
-import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import TooltipSpotSlider from "../TooltipSpotSlider";
 import SettingsPopover from "../TradeFormHelpers/SettingsPopover";
-import UpdatedPositionInfo from "../TradeFormHelpers/UpdatedPositionInfo";
 import classNames from "classnames";
 
 import {
   addCommasToNumber,
   formatInputNum,
 } from "../TradeFormHelpers/FormHelpers";
+import { UserContext } from "../../../../../context/UserContext";
 
 const {
   _renderActionButtons,
@@ -21,12 +18,9 @@ const {
 } = require("../TradeFormHelpers/FormButtons");
 
 const {
-  get_max_leverage,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
-  PRICE_DECIMALS_PER_ASSET,
   SYMBOLS_TO_IDS,
-  MAX_LEVERAGE,
   COLLATERAL_TOKEN,
 } = require("../../../../../app_logic/helpers/utils");
 
@@ -38,15 +32,9 @@ type props = {
 };
 
 const TradeForm = ({ type, token, action_, formInputs }: props) => {
-  let {
-    user,
-    userAddress,
-    login,
-    connect,
-    forceRerender,
-    getMarkPrice,
-    setToastMessage,
-  } = useContext(WalletContext);
+  let { user, login, forceRerender, getMarkPrice, setToastMessage } =
+    useContext(UserContext);
+  let { userAddress, connect, signer } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [action, setAction] = useState<string>(action_);
@@ -83,11 +71,13 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       : null;
 
     if (action === "buy") {
-      formInputs.quoteAmount = Math.min(
-        Number(formInputs.quoteAmount),
-        user.getAvailableAmount(COLLATERAL_TOKEN) /
-          10 ** COLLATERAL_TOKEN_DECIMALS
-      );
+      if (user && user.userId) {
+        formInputs.quoteAmount = Math.min(
+          Number(formInputs.quoteAmount),
+          user.getAvailableAmount(COLLATERAL_TOKEN) /
+            10 ** COLLATERAL_TOKEN_DECIMALS
+        );
+      }
       quoteAmount_ = formInputs.quoteAmount
         ? formatInputNum(formInputs.quoteAmount.toString(), 2)
         : null;
@@ -96,11 +86,13 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
         baseAmount_ = Number((quoteAmount_ / price_).toFixed(4));
       }
     } else {
-      formInputs.amount = Math.min(
-        Number(formInputs.amount),
-        user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
-          10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
-      );
+      if (user && user.userId) {
+        formInputs.amount = Math.min(
+          Number(formInputs.amount),
+          user.getAvailableAmount(SYMBOLS_TO_IDS[token]) /
+            10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]]
+        );
+      }
       baseAmount_ = formInputs.amount
         ? formatInputNum(formInputs.amount.toString(), 4)
         : null;
@@ -145,7 +137,13 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
   }
 
   function renderLoginButton() {
-    return _renderLoginButton(isLoading, setIsLoading, login, forceRerender);
+    return _renderLoginButton(
+      isLoading,
+      setIsLoading,
+      signer,
+      login,
+      forceRerender
+    );
   }
 
   const [price, setPrice] = useState<string | null>(

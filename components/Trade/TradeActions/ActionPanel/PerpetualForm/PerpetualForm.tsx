@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { WalletContext } from "../../../../../context/WalletContext";
 
 import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import SettingsPopover from "../TradeFormHelpers/SettingsPopover";
@@ -17,6 +16,8 @@ import {
   _handleQuoteAmountChange,
   _handleSliderChange,
 } from "./formInputHandlers";
+import { UserContext } from "../../../../../context/UserContext";
+import { WalletContext } from "../../../../../context/WalletContext";
 
 const {
   _renderActionButtons,
@@ -29,7 +30,6 @@ const {
   SYMBOLS_TO_IDS,
   COLLATERAL_TOKEN,
   DECIMALS_PER_ASSET,
-  PRICE_DECIMALS_PER_ASSET,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -53,15 +53,9 @@ const TradeForm = ({
   positionData,
   formInputs,
 }: props) => {
-  let {
-    user,
-    userAddress,
-    login,
-    connect,
-    forceRerender,
-    getMarkPrice,
-    setToastMessage,
-  } = useContext(WalletContext);
+  let { user, login, forceRerender, getMarkPrice, setToastMessage } =
+    useContext(UserContext);
+  let { userAddress, connect, signer } = useContext(WalletContext);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [action, setAction] = useState<"Long" | "Short">(action_);
@@ -224,7 +218,13 @@ const TradeForm = ({
   }
 
   function renderLoginButton() {
-    return _renderLoginButton(isLoading, setIsLoading, login, forceRerender);
+    return _renderLoginButton(
+      isLoading,
+      setIsLoading,
+      signer,
+      login,
+      forceRerender
+    );
   }
 
   const [leverage, setLeverage] = useState(initLev);

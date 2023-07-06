@@ -5,16 +5,15 @@ import Orders from "./Orders/Orders";
 // import Chart from "./Chart";
 import TradeActions from "./TradeActions/TradeActions";
 import { useContext, useEffect, useReducer, useState } from "react";
-import { WalletContext } from "../../context/WalletContext";
 
 import dynamic from "next/dynamic";
 import Toast from "../Layout/Toast/Toast";
+import { UserContext } from "../../context/UserContext";
 const DynamicHomeWithNoSSR = dynamic(() => import("./Chart"), { ssr: false });
 const Chart = DynamicHomeWithNoSSR;
 
 export default function Trade() {
-  const { initialize, toastMessage, setToastMessage } =
-    useContext(WalletContext);
+  const { initialize, toastMessage, setToastMessage } = useContext(UserContext);
 
   let [toasts, setToasts] = useState<any>([]);
   let _toasts_: any[] = toasts;

@@ -1,10 +1,6 @@
-import React, { CSSProperties, useContext, useEffect, useState } from "react";
+import React from "react";
 
-import { prettyBalance, prettyBalanceUSD } from "../../../../utils/utils";
-import { TradeType } from "../BookTrades";
 import classNames from "classnames";
-
-
 
 const {
   SYMBOLS_TO_IDS,

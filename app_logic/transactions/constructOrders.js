@@ -7,26 +7,18 @@ const { storeOrderId } = require("../helpers/firebaseConnection");
 const { computeHashOnElements } = require("../helpers/pedersen");
 
 const {
-  SERVER_URL,
+  EXPRESS_APP_URL,
   COLLATERAL_TOKEN,
   COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   handleNoteSplit,
   DUST_AMOUNT_PER_ASSET,
-  CHAIN_IDS,
 } = require("../helpers/utils");
 const {
   _getBankruptcyPrice,
   _getLiquidationPrice,
 } = require("../helpers/tradePriceCalculations");
-
-// const path = require("path");
-// require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
-
-const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api"; // `http://${SERVER_URL}:4000`; // process.env.EXPRESS_APP_URL;
-
-// TODO: Remove notes only after order is confirmed
 
 /**
  * This constructs a spot swap and sends it to the backend

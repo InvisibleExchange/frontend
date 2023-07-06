@@ -2,7 +2,7 @@ import { use, useContext, useEffect, useState } from "react";
 import { RadioGroup, Tab } from "@headlessui/react";
 import classNames from "classnames";
 import TradeForm from "./PerpetualForm";
-import { WalletContext } from "../../../../../context/WalletContext";
+import { UserContext } from "../../../../../context/UserContext";
 
 const { SYMBOLS_TO_IDS } = require("../../../../../app_logic/helpers/utils");
 
@@ -16,7 +16,7 @@ const plans = [
 ];
 
 const PerpetualFormWrapper = ({ token }: any) => {
-  let { user, getSelectedPosition, formInputs } = useContext(WalletContext);
+  let { user, getSelectedPosition, formInputs } = useContext(UserContext);
 
   let selectedPosition = getSelectedPosition();
   let positionData;

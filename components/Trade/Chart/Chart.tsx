@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import TradingViewWidget, { Themes } from "react-tradingview-widget";
-import { WalletContext } from "../../../context/WalletContext";
+import { UserContext } from "../../../context/UserContext";
 
 const Chart = () => {
-  const { selectedType, selectedMarket } = useContext(WalletContext);
+  const { selectedType, selectedMarket } = useContext(UserContext);
 
   let token =
     selectedType == "perpetual"

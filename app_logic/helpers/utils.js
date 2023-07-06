@@ -2,9 +2,6 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note, trimHash } = require("../users/Notes");
 
-// const SERVER_URL = "localhost";
-const SERVER_URL = "54.212.28.196";
-
 const SYMBOLS_TO_IDS = {
   BTC: 12345,
   ETH: 54321,
@@ -17,9 +14,9 @@ const IDS_TO_SYMBOLS = {
 };
 
 const CHAIN_IDS = {
-  L1: 9090909,
-  starknet: 7878787,
-  zkSync: 5656565,
+  "ETH Mainnet": 9090909,
+  Starknet: 7878787,
+  ZkSync: 5656565,
 };
 
 const DECIMALS_PER_ASSET = {
@@ -43,8 +40,15 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-// const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
-const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
+const SERVER_URL = "localhost";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
+const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
+
+// const SERVER_URL = "54.212.28.196";
+// const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
+// const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
+// const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
 
 /// Things we keep track of
 /// Index prices
@@ -497,7 +501,7 @@ async function loginUser(signer) {
     require("@starkware-industries/starkware-crypto-utils").keyDerivation;
 
   let sig = await signer.signMessage(
-    "Sign this message to access your Invisibl3 account. \nIMPORTANT: Only sign this message on Invisible.com!!"
+    "Sign this message to access your Invisibl3 account. \nIMPORTANT: Be careful to only sign this message on the official website!"
   );
 
   let pk = keyDerivation.getPrivateKeyFromEthSignature(sig);
@@ -554,13 +558,16 @@ async function getActiveOrders(order_ids, perp_order_ids) {
 //
 
 module.exports = {
-  SERVER_URL,
+  EXPRESS_APP_URL,
+  SERVER_WS_URL,
+  RELAY_WS_URL,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   DUST_AMOUNT_PER_ASSET,
   LEVERAGE_DECIMALS,
   COLLATERAL_TOKEN_DECIMALS,
   COLLATERAL_TOKEN,
+  CHAIN_IDS,
   handleSwapResult,
   handlePerpSwapResult,
   handleNoteSplit,

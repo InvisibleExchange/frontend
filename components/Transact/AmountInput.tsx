@@ -17,7 +17,7 @@ const AmountInput = ({ selected, setAmount, amount }: any) => {
           }}
           value={amount}
         />
-        <button className="absolute text-sm dark:text-yellow text-blue right-20 top-3 hover:opacity-70">
+        <button className="absolute text-md dark:text-yellow text-blue mr-3 right-20 top-3 hover:opacity-70">
           Max
         </button>
         <div className="absolute top-0 bottom-0 right-0 text-white rounded-r-lg bg-blue">

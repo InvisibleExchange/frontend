@@ -3,7 +3,7 @@ import { Tab, RadioGroup } from "@headlessui/react";
 import classNames from "classnames";
 
 import TradeForm from "./SpotForm";
-import { WalletContext } from "../../../../../context/WalletContext";
+import { UserContext } from "../../../../../context/UserContext";
 
 const plans = [
   {
@@ -15,7 +15,7 @@ const plans = [
 ];
 
 const SpotFormWrapper = ({ token }: any) => {
-  let { formInputs } = useContext(WalletContext);
+  let { formInputs } = useContext(UserContext);
 
   let [categories] = useState(["Limit", "Market"]);
   const [selected, setSelected] = useState<any>(plans[0]);

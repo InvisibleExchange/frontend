@@ -1,19 +1,10 @@
-import React, {
-  CSSProperties,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import classNames from "classnames";
+import React from "react";
 
 const {
   SYMBOLS_TO_IDS,
   DECIMALS_PER_ASSET,
-  PRICE_DECIMALS_PER_ASSET,
 } = require("../../../../app_logic/helpers/utils");
 
-import { WalletContext } from "../../../../context/WalletContext";
 
 type Props = {
   token: string;
@@ -32,7 +23,6 @@ export default function Book({
   setFormInputs,
   forceRerender,
 }: Props) {
-  // const { userAddress } = useContext(WalletContext);
 
   askQueue = askQueue.slice(-7);
   bidQueue = bidQueue.slice(0, 7);

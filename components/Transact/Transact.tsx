@@ -6,11 +6,10 @@ import { Tab } from "@headlessui/react";
 import DepositPanel from "./DepositPanel";
 import WithdrawPanel from "./WithdrawPanel";
 import Toast from "../Layout/Toast/Toast";
-import { WalletContext } from "../../context/WalletContext";
+import { UserContext } from "../../context/UserContext";
 
 const Transact = () => {
-  const { initialize, setToastMessage, toastMessage } =
-    useContext(WalletContext);
+  const { initialize, setToastMessage, toastMessage } = useContext(UserContext);
 
   let [toasts, setToasts] = useState<any>([]);
   let _toasts_: any[] = toasts;

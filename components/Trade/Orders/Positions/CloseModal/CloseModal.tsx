@@ -14,7 +14,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { ThemeContext } from "../../../../../context/ThemeContext";
 import classNames from "classnames";
 import TooltipCloseSlider from "./ClosePositionSlider";
-import { WalletContext } from "../../../../../context/WalletContext";
+import { UserContext } from "../../../../../context/UserContext";
 
 const {
   IDS_TO_SYMBOLS,
@@ -29,7 +29,7 @@ const types = [{ name: "Add" }, { name: "Remove" }];
 
 const CloseModal = ({ position, setToastMessage }: any) => {
   const { theme } = useContext(ThemeContext);
-  const { user, getMarkPrice } = useContext(WalletContext);
+  const { user, getMarkPrice } = useContext(UserContext);
 
   let [categories] = useState(["Limit", "Market"]);
 

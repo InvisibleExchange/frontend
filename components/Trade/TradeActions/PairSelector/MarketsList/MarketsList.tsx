@@ -4,8 +4,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import { HiStar, HiOutlineStar } from "react-icons/hi2";
 import { FiSearch } from "react-icons/fi";
-import { WalletContext } from "../../../../../context/WalletContext";
-import { addCommasToNumber } from "../../ActionPanel/TradeFormHelpers/FormHelpers";
+import { UserContext } from "../../../../../context/UserContext";
 
 const { SYMBOLS_TO_IDS } = require("../../../../../app_logic/helpers/utils");
 
@@ -37,13 +36,7 @@ export default function MarketsList({
   setCurrentMarket,
   isCurrentMarket,
 }: Props) {
-  let {
-    getMarkPrice,
-    priceChange24h,
-    spot24hInfo,
-    perp24hInfo,
-    tokenFundingInfo,
-  } = useContext(WalletContext);
+  let { getMarkPrice, priceChange24h } = useContext(UserContext);
 
   const [query, setQuery] = useState("");
   const [coinQuery, setCoinQuery] = useState("");

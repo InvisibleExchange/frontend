@@ -9,7 +9,7 @@ export default function ThemeSelector() {
   return (
     <button
       className="flex items-center px-4 text-fg_middle_color"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      // onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
       {theme === "dark" ? (
         <HiSun className="w-5 h-5 hover:text-fg_top_color" />

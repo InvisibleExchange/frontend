@@ -8,14 +8,12 @@ import { useState, useContext } from "react";
 // import useTranslation from "next-translate/useTranslation"
 import { WalletContext } from "../../../context/WalletContext";
 import { hideAddress } from "../../../utils/utils";
-import { UserContext } from "../../../context/UserContext";
-import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 
 function ConnectWallet() {
-  const { user, userAddress, username, network, login, connect, disconnect } =
+  const { userAddress, username, connect, disconnect } =
     useContext(WalletContext);
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   function open() {
     setIsOpen(true);

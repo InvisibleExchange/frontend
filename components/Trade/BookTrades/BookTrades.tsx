@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
-import { WalletContext } from "../../../context/WalletContext";
 import Book from "./Book/Book";
 import Trades from "./Trades/Trades";
+import { UserContext } from "../../../context/UserContext";
 
 const {
   fetchLiquidity,
@@ -24,7 +24,7 @@ export default function BookTrades() {
     selectedType,
     selectedMarket,
     setFormInputs,
-  } = useContext(WalletContext);
+  } = useContext(UserContext);
 
   let token =
     selectedType == "perpetual"

@@ -3,10 +3,9 @@ import classNames from "classnames";
 import AdjustMarginModal from "./AdjustMarginModal";
 import CloseModal from "./CloseModal";
 
-import { WalletContext } from "../../../../context/WalletContext";
-
 import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
+import { UserContext } from "../../../../context/UserContext";
 
 const {
   IDS_TO_SYMBOLS,
@@ -31,7 +30,7 @@ const Positions = () => {
     setSelectedPosition,
     setToastMessage,
     tokenFundingInfo,
-  } = useContext(WalletContext);
+  } = useContext(UserContext);
 
   let positions: any[] = [];
   if (user && user.userId) {

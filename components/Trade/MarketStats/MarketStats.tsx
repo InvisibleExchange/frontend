@@ -1,7 +1,6 @@
 import classNames from "classnames";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import styles from "./MarketStats.module.css";
-import { WalletContext } from "../../../context/WalletContext";
 import { UserContext } from "../../../context/UserContext";
 import {
   addCommasToNumber,
@@ -11,7 +10,6 @@ import {
 const {
   SYMBOLS_TO_IDS,
   DECIMALS_PER_ASSET,
-  PRICE_DECIMALS_PER_ASSET,
 } = require("../../../app_logic/helpers/utils");
 
 export default function MarketStats() {
@@ -23,7 +21,7 @@ export default function MarketStats() {
     spot24hInfo,
     perp24hInfo,
     tokenFundingInfo,
-  } = useContext(WalletContext);
+  } = useContext(UserContext);
 
   let token =
     selectedType == "perpetual"
@@ -77,8 +75,14 @@ export default function MarketStats() {
       <div className={styles.twentyfour_change}>
         <div className={styles.label}>24h Change</div>
         <div className={`${styles.value} ${colorStyle}`}>
-          {priceChange24h[token]?.absolute.toFixed(2)} (
-          {(priceChange24h[token]?.percentage * 100).toFixed(2)}%)
+          {priceChange24h[token]
+            ? priceChange24h[token].absolute.toFixed(2)
+            : 0}{" "}
+          (
+          {priceChange24h[token]
+            ? (priceChange24h[token].percentage * 100).toFixed(2)
+            : 0}
+          %)
         </div>
       </div>
       <div className={styles.twentyfour_volume}>

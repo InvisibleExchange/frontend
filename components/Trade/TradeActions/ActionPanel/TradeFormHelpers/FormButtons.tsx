@@ -1,4 +1,3 @@
-import { useContext, useState } from "react";
 import LoadingSpinner from "../../../../Layout/LoadingSpinner/LoadingSpinner";
 import { checkValidSizeIncrease, checkValidSizeFlip } from "./FormHelpers";
 
@@ -552,7 +551,13 @@ const _renderConnectButton = (connect) => {
   );
 };
 
-const _renderLoginButton = (isLoading, setIsLoading, login, forceRerender) => {
+const _renderLoginButton = (
+  isLoading,
+  setIsLoading,
+  signer,
+  login,
+  forceRerender
+) => {
   return (
     <div>
       {isLoading ? (
@@ -570,7 +575,7 @@ const _renderLoginButton = (isLoading, setIsLoading, login, forceRerender) => {
           onClick={async () => {
             try {
               setIsLoading(true);
-              await login();
+              await login(signer);
               setIsLoading(false);
               forceRerender();
             } catch (error) {
