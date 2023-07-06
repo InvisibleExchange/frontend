@@ -9,7 +9,7 @@ import {
 
 import { BigNumber, ethers, utils } from "ethers";
 
-import zzLogo from "../public/tokenIcons/kjpL6Cnx_400x400 (3).png";
+import zzLogo from "../public/tokenIcons/zzLogo.png";
 
 import Onboard, { WalletState } from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
