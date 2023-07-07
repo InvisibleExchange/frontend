@@ -362,14 +362,15 @@ function UserProvider({ children }: Props) {
 
     let serverClient = new W3CWebSocket(SERVER_WS_URL);
 
-    serverClient.onopen = function () {
-      const ID = trimHash(user.userId, 64).toString();
 
+    const ID = trimHash(user.userId, 64).toString();
+    serverClient.onopen = function () {
       serverClient.send(JSON.stringify({ user_id: ID, config_code: "0" }));
     };
 
     serverClient.onmessage = function (e: any) {
       let msg = JSON.parse(e.data);
+
       // 2.)
       // "message_id": "PERPETUAL_SWAP",
       // "order_id": u64,
@@ -430,6 +431,14 @@ function UserProvider({ children }: Props) {
 
       forceRerender();
     };
+
+    serverClient.onclose = function () {
+      listenToServerWebSocket(user);
+    };
+
+    serverClient.onerror = function (e) {
+      console.log("server ws error: ", e);
+    };
   };
 
   const listenToRelayWebSocket = () => {
@@ -442,6 +451,8 @@ function UserProvider({ children }: Props) {
 
     relayClient.onmessage = function (e: any) {
       let msg = JSON.parse(e.data);
+
+      // console.log("relay ws message: ", msg.message_id);
 
       // 1.)
       // "message_id": LIQUIDITY_UPDATE,
@@ -480,6 +491,10 @@ function UserProvider({ children }: Props) {
       }
 
       forceRerender();
+    };
+
+    relayClient.onclose = function () {
+      listenToRelayWebSocket();
     };
   };
 
