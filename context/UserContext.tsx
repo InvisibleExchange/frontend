@@ -45,6 +45,7 @@ export type UserContextType = {
 
   login: (signer: any) => any;
   initialize: () => void;
+  initialized: boolean;
 
   setFormInputs: any;
   formInputs: any;
@@ -88,6 +89,7 @@ export const UserContext = createContext<UserContextType>({
 
   login: async () => {},
   initialize: () => {},
+  initialized: false,
 
   liquidity: {},
   perpLiquidity: {},
@@ -362,7 +364,6 @@ function UserProvider({ children }: Props) {
 
     let serverClient = new W3CWebSocket(SERVER_WS_URL);
 
-
     const ID = trimHash(user.userId, 64).toString();
     serverClient.onopen = function () {
       serverClient.send(JSON.stringify({ user_id: ID, config_code: "0" }));
@@ -515,6 +516,7 @@ function UserProvider({ children }: Props) {
 
         login: login,
         initialize: initialize,
+        initialized,
 
         setFormInputs,
         formInputs,

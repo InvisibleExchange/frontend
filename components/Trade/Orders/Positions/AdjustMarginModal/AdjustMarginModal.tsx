@@ -8,6 +8,7 @@ import { IoIosArrowDown } from "react-icons/io";
 import { ThemeContext } from "../../../../../context/ThemeContext";
 import classNames from "classnames";
 import { UserContext } from "../../../../../context/UserContext";
+import { formatInputNum } from "../../../TradeActions/ActionPanel/TradeFormHelpers/FormHelpers";
 
 const {
   IDS_TO_SYMBOLS,
@@ -51,40 +52,48 @@ const AdjustMarginModal = ({ position }: any) => {
     0
   );
 
-  const [marginChange, _setMarginChange] = useState<number | null>(null);
+  const [marginChange, _setMarginChange] = useState<string | undefined>(
+    undefined
+  );
 
   function setSelected(val: any) {
     _setSelected(val);
   }
 
   function setMarginChange(num: any) {
-    num = Number.parseFloat(num);
+    let num_ = Number.parseFloat(num);
 
     let maxValue = selected.name == "Add" ? maxAddable : maxRemovable;
 
-    if (num > maxValue) {
-      _setMarginChange(maxValue);
+    if (num_ > maxValue) {
+      _setMarginChange(maxValue.toFixed(2));
     } else {
       _setMarginChange(num);
     }
   }
 
-  // 20021 701 373
-
   async function sendMarginChangeRequest() {
+    if (!marginChange) {
+      setToastMessage({ type: "error", message: "select an amount" });
+      return;
+    }
+
     await sendChangeMargin(
       user,
       position.position_address,
       position.synthetic_token,
-      marginChange,
+      marginChange ? Number.parseFloat(marginChange) : 0,
       selected.name
     );
 
     let message =
       selected.name == "Add"
-        ? " +" + marginChange?.toFixed(2) + " USDC"
-        : " -" + marginChange?.toFixed(2) + " USDC";
-    setToastMessage("Updated margin sucessfuly:" + message);
+        ? " +" + marginChange + " USDC"
+        : " -" + marginChange + " USDC";
+    setToastMessage({
+      type: "info",
+      message: "Updated margin sucessfuly:" + message,
+    });
 
     forceRerender();
 
@@ -221,9 +230,9 @@ const AdjustMarginModal = ({ position }: any) => {
                           className="w-full py-3 pl-3 font-mono text-sm rounded-r-sm dark:bg-fg_below_color focus:outline-none"
                           type="number"
                           step={0.01}
-                          value={marginChange?.toString()}
+                          value={marginChange}
                           onChange={(e) => {
-                            setMarginChange(Number.parseFloat(e.target.value));
+                            setMarginChange(formatInputNum(e.target.value, 4));
                           }}
                         />
                         <button

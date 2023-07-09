@@ -22,8 +22,8 @@ export default function Layout({ children }: Props) {
           <Nav />
         </div>
         <div className="flex">
-          <ThemeSelector />
-          <LanguageSelector />
+          {/* <ThemeSelector />
+          <LanguageSelector /> */}
           <ConnectWallet />
         </div>
       </header>

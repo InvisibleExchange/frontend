@@ -7,9 +7,12 @@ import DepositPanel from "./DepositPanel";
 import WithdrawPanel from "./WithdrawPanel";
 import Toast from "../Layout/Toast/Toast";
 import { UserContext } from "../../context/UserContext";
+import TradeActions from "../Trade/TradeActions/TradeActions";
+import LandingModal from "../Layout/LandingModal/LandingModal";
 
 const Transact = () => {
-  const { initialize, setToastMessage, toastMessage } = useContext(UserContext);
+  const { initialize, initialized, setToastMessage, toastMessage } =
+    useContext(UserContext);
 
   let [toasts, setToasts] = useState<any>([]);
   let _toasts_: any[] = toasts;
@@ -54,6 +57,7 @@ const Transact = () => {
 
   return (
     <div className="flex justify-center w-full">
+      <LandingModal shouldOpen={!initialized} />
       <div className="w-[500px] mt-10  rounded-lg">
         <Tab.Group>
           <Tab.List className="flex p-1 space-x-2 rounded-xl bg-blue-900/20">

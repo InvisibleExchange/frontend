@@ -272,12 +272,17 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       {/* Available base ====================================== */}
       <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
         <p className="text-[12px]">Available balance</p>
-        <p>
+        <button
+          onClick={() => {
+            handleBaseAmountChange({ target: { value: maxBase.toString() } });
+          }}
+          disabled={action_ == "buy"}
+        >
           {addCommasToNumber(
             Number(formatInputNum(maxBase.toString(), 3)).toFixed(3)
           )}{" "}
           {token}
-        </p>
+        </button>
       </div>
       {/* Quote input ====================================== */}
       <div className="relative mt-5">
@@ -297,12 +302,17 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       {/* Available collateral ====================================== */}
       <div className="flex items-center justify-between mt-2 text-sm text-fg_below_color dark:text-white">
         <p className="text-[12px]">Available balance</p>
-        <p>
+        <button
+          onClick={() => {
+            handleQuoteAmountChange({ target: { value: maxQuote.toString() } });
+          }}
+          disabled={action_ == "sell"}
+        >
           {addCommasToNumber(
             Number(formatInputNum(maxQuote.toString(), 2)).toFixed(2)
           )}{" "}
           USDC
-        </p>
+        </button>
       </div>
       {/* Slider ====================================== */}
 

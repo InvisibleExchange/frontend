@@ -9,11 +9,13 @@ import { useContext, useEffect, useReducer, useState } from "react";
 import dynamic from "next/dynamic";
 import Toast from "../Layout/Toast/Toast";
 import { UserContext } from "../../context/UserContext";
+import LandingModal from "../Layout/LandingModal/LandingModal";
 const DynamicHomeWithNoSSR = dynamic(() => import("./Chart"), { ssr: false });
 const Chart = DynamicHomeWithNoSSR;
 
 export default function Trade() {
-  const { initialize, toastMessage, setToastMessage } = useContext(UserContext);
+  const { initialize, initialized, toastMessage, setToastMessage } =
+    useContext(UserContext);
 
   let [toasts, setToasts] = useState<any>([]);
   let _toasts_: any[] = toasts;
@@ -64,6 +66,7 @@ export default function Trade() {
           <MarketStats />
           <Chart />
         </div>
+        <LandingModal shouldOpen={!initialized} />
         <div>
           <BookTrades />
         </div>
