@@ -4,8 +4,7 @@ const { IDS_TO_SYMBOLS, PRICE_DECIMALS_PER_ASSET } = require("./utils");
 const {
   checkNoteExistance,
   checkPositionExistance,
-} = require("./firebase/firebaseConnection");
-const { storeUserState } = require("./localStorage");
+} = require("./firebaseConnection");
 const { storePrivKey } = require("./firebaseConnection");
 
 // ! RESTORE KEY DATA ========================================================================
