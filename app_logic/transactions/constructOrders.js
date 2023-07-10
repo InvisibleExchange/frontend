@@ -19,6 +19,7 @@ const {
   _getBankruptcyPrice,
   _getLiquidationPrice,
 } = require("../helpers/tradePriceCalculations");
+const { restoreUserState } = require("../helpers/keyRetrieval");
 
 /**
  * This constructs a spot swap and sends it to the backend
@@ -200,6 +201,10 @@ async function sendSpotOrder(
           "Failed to submit order with error: \n" +
           order_response.error_message;
         console.log(msg);
+
+        if (order_response.error_message.includes("Note does not exist")) {
+          restoreUserState(user, true, false);
+        }
 
         user.awaittingOrder = false;
         throw new Error(msg);
@@ -394,6 +399,13 @@ async function sendPerpOrder(
           order_response.error_message;
         console.log(msg);
 
+        if (
+          order_response.error_message.includes("Note does not exist") ||
+          order_response.error_message.includes("Position does not exist")
+        ) {
+          restoreUserState(user, true, true);
+        }
+
         user.awaittingOrder = false;
         throw new Error(msg);
       }
@@ -483,6 +495,14 @@ async function sendLiquidationOrder(
           "Failed to submit order with error: \n" +
           order_response.error_message;
         console.log(msg);
+
+        if (
+          order_response.error_message.includes("Note does not exist") ||
+          order_response.error_message.includes("Position does not exist")
+        ) {
+          restoreUserState(user, true, true);
+        }
+
         throw new Error(msg);
       }
     });
@@ -784,6 +804,11 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
         let msg =
           "Deposit failed with error: \n" + deposit_response.error_message;
         console.log(msg);
+
+        if (order_response.error_message.includes("Note does not exist")) {
+          restoreUserState(user, true, false);
+        }
+
         throw new Error(msg);
       }
     });
@@ -825,6 +850,10 @@ async function sendWithdrawal(
           "Withdrawal failed with error: \n" +
           withdrawal_response.error_message;
         console.log(msg);
+
+        if (order_response.error_message.includes("Note does not exist")) {
+          restoreUserState(user, true, false);
+        }
       }
     });
 }
@@ -863,6 +892,10 @@ async function sendSplitOrder(user, token, newAmount) {
         let msg =
           "Note split failed with error: \n" + split_response.error_message;
         console.log(msg);
+
+        if (order_response.error_message.includes("Note does not exist")) {
+          restoreUserState(user, true, false);
+        }
       }
     });
 }
@@ -998,6 +1031,13 @@ async function sendChangeMargin(
           "Failed to submit order with error: \n" +
           marginChangeResponse.error_message;
         console.log(msg);
+
+        if (
+          order_response.error_message.includes("Note does not exist") ||
+          order_response.error_message.includes("Position does not exist")
+        ) {
+          restoreUserState(user, true, true);
+        }
       }
     });
 }

@@ -6,6 +6,7 @@ const {
   checkPositionExistance,
 } = require("./firebase/firebaseConnection");
 const { storeUserState } = require("./localStorage");
+const { storePrivKey } = require("./firebaseConnection");
 
 // ! RESTORE KEY DATA ========================================================================
 
@@ -79,28 +80,35 @@ async function restoreKeyData(
 
 /**
  *
- * @param {bigint|string} originPrivKey
+ * @param {User} user
  * @param {boolean} restoreNotes  - if true retrieve note keys
  * @param {boolean} restorePositions - if true retrieve position keys
  */
-async function restoreUserState(originPrivKey, restoreNotes, restorePositions) {
-  let user = User.fromPrivKey(originPrivKey.toString());
-  await user.login();
+async function restoreUserState(user, restoreNotes, restorePositions) {
+  // let user = User.fromPrivKey(originPrivKey.toString());
+  // await user.login();
 
+  let privKeys = {};
+  let posPrivKeys = {};
   if (restoreNotes) {
-    let privKeys = await restoreKeyData(user, false);
+    privKeys = await restoreKeyData(user, false);
     console.log("note keyData: ", privKeys);
 
     user.notePrivKeys = privKeys;
   }
   if (restorePositions) {
-    let posPrivKeys = await restoreKeyData(user, true);
+    posPrivKeys = await restoreKeyData(user, true);
     console.log("position keyData: ", posPrivKeys);
 
     user.positionPrivKeys = posPrivKeys;
   }
 
-  storeUserState(user.db, user);
+  for (let pk of privKeys) {
+    storePrivKey(user.userId, pk, false, user.privateSeed);
+  }
+  for (let pk of posPrivKeys) {
+    storePrivKey(user.userId, pk, true, user.privateSeed);
+  }
 }
 
 module.exports = { restoreUserState };

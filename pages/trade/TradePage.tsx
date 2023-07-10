@@ -6,10 +6,10 @@ const TradePage = () => {
   return (
     <>
       <Head>
-        <title>ZigZag Exchange</title>
+        <title>Invisible Exchange</title>
         <meta
           name="description"
-          content="ZigZag is a decentralised P2P order book exchange that uses ZK-Rollups for optimal security and scalability."
+          content="Invisible is a decentralised P2P orderbook exchange that uses ZK-Rollups to guareente user privacy while maintaining optimal security and scalability"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
