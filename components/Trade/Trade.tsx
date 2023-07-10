@@ -58,7 +58,7 @@ export default function Trade() {
   return (
     <>
       <Head>
-        <title>{`ZigZag Exchange`}</title>
+        <title>{`Invisible Exchange`}</title>
       </Head>
       <div className="grid w-full grid-cols-4 gap-4 m-4 2xl:grid-cols-5 fadeIn">
         <TradeActions />
