@@ -14,7 +14,7 @@ const {
 const PendingPanel = ({ type, user, showToast }: any) => {
   let deposits: any[] = [];
 
-  let amounts = { ETH: 5, USDC: 55_000, BTC: 2 };
+  let amounts = { ETH: 5, USDC: 15_000, BTC: 0.4 };
   let icons = { ETH: ethLogo, USDC: usdcLogo, BTC: btcLogo };
   if (user?.userId) {
     for (let token_ of ["ETH", "USDC", "BTC"]) {

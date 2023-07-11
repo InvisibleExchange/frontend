@@ -26,10 +26,10 @@ class LiquidationOrder {
     let order_side;
     switch (this.order_side) {
       case "Long":
-        order_side = 0n;
+        order_side = 1n;
         break;
       case "Short":
-        order_side = 1n;
+        order_side = 0n;
         break;
       default:
         throw "invalid order side (should be binary)";
