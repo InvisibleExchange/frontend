@@ -224,8 +224,8 @@ const _renderBuyButton = (
 
             let slippage = maxSlippage ? Math.min(Number(maxSlippage), 20) : 3;
             let expirationTimesamp = expirationTime
-              ? Number(expirationTime) * 1000
-              : 2_500_000; // ~4 weeks
+              ? Number(expirationTime) * 3600
+              : 2500_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -281,7 +281,9 @@ const _renderBuyButton = (
         } else {
           try {
             let slippage = maxSlippage ? Math.min(Number(maxSlippage), 20) : 3;
-            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
+            let expirationTimesamp = expirationTime
+              ? Number(expirationTime) * 3600
+              : 2500_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (refundNow) {
@@ -433,7 +435,9 @@ const _renderAskButton = (
             //
 
             let slippage = maxSlippage ? Math.min(Number(maxSlippage), 20) : 3;
-            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
+            let expirationTimesamp = expirationTime
+              ? Number(expirationTime) * 3600
+              : 2500_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (!positionData && refundNow) {
@@ -488,7 +492,9 @@ const _renderAskButton = (
         } else {
           try {
             let slippage = maxSlippage ? Math.min(Number(maxSlippage), 20) : 3;
-            let expirationTimesamp = expirationTime ? expirationTime : 3600_000; // ~4 weeks
+            let expirationTimesamp = expirationTime
+              ? Number(expirationTime) * 3600
+              : 2500_000; // ~4 weeks
             let feeLimitPercent = 0.07;
 
             if (refundNow) {

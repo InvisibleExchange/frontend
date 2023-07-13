@@ -31,7 +31,7 @@ const {
 const OpenOrders = () => {
   const { user, forceRerender } = useContext(UserContext);
 
-  let [cancelling, setCancelling] = React.useState(false);
+  // let [cancelling, setCancelling] = React.useState(false);
 
   const cancelOrder = async (
     orderId: any,
@@ -46,11 +46,7 @@ const OpenOrders = () => {
       marketId = SPOT_MARKET_IDS[token];
     }
 
-    setCancelling(true);
-
     await sendCancelOrder(user, orderId, orderSide, isPerp, marketId);
-
-    setCancelling(false);
   };
 
   let orders: any[] = [];
@@ -101,7 +97,7 @@ const OpenOrders = () => {
               const isPerp = order.synthetic_token ? true : false;
 
               const expiry = new Date(
-                Number(order.expiration_timestamp) * 3600 * 1000
+                Number(order.expiration_timestamp) * 1000
               );
               let baseAsset = isPerp ? order.synthetic_token : order.base_asset;
 
@@ -263,23 +259,22 @@ const OpenOrders = () => {
                     </td>
                     {/* Cancel order ==================*/}
                     <td className={classNames("pl-3 font-medium ")}>
-                      {!cancelling ? (
-                        <button
-                          onClick={async () => {
-                            await cancelOrder(
-                              order.order_id,
-                              order.order_side,
-                              isPerp,
-                              isPerp ? order.synthetic_token : baseAsset
-                            );
-                            forceRerender();
-                          }}
-                        >
-                          <FaTrashAlt color="#C83131" size={20} />
-                        </button>
-                      ) : (
+                      <button
+                        onClick={async () => {
+                          await cancelOrder(
+                            order.order_id,
+                            order.order_side,
+                            isPerp,
+                            isPerp ? order.synthetic_token : baseAsset
+                          );
+                          forceRerender();
+                        }}
+                      >
+                        <FaTrashAlt color="#C83131" size={20} />
+                      </button>
+                      {/* {!cancelling ? () : (
                         <LoadingSpinner />
-                      )}
+                      )} */}
                     </td>
                   </tr>
                 </tbody>
