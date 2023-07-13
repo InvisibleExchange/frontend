@@ -107,19 +107,8 @@ const LandingModal = ({ shouldOpen }: props) => {
                     privacy and imporve user experience. This is a testnet
                     version, so please be aware that there may be bugs and the
                     app may be down for maintenance at times. If you have any
-                    questions or feedback, please <button></button>
-                    <Link
-                      href="/contact"
-                      className="hover:opacity-60"
-                      style={{
-                        color: "white",
-                        fontStyle: "italic",
-                        textDecoration: "underline",
-                        border: "none",
-                      }}
-                    >
-                      Contact Us
-                    </Link>
+                    questions or feedback, contact us on twitter or discord.{" "}
+                    <button></button>
                   </Dialog.Description>
 
                   {/* BUTTON */}

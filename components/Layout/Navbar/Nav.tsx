@@ -25,14 +25,14 @@ export default function Nav() {
         Deposit / Withdraw
       </Link>
 
-      <Link
+      {/* <Link
         href="/contact"
         className={`flex ml-5 items-center text-fg_below_color text-sm font-medium tracking-wider ${
           router.route.includes("contact") ? `text-fg_top_color` : undefined
         }`}
       >
         Contact Us
-      </Link>
+      </Link> */}
     </div>
   );
 }
