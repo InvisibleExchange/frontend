@@ -102,13 +102,13 @@ const LandingModal = ({ shouldOpen }: props) => {
                   </Dialog.Title>
                   <Dialog.Description className="mt-4 text-md text-gray-500">
                     Welcome to the first public testnet version of our new
-                    Invisible DEX. It is an app-specific rollup built on top of
-                    starkware{"'"}s prover technology designed to maintain user
-                    privacy and imporve user experience. This is a testnet
-                    version, so please be aware that there may be bugs and the
-                    app may be down for maintenance at times. If you have any
-                    questions or feedback, contact us on twitter or discord.{" "}
-                    <button></button>
+                    Invisible DEX. It is an app-specific rollup{" "}
+                    {/* built on top of starkware{"'"}s prover technology  */}
+                    designed to maintain user privacy and imporve user
+                    experience. This is a testnet version, so please be aware
+                    that there may be bugs and the app may be down for
+                    maintenance at times. If you have any questions or feedback,
+                    contact us on twitter or discord. <button></button>
                   </Dialog.Description>
 
                   {/* BUTTON */}
