@@ -42,7 +42,7 @@ const { Note, trimHash } = require("./Notes.js");
 //   signLimitOrderFfi,
 //   LimitOrderToFfiPointer,
 // } = require("../helpers/FFI");
-const LimitOrder = require("../transactions/LimitOrder");
+const { LimitOrder, SpotNotesInfo } = require("../transactions/LimitOrder");
 const Deposit = require("../transactions/Deposit");
 const {
   OpenOrderFields,
@@ -602,6 +602,12 @@ export default class User {
     }
 
     // ? generate the refund note
+    let spotNoteInfo = new SpotNotesInfo(
+      KoR,
+      ytR,
+      notesIn.map((x) => x.note),
+      refundNote
+    );
 
     let limitOrder = new LimitOrder(
       expiration_timestamp,
@@ -610,10 +616,8 @@ export default class User {
       amount_spent,
       amount_received,
       fee_limit,
-      KoR,
-      ytR,
-      notesIn.map((x) => x.note),
-      refundNote
+      spotNoteInfo,
+      null
     );
 
     let _sig = limitOrder.signOrder(privKeys);

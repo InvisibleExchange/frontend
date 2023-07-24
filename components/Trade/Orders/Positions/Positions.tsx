@@ -239,6 +239,10 @@ const Positions = () => {
 export default Positions;
 
 function calculateFundingPnl(positionData, fundingRates, prices) {
+  console.log("last_funding_index", positionData.last_funding_index);
+  console.log("fundingRates", fundingRates);
+  console.log("prices", prices);
+
   let applicableFundingRates = fundingRates.slice(
     positionData.last_funding_index
   );

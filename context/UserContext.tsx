@@ -387,18 +387,21 @@ function UserProvider({ children }: Props) {
 
       switch (msg.message_id) {
         case "SWAP_RESULT":
+          console.log("swap result: ", msg);
+
           handleSwapResult(user, msg.order_id, msg.swap_response);
 
+          let swapNote = msg.swap_response.note_info_swap_response.swap_note;
           setToastMessage({
             type: "info",
             message:
               "Swap executed successfully: " +
               (
-                msg.swap_response.swap_note.amount /
-                10 ** DECIMALS_PER_ASSET[msg.swap_response.swap_note.token]
+                swapNote.amount /
+                10 ** DECIMALS_PER_ASSET[swapNote.token]
               ).toFixed(3) +
               " " +
-              IDS_TO_SYMBOLS[msg.swap_response.swap_note.token],
+              IDS_TO_SYMBOLS[swapNote.token],
           });
 
           break;

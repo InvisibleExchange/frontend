@@ -143,6 +143,8 @@ async function sendSpotOrder(
           user.privateSeed
         );
 
+        let spotNotesInfo = limitOrder.spot_note_info;
+
         // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
 
         // If this is a taker order it might have been filled fully/partially before the response was received (here)
@@ -150,8 +152,8 @@ async function sendSpotOrder(
           ? user.filledAmounts[order_response.order_id]
           : 0;
 
-        if (limitOrder.notes_in.length > 0) {
-          for (let note of limitOrder.notes_in) {
+        if (spotNotesInfo.notes_in.length > 0) {
+          for (let note of spotNotesInfo.notes_in) {
             user.noteData[note.token] = user.noteData[note.token].filter(
               (n) => n.index != note.index
             );
@@ -159,16 +161,17 @@ async function sendSpotOrder(
         }
 
         // ? Add the refund note
-        if (limitOrder.refund_note) {
+        if (spotNotesInfo.refund_note) {
           if (filledAmount > 0) {
             // If this is a market order then we can add the refund note immediately
-            user.noteData[limitOrder.refund_note.token].push(
-              limitOrder.refund_note
+            user.noteData[spotNotesInfo.refund_note.token].push(
+              spotNotesInfo.refund_note
             );
           } else {
             // If this is a limit order then we need to wait for the order to be filled
             // (untill we receive a response through the websocket)
-            user.refundNotes[order_response.order_id] = limitOrder.refund_note;
+            user.refundNotes[order_response.order_id] =
+              spotNotesInfo.refund_note;
           }
         }
 
@@ -184,12 +187,12 @@ async function sendSpotOrder(
             quote_asset: quoteToken,
             expiration_timestamp: expirationTimestamp,
             fee_limit: feeLimit,
-            notes_in: limitOrder.notes_in,
+            notes_in: spotNotesInfo.notes_in,
             order_id: order_response.order_id,
             order_side,
             price: price,
             qty_left: receiveAmount - filledAmount,
-            refund_note: limitOrder.refund_note,
+            refund_note: spotNotesInfo.refund_note,
           };
 
           user.orders.push(orderData);
