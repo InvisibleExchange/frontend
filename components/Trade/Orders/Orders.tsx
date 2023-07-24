@@ -5,12 +5,14 @@ import OpenOrders from "./OpenOrders";
 import Positions from "./Positions";
 import FillHistory from "./FillHistory";
 import Balances from "./Balances";
+import FundingPayments from "./FundingPayments";
 
 const Orders = () => {
   let [categories] = useState([
     "Positions",
     "Open Orders",
     "Fill History",
+    "Funding Payments",
     "Balances",
   ]);
 
@@ -25,8 +27,8 @@ const Orders = () => {
                 classNames(
                   "rounded-lg py-3 text-sm font-medium leading-5 tracking-wider outline-none",
                   selected
-                    ? "dark:text-white text-blue hover:outline-none"
-                    : "text-fg_below_color"
+                    ? "dark:text-white text-blue hover:outline-none text-md font-bold"
+                    : "opacity-50"
                 )
               }
             >
@@ -43,6 +45,9 @@ const Orders = () => {
           </Tab.Panel>
           <Tab.Panel className={classNames("outline-none")}>
             <FillHistory />
+          </Tab.Panel>
+          <Tab.Panel className={classNames("outline-none")}>
+            <FundingPayments />
           </Tab.Panel>
           <Tab.Panel className={classNames("outline-none")}>
             <Balances />

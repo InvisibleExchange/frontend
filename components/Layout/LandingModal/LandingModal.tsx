@@ -100,14 +100,13 @@ const LandingModal = ({ shouldOpen }: props) => {
                   >
                     Welcome to Invisible Exchange!
                   </Dialog.Title>
-                  <Dialog.Description className="mt-4 text-md text-gray-500">
+                  <Dialog.Description className="mt-4 text-lg text-gray-500">
                     Welcome to the first public testnet version of our new
-                    Invisible DEX. It is an app-specific rollup{" "}
-                    {/* built on top of starkware{"'"}s prover technology  */}
-                    designed to maintain user privacy and imporve user
-                    experience. This is a testnet version, so please be aware
-                    that there may be bugs and the app may be down for
-                    maintenance at times. If you have any questions or feedback,
+                    Invisible DEX. Invisible is an app-specific ZK rollup using
+                    starkware{"'"}s prover technology, designed to maintain user
+                    privacy and imporve user experience. Please be aware that
+                    this is a testnet version that may contain bugs or be down
+                    for maintenance. If you have any questions or feedback,
                     contact us on twitter or discord. <button></button>
                   </Dialog.Description>
 
