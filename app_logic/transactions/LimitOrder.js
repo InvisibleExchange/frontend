@@ -29,6 +29,8 @@ class LimitOrder {
   }
 
   hashOrder() {
+    // & H({expiration_timestamp, token_spent, token_received, amount_spent, amount_received, fee_limit, note_info_hash, order_tab_pub_key})
+
     let hashInputs = [
       this.expiration_timestamp,
       this.token_spent,
@@ -38,10 +40,11 @@ class LimitOrder {
       this.fee_limit,
     ];
 
-    let note_info_hash = this.spot_note_info ? this.spot_note_info.hash() : 0n;
-    let order_tab_hash = this.order_tab ? this.order_tab.hash : 0n;
-    hashInputs.push(note_info_hash);
-    hashInputs.push(order_tab_hash);
+    if (this.spot_note_info) {
+      hashInputs.push(this.spot_note_info.hash());
+    } else {
+      hashInputs.push(this.order_tab.tab_header.pub_key);
+    }
 
     return computeHashOnElements(hashInputs);
   }

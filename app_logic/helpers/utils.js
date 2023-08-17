@@ -374,22 +374,28 @@ function handlePerpSwapResult(user, orderId, swap_response) {
 
   if (position) {
     if (
-      !user.positionData[position.synthetic_token] ||
-      user.positionData[position.synthetic_token].length == 0
+      !user.positionData[position.position_header.synthetic_token] ||
+      user.positionData[position.position_header.synthetic_token].length == 0
     ) {
-      user.positionData[position.synthetic_token] = [position];
+      user.positionData[position.position_header.synthetic_token] = [position];
     } else {
       // check if positions with this address and index already exist
-      let idx = user.positionData[position.synthetic_token].findIndex(
+      let idx = user.positionData[
+        position.position_header.synthetic_token
+      ].findIndex(
         (p) =>
-          p.position_address == position.position_address &&
+          p.position_header.position_address ==
+            position.position_header.position_address &&
           p.index == position.index
       );
 
       if (idx >= 0) {
-        user.positionData[position.synthetic_token][idx] = position;
+        user.positionData[position.position_header.synthetic_token][idx] =
+          position;
       } else {
-        user.positionData[position.synthetic_token].push(position);
+        user.positionData[position.position_header.synthetic_token].push(
+          position
+        );
       }
     }
   }
@@ -420,7 +426,7 @@ function handlePerpSwapResult(user, orderId, swap_response) {
       let idx = user.positionData[swap_response.synthetic_token].findIndex(
         (p) =>
           Math.abs(p.position_size - swap_response.qty) <
-          DUST_AMOUNT_PER_ASSET[p.synthetic_token]
+          DUST_AMOUNT_PER_ASSET[p.position_header.synthetic_token]
       );
 
       if (idx >= 0) {

@@ -73,14 +73,20 @@ async function fetchPositionData(addressData) {
         return;
       }
 
-      if (positionData[positions[0].synthetic_token]) {
-        positionData[positions[0].synthetic_token].push(positions[0]);
+      if (positionData[positions[0].position_header.synthetic_token]) {
+        positionData[positions[0].position_header.synthetic_token].push(
+          positions[0]
+        );
       } else {
-        positionData[positions[0].synthetic_token] = [positions[0]];
+        positionData[positions[0].position_header.synthetic_token] = [
+          positions[0],
+        ];
       }
 
       for (let j = 1; j < positions.length; j++) {
-        positionData[positions[j].synthetic_token].push(positions[j]);
+        positionData[positions[j].position_header.synthetic_token].push(
+          positions[j]
+        );
       }
 
       posPrivKeys[BigInt(addr.getX())] = privKey;
@@ -137,12 +143,12 @@ function signMarginChange(
 }
 
 // ! CRYPTO HELPERS
-function _subaddressPrivKeys(privSpendKey, privViewKey, token) {
+function _subaddressPrivKeys(privSpendKey, privViewKey, randSeed) {
   // //ksi = ks + H(kv, i)
   // //kvi = kv + H(ks, i)
 
-  const ksi = trimHash(pedersen([privSpendKey, token]), 240);
-  const kvi = trimHash(pedersen([privViewKey, token]), 240);
+  const ksi = trimHash(pedersen([privSpendKey, randSeed]), 240);
+  const kvi = trimHash(pedersen([privViewKey, randSeed]), 240);
 
   return { ksi, kvi };
 }

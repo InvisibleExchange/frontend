@@ -125,7 +125,8 @@ function calculateNewSize(
   isBuy: boolean
 ): number {
   let size =
-    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    position.position_size /
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   if (!increaseSize) {
     return size;
@@ -163,7 +164,7 @@ function calculateAvgEntryPrice(
   if (!increaseSize) {
     return (
       position.entry_price /
-      10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+      10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
     );
   }
 
@@ -174,13 +175,14 @@ function calculateAvgEntryPrice(
       if (
         increaseSize >
         position.position_size /
-          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+          10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token]
       ) {
         return price;
       } else {
         return (
           position.entry_price /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+          10 **
+            PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
         );
       }
     }
@@ -191,13 +193,14 @@ function calculateAvgEntryPrice(
       if (
         increaseSize >
         position.position_size /
-          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+          10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token]
       ) {
         return price;
       } else {
         return (
           position.entry_price /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+          10 **
+            PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
         );
       }
     }
@@ -213,7 +216,7 @@ function calculateNewLiqPrice(
   if (!increaseSize) {
     return (
       position.liquidation_price /
-      10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+      10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
     );
   }
 
@@ -221,22 +224,24 @@ function calculateNewLiqPrice(
     if (position.order_side == "Long") {
       return (
         calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
-        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
       );
     } else {
       if (
         increaseSize >
         position.position_size /
-          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+          10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token]
       ) {
         return (
           calulateLiqPriceInFlipSide(position, increaseSize, price) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+          10 **
+            PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
         );
       } else {
         return (
           calulateLiqPriceInDecreaseSize(position, increaseSize) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+          10 **
+            PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
         );
       }
     }
@@ -244,22 +249,24 @@ function calculateNewLiqPrice(
     if (position.order_side == "Short") {
       return (
         calulateLiqPriceInIncreaseSize(position, increaseSize, price) /
-        10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+        10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
       );
     } else {
       if (
         increaseSize >
         position.position_size /
-          10 ** DECIMALS_PER_ASSET[position.synthetic_token]
+          10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token]
       ) {
         return (
           calulateLiqPriceInFlipSide(position, increaseSize, price) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+          10 **
+            PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
         );
       } else {
         return (
           calulateLiqPriceInDecreaseSize(position, increaseSize) /
-          10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+          10 **
+            PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
         );
       }
     }

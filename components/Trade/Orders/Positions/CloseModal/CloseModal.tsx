@@ -16,6 +16,8 @@ import classNames from "classnames";
 import TooltipCloseSlider from "./ClosePositionSlider";
 import { UserContext } from "../../../../../context/UserContext";
 
+import _debounce from "lodash/debounce";
+
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
@@ -43,7 +45,8 @@ const CloseModal = ({ position, setToastMessage }: any) => {
   let [percent, setPercent] = useState(0);
 
   let positionSize =
-    position.position_size / 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    position.position_size /
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   function closeModal() {
     setIsOpen(false);
@@ -53,12 +56,13 @@ const CloseModal = ({ position, setToastMessage }: any) => {
     setIsOpen(true);
   }
 
-  function handleSliderChange(val: any) {
+  function _handleSliderChange(val: any) {
     let closeAmount = positionSize * (val / 100);
 
     setAmount(closeAmount);
     setPercent(Number(val));
   }
+  const handleSliderChange = _debounce(_handleSliderChange, 100);
 
   function handleAmountChange(amount: number) {
     setAmount(amount);
@@ -188,7 +192,7 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                                     price
                                       ? price.toFixed(2)
                                       : getMarkPrice(
-                                          position.synthetic_token,
+                                          position.position_header.synthetic_token,
                                           true
                                         ).toFixed(2)
                                   }
@@ -201,7 +205,13 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                         {/* AMOUNT =================================== */}
                         <div className="flex justify-between text-sm dark:text-gray_lighter  mt-6">
                           <p>
-                            Amount({IDS_TO_SYMBOLS[position.synthetic_token]})
+                            Amount(
+                            {
+                              IDS_TO_SYMBOLS[
+                                position.position_header.synthetic_token
+                              ]
+                            }
+                            )
                           </p>
                           <p>
                             Max:{" "}
@@ -212,7 +222,11 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                               }
                             >
                               {positionSize}{" "}
-                              {IDS_TO_SYMBOLS[position.synthetic_token]}
+                              {
+                                IDS_TO_SYMBOLS[
+                                  position.position_header.synthetic_token
+                                ]
+                              }
                             </span>
                           </p>
                         </div>
@@ -260,7 +274,10 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                         }
 
                         if (!price) {
-                          price = getMarkPrice(position.synthetic_token, true);
+                          price = getMarkPrice(
+                            position.position_header.synthetic_token,
+                            true
+                          );
                         }
 
                         await onSumbitCloseOrder(
@@ -303,8 +320,8 @@ const onSumbitCloseOrder = async (
       position.order_side == "Long" ? "Short" : "Long",
       600_000, // ~1 weeks
       "Close",
-      position.position_address, // position address
-      position.synthetic_token, //token
+      position.position_header.position_address, // position address
+      position.position_header.synthetic_token, //token
       closeAmount, //amount
       price,
       null, // initial margin

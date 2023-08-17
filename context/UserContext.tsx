@@ -127,17 +127,20 @@ function UserProvider({ children }: Props) {
   function setSelectedPosition(pos: any) {
     _setSelectedPosition(pos);
     setSelectedType("perpetual");
-    setSelectedMarket(token2Market[pos.synthetic_token]);
+    setSelectedMarket(token2Market[pos.position_header.synthetic_token]);
     forceRerender();
   }
   function getSelectedPosition() {
     if (!user || !selectedPosition) return null;
 
     // check that a position with the same index and position_address exists in the user's positionData
-    const position = user.positionData[selectedPosition.synthetic_token].find(
+    const position = user.positionData[
+      selectedPosition.position_header.synthetic_token
+    ].find(
       (pos) =>
         pos.index === selectedPosition.index &&
-        pos.position_address === selectedPosition.position_address
+        pos.position_header.position_address ===
+          selectedPosition.position_header.position_address
     );
     if (!position) {
       _setSelectedPosition(null);
@@ -387,8 +390,6 @@ function UserProvider({ children }: Props) {
 
       switch (msg.message_id) {
         case "SWAP_RESULT":
-          console.log("swap result: ", msg);
-
           handleSwapResult(user, msg.order_id, msg.swap_response);
 
           let swapNote = msg.swap_response.note_info_swap_response.swap_note;

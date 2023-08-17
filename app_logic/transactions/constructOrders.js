@@ -382,7 +382,7 @@ async function sendPerpOrder(
             order_side: perpOrder.order_side == "Long",
             price: price,
             position_address: perpOrder.position
-              ? perpOrder.position.position_address
+              ? perpOrder.position.position_header.position_address
               : null,
             qty_left: perpOrder.synthetic_amount - filledAmount,
             notes_in: notesIn,
@@ -483,12 +483,17 @@ async function sendLiquidationOrder(
             this.position.order_side == 1 ? "Long" : "Short";
 
           if (
-            !user.positionData[position.synthetic_token] ||
-            user.positionData[position.synthetic_token].length == 0
+            !user.positionData[position.position_header.synthetic_token] ||
+            user.positionData[position.position_header.synthetic_token]
+              .length == 0
           ) {
-            user.positionData[position.synthetic_token] = [position];
+            user.positionData[position.position_header.synthetic_token] = [
+              position,
+            ];
           } else {
-            user.positionData[position.synthetic_token].push(position);
+            user.positionData[position.position_header.synthetic_token].push(
+              position
+            );
           }
 
           //
@@ -684,7 +689,7 @@ async function sendAmendOrder(
       signature = sig;
     } else {
       let position_priv_key =
-        user.positionPrivKeys[ord.position.position_address];
+        user.positionPrivKeys[ord.position.position_header.position_address];
 
       let sig = ord.signOrder(null, position_priv_key);
       signature = sig;
@@ -782,7 +787,10 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
   let tokenDecimals = DECIMALS_PER_ASSET[token];
   amount = amount * 10 ** tokenDecimals;
 
+  console.log(depositId);
   let deposit = user.makeDepositOrder(depositId, amount, token, pubKey);
+
+  console.log(deposit);
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_deposit`, deposit.toGrpcObject())
@@ -970,20 +978,20 @@ async function sendChangeMargin(
           // dest_received_address: any, dest_received_blinding
           let returnCollateralNote = new Note(
             close_order_fields.dest_received_address,
-            position.collateral_token,
+            COLLATERAL_TOKEN,
             margin_change,
             close_order_fields.dest_received_blinding,
             marginChangeResponse.return_collateral_index
           );
           // storeNewNote(returnCollateralNote);
-          user.noteData[position.collateral_token].push(returnCollateralNote);
+          user.noteData[COLLATERAL_TOKEN].push(returnCollateralNote);
         }
 
         // Update the user's position data
         user.positionData[syntheticToken] = user.positionData[
           syntheticToken
         ].map((pos) => {
-          if (pos.position_address == positionAddress) {
+          if (pos.position_header.position_address == positionAddress) {
             pos.margin += direction == "Add" ? margin_change : -margin_change;
 
             let bankruptcyPrice = _getBankruptcyPrice(
@@ -991,7 +999,7 @@ async function sendChangeMargin(
               pos.margin,
               pos.position_size,
               pos.order_side,
-              pos.synthetic_token
+              pos.position_header.synthetic_token
             );
 
             let liquidationPrice = _getLiquidationPrice(
@@ -999,26 +1007,19 @@ async function sendChangeMargin(
               pos.margin,
               pos.position_size,
               pos.order_side,
-              pos.synthetic_token,
-              pos.allow_partial_liquidations
+              pos.position_header.synthetic_token,
+              pos.position_header.allow_partial_liquidations
             );
 
             pos.bankruptcy_price = bankruptcyPrice;
             pos.liquidation_price = liquidationPrice;
 
             let hash = computeHashOnElements([
-              pos.order_side == "Long"
-                ? pos.allow_partial_liquidations
-                  ? 3
-                  : 2
-                : pos.allow_partial_liquidations
-                ? 1
-                : 0,
-              pos.synthetic_token,
+              pos.position_header.hash,
+              pos.order_side == "Long" ? 1 : 0,
               pos.position_size,
               pos.entry_price,
               pos.liquidation_price,
-              pos.position_address,
               pos.last_funding_idx,
             ]);
 
@@ -1031,13 +1032,13 @@ async function sendChangeMargin(
         });
       } else {
         let msg =
-          "Failed to submit order with error: \n" +
+          "Failed to change margin with error: \n" +
           marginChangeResponse.error_message;
         console.log(msg);
 
         if (
-          order_response.error_message.includes("Note does not exist") ||
-          order_response.error_message.includes("Position does not exist")
+          marginChangeResponse.error_message.includes("Note does not exist") ||
+          marginChangeResponse.error_message.includes("Position does not exist")
         ) {
           restoreUserState(user, true, true);
         }

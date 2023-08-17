@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import TooltipPerpetualSlider from "../TooltipPerpetualSlider";
+import DebouncedTooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import SettingsPopover from "../TradeFormHelpers/SettingsPopover";
 import UpdatedPositionInfo from "../TradeFormHelpers/UpdatedPositionInfo";
 import classNames from "classnames";
@@ -18,6 +18,8 @@ import {
 } from "./formInputHandlers";
 import { UserContext } from "../../../../../context/UserContext";
 import { WalletContext } from "../../../../../context/WalletContext";
+
+import _debounce from "lodash/debounce";
 
 const {
   _renderActionButtons,
@@ -178,7 +180,7 @@ const TradeForm = ({
       maxQuote
     );
   }
-  function handleSliderChange(val: any) {
+  function _handleSliderChange_(val: any) {
     let leverage_ = Number(val[0]);
 
     _handleSliderChange(
@@ -191,6 +193,7 @@ const TradeForm = ({
       leverage_
     );
   }
+  const handleSliderChange = _debounce(_handleSliderChange_, 10);
 
   function renderActionButtons() {
     return _renderActionButtons(
@@ -335,7 +338,7 @@ const TradeForm = ({
       {/* Slider ====================================== */}
 
       <div className="mx-2 mt-12">
-        <TooltipPerpetualSlider
+        <DebouncedTooltipPerpetualSlider
           tipFormatter={percentFormatter}
           tipProps={{ overlayClassName: "foo" }}
           minLeverage={newMinMaxLeverage ? newMinMaxLeverage.lowerBound : 0.1}

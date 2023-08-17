@@ -1,3 +1,5 @@
+import { match } from "assert";
+
 const { LiquidationOrder } = require("../transactions/LiquidationOrder");
 
 const bigInt = require("big-integer");
@@ -34,6 +36,11 @@ const DUST_AMOUNT_PER_ASSET = {
   55555: 50000, // USDC ~ 5c
 };
 const COLLATERAL_TOKEN = 55555;
+const CHAIN_IDS = {
+  "ETH Mainnet": 9090909,
+  Starknet: 7878787,
+  ZkSync: 5656565,
+};
 
 const { Note, trimHash } = require("./Notes.js");
 // const {
@@ -442,7 +449,7 @@ export default class User {
       // ? Get the position priv Key for this position
       if (this.positionData[synthetic_token].length > 0) {
         for (let pos of this.positionData[synthetic_token]) {
-          if (pos.position_address == positionAddress) {
+          if (pos.position_header.position_address == positionAddress) {
             perpPosition = pos;
             break;
           }
@@ -461,7 +468,7 @@ export default class User {
       // ? Get the position priv Key for this position
       if (this.positionData[synthetic_token].length > 0) {
         for (let pos of this.positionData[synthetic_token]) {
-          if (pos.position_address == positionAddress) {
+          if (pos.position_header.position_address == positionAddress) {
             perpPosition = pos;
             break;
           }
@@ -529,7 +536,7 @@ export default class User {
     }
 
     let { positionPrivKey, positionAddress } = this.getPositionAddress(
-      liquidatedPosition.synthetic_token
+      liquidatedPosition.position_header.synthetic_token
     );
     this.positionPrivKeys[positionAddress.getX().toString()] = positionPrivKey;
 
@@ -548,7 +555,7 @@ export default class User {
     let perpOrder = new LiquidationOrder(
       liquidatedPosition,
       order_side,
-      liquidatedPosition.synthetic_token,
+      liquidatedPosition.position_header.synthetic_token,
       synthetic_amount,
       collateral_amount,
       open_order_fields
@@ -633,10 +640,22 @@ export default class User {
     let depositStarkKey = this.getDepositStarkKey(depositToken);
     let privKey = this._getDepositStarkPrivKey(depositToken);
 
-    // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // TODO =============================================================
     // if (starkKey != depositStarkKey) {
     //   throw new Error("Unknown stark key");
     // }
+
+    let chainId = Number.parseInt(BigInt(depositId) / 2n ** 32n);
+    if (!Object.values(CHAIN_IDS).includes(chainId)) {
+      console.log("Unknown chain id");
+      console.log(chainId);
+      console.log(Object.values(CHAIN_IDS));
+      // throw new Error("Unknown chain id");
+
+      alert("Unknown chain id");
+    }
+
+    // TODO =============================================================
 
     let { KoR, koR, ytR } = this.getDestReceivedAddresses(depositToken);
     let note = new Note(KoR, depositToken, depositAmount, ytR);
@@ -739,7 +758,7 @@ export default class User {
     let position;
     let positionPrivKey;
     for (let position_ of this.positionData[token]) {
-      if (position_.position_address == positionAddress) {
+      if (position_.position_header.position_address == positionAddress) {
         position = position_;
         positionPrivKey = this.positionPrivKeys[positionAddress];
 
@@ -757,7 +776,7 @@ export default class User {
       // ? Get the notesIn and priv keys for these notes
 
       let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
-        position.collateral_token,
+        COLLATERAL_TOKEN,
         amount
       );
 
@@ -784,9 +803,7 @@ export default class User {
 
       notes_in = notesIn.map((n) => n.note);
     } else if (direction == "Remove") {
-      let { KoR, koR, ytR } = this.getDestReceivedAddresses(
-        position.collateral_token
-      );
+      let { KoR, koR, ytR } = this.getDestReceivedAddresses(COLLATERAL_TOKEN);
       this.notePrivKeys[KoR.getX().toString()] = koR;
 
       close_order_fields = new CloseOrderFields(KoR, ytR);
@@ -827,7 +844,7 @@ export default class User {
     this.noteCounts[tokenReceived] = (noteCount2 + 1) % 32;
 
     // ? Generate a new address and private key pair
-    let koR = this.oneTimeAddressPrivKey(noteCount2, tokenReceived);
+    let koR = this.oneTimeAddressPrivKey(noteCount2, tokenReceived, "note");
     let KoR = getKeyPair(koR).getPublic();
 
     // ? Get the blinding for the note
@@ -875,7 +892,11 @@ export default class User {
 
     this.positionCounts[syntheticToken] = (posCount + 1) % 16;
 
-    let positionPrivKey = this.oneTimeAddressPrivKey(posCount, syntheticToken);
+    let positionPrivKey = this.oneTimeAddressPrivKey(
+      posCount,
+      syntheticToken,
+      "position"
+    );
     let positionAddress = getKeyPair(positionPrivKey).getPublic();
 
     return { positionPrivKey, positionAddress };
@@ -895,12 +916,34 @@ export default class User {
 
   //* HELPERS ===========================================================================
 
-  subaddressPrivKeys(token) {
-    return _subaddressPrivKeys(this.privSpendKey, this.privViewKey, token);
+  subaddressPrivKeys(randSeed) {
+    return _subaddressPrivKeys(this.privSpendKey, this.privViewKey, randSeed);
   }
 
-  oneTimeAddressPrivKey(count, token) {
-    let { ksi, kvi } = this.subaddressPrivKeys(token);
+  oneTimeAddressPrivKey(count, token, type) {
+    let seed;
+    switch (type) {
+      case "note":
+        let noteSeedRandomness =
+          328965294021249504871258328423859990890523432589236523n;
+        seed = pedersen([noteSeedRandomness, token]);
+        break;
+      case "position":
+        let positionSeedRandomness =
+          87311195862357333589832472352389732849239571003295829n;
+        seed = pedersen([positionSeedRandomness, token]);
+        break;
+      case "order_tab":
+        let orderTabSeedRandomness =
+          3289651004221748755344442085963285230025892366052333n;
+        seed = pedersen([orderTabSeedRandomness, token]);
+        break;
+
+      default:
+        break;
+    }
+
+    let { ksi, kvi } = this.subaddressPrivKeys(seed);
     let Kvi = getKeyPair(kvi).getPublic();
 
     return _oneTimeAddressPrivKey(Kvi, ksi, count);

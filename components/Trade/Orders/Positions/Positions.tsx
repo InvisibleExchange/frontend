@@ -64,13 +64,19 @@ const Positions = () => {
           {/* */}
           {user && user.userId
             ? positions.map((pos, idx) => {
-                let markPrice = getMarkPrice(pos.synthetic_token, true);
+                let markPrice = getMarkPrice(
+                  pos.position_header.synthetic_token,
+                  true
+                );
                 let entryPrice =
                   pos.entry_price /
-                  10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token];
+                  10 **
+                    PRICE_DECIMALS_PER_ASSET[
+                      pos.position_header.synthetic_token
+                    ];
                 let size =
                   pos.position_size /
-                  10 ** DECIMALS_PER_ASSET[pos.synthetic_token];
+                  10 ** DECIMALS_PER_ASSET[pos.position_header.synthetic_token];
                 let margin = pos.margin / 10 ** COLLATERAL_TOKEN_DECIMALS;
 
                 let pnl =
@@ -87,13 +93,14 @@ const Positions = () => {
 
                 let fundingPnl = calculateFundingPnl(
                   pos,
-                  fundingRates[pos.synthetic_token],
-                  fundingPrices[pos.synthetic_token]
+                  fundingRates[pos.position_header.synthetic_token],
+                  fundingPrices[pos.position_header.synthetic_token]
                 );
                 let fundingPnlPercent = (fundingPnl / margin) * 100;
 
                 let logo;
-                switch (pos.synthetic_token) {
+
+                switch (pos.position_header.synthetic_token) {
                   case 12345:
                     logo = btcLogo;
                     break;
@@ -134,7 +141,9 @@ const Positions = () => {
                             className="logo_icon"
                           />
                           <div className="ml-3">
-                            {IDS_TO_SYMBOLS[pos.synthetic_token] + "-PERP"}
+                            {IDS_TO_SYMBOLS[
+                              pos.position_header.synthetic_token
+                            ] + "-PERP"}
                             <p
                               className={classNames(
                                 "text-[12px] " + symbolColor.toString()
@@ -153,7 +162,7 @@ const Positions = () => {
                       <div className="flex items-center gap-2">
                         <p className="text-sm">
                           {size.toFixed(3)}{" "}
-                          {IDS_TO_SYMBOLS[pos.synthetic_token]}
+                          {IDS_TO_SYMBOLS[pos.position_header.synthetic_token]}
                         </p>
                         {/* <AdjustSizeModal /> */}
                       </div>
@@ -170,7 +179,10 @@ const Positions = () => {
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
                         pos.liquidation_price /
-                        10 ** PRICE_DECIMALS_PER_ASSET[pos.synthetic_token]
+                        10 **
+                          PRICE_DECIMALS_PER_ASSET[
+                            pos.position_header.synthetic_token
+                          ]
                       ).toFixed(2)}{" "}
                       USD
                     </td>
@@ -239,24 +251,25 @@ const Positions = () => {
 export default Positions;
 
 function calculateFundingPnl(positionData, fundingRates, prices) {
-  console.log("last_funding_index", positionData.last_funding_index);
-  console.log("fundingRates", fundingRates);
-  console.log("prices", prices);
-
-  let applicableFundingRates = fundingRates.slice(
-    positionData.last_funding_index
-  );
-  let applicablePrices = prices.slice(positionData.last_funding_index);
+  let applicableFundingRates =
+    fundingRates && fundingRates.length > 0
+      ? fundingRates.slice(positionData.last_funding_index)
+      : [];
+  let applicablePrices =
+    prices && prices.length > 0
+      ? prices.slice(positionData.last_funding_index)
+      : [];
   let size =
     positionData.position_size /
-    10 ** DECIMALS_PER_ASSET[positionData.synthetic_token];
+    10 ** DECIMALS_PER_ASSET[positionData.position_header.synthetic_token];
 
   let fundingSum = 0;
   for (let i = 0; i < applicableFundingRates.length; i++) {
     let fundingRate = applicableFundingRates[i] / 100_000;
     let fundingPrice =
       applicablePrices[i] /
-      10 ** PRICE_DECIMALS_PER_ASSET[positionData.synthetic_token];
+      10 **
+        PRICE_DECIMALS_PER_ASSET[positionData.position_header.synthetic_token];
 
     let funding = size * fundingRate;
     let fundingInUsd = funding * fundingPrice;

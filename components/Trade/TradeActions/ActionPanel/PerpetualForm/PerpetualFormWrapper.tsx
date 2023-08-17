@@ -22,7 +22,7 @@ const PerpetualFormWrapper = ({ token }: any) => {
   let positionData;
   if (
     selectedPosition &&
-    selectedPosition.synthetic_token == SYMBOLS_TO_IDS[token]
+    selectedPosition.position_header.synthetic_token == SYMBOLS_TO_IDS[token]
   ) {
     positionData = selectedPosition;
   } else if (user && user.userId) {

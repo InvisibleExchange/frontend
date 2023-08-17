@@ -197,7 +197,8 @@ const _handleSliderChange = (
       let sizeChange = Math.abs(
         newSize -
           positionData.position_size /
-            10 ** DECIMALS_PER_ASSET[positionData.synthetic_token]
+            10 **
+              DECIMALS_PER_ASSET[positionData.position_header.synthetic_token]
       );
 
       setBaseAmount(formatInputNum(sizeChange.toString(), 4));
