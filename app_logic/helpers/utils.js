@@ -40,15 +40,15 @@ const LEVERAGE_DECIMALS = 6;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-// const SERVER_URL = "localhost";
-// const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
-// const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
-// const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
+const SERVER_URL = "localhost";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
+const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
 
-const SERVER_URL = "54.212.28.196";
-const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
-const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
-const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
+// const SERVER_URL = "54.212.28.196";
+// const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
+// const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
+// const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
 
 /// Things we keep track of
 /// Index prices
@@ -303,9 +303,9 @@ function handleFillResult(
  *   }
  */
 function handleSwapResult(user, orderId, swap_response) {
-  //
+  let noteInfoSwapResponse = swap_response.note_info_swap_response;
 
-  let swapNoteObject = swap_response.swap_note;
+  let swapNoteObject = noteInfoSwapResponse.swap_note;
   let swapNote = Note.fromGrpcObject(swapNoteObject);
   if (user.noteData[swapNote.token]) {
     user.noteData[swapNote.token].push(swapNote);
@@ -321,8 +321,8 @@ function handleSwapResult(user, orderId, swap_response) {
 
   if (user.refundNotes[orderId]) {
     if (
-      swap_response.swap_note.amount ==
-      swap_response.new_amount_filled - swap_response.fee_taken
+      noteInfoSwapResponse.swap_note.amount ==
+      noteInfoSwapResponse.new_amount_filled - swap_response.fee_taken
     ) {
       // This is a limit first fill order and the refun note has been stored, then we can
       // add the refund note to the noteData
@@ -340,15 +340,15 @@ function handleSwapResult(user, orderId, swap_response) {
   let order = user.orders[idx];
 
   if (order) {
-    order.qty_left -= swap_response.swap_note.amount;
+    order.qty_left -= noteInfoSwapResponse.swap_note.amount;
 
-    if (!swap_response.new_pfr_note) {
+    if (!noteInfoSwapResponse.new_pfr_note) {
       user.orders.splice(idx, 1);
     } else {
       user.orders[idx] = order;
     }
   }
-  user.filledAmounts[orderId] = swap_response.new_amount_filled;
+  user.filledAmounts[orderId] = noteInfoSwapResponse.new_amount_filled;
 }
 
 /**
@@ -374,22 +374,28 @@ function handlePerpSwapResult(user, orderId, swap_response) {
 
   if (position) {
     if (
-      !user.positionData[position.synthetic_token] ||
-      user.positionData[position.synthetic_token].length == 0
+      !user.positionData[position.position_header.synthetic_token] ||
+      user.positionData[position.position_header.synthetic_token].length == 0
     ) {
-      user.positionData[position.synthetic_token] = [position];
+      user.positionData[position.position_header.synthetic_token] = [position];
     } else {
       // check if positions with this address and index already exist
-      let idx = user.positionData[position.synthetic_token].findIndex(
+      let idx = user.positionData[
+        position.position_header.synthetic_token
+      ].findIndex(
         (p) =>
-          p.position_address == position.position_address &&
+          p.position_header.position_address ==
+            position.position_header.position_address &&
           p.index == position.index
       );
 
       if (idx >= 0) {
-        user.positionData[position.synthetic_token][idx] = position;
+        user.positionData[position.position_header.synthetic_token][idx] =
+          position;
       } else {
-        user.positionData[position.synthetic_token].push(position);
+        user.positionData[position.position_header.synthetic_token].push(
+          position
+        );
       }
     }
   }
@@ -420,7 +426,7 @@ function handlePerpSwapResult(user, orderId, swap_response) {
       let idx = user.positionData[swap_response.synthetic_token].findIndex(
         (p) =>
           Math.abs(p.position_size - swap_response.qty) <
-          DUST_AMOUNT_PER_ASSET[p.synthetic_token]
+          DUST_AMOUNT_PER_ASSET[p.position_header.synthetic_token]
       );
 
       if (idx >= 0) {

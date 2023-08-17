@@ -244,12 +244,26 @@ const _renderBuyButton = (
               }
             }
 
+            // user,
+            // order_side,
+            // expirationTime,
+            // position_effect_type,
+            // positionAddress,
+            // syntheticToken,
+            // syntheticAmount,
+            // price,
+            // initial_margin,
+            // feeLimit,
+            // slippage,
+            // isMarket
             await sendPerpOrder(
               user,
               "Long",
               expirationTimesamp,
               posEffectType,
-              positionData ? positionData.position_address : null,
+              positionData
+                ? positionData.position_header.position_address
+                : null,
               SYMBOLS_TO_IDS[token],
               baseAmount,
               price,
@@ -461,7 +475,9 @@ const _renderAskButton = (
               "Short",
               expirationTimesamp,
               posEffectType,
-              positionData ? positionData.position_address : null,
+              positionData
+                ? positionData.position_header.position_address
+                : null,
               SYMBOLS_TO_IDS[token],
               baseAmount,
               price,

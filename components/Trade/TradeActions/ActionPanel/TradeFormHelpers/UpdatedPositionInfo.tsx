@@ -32,7 +32,7 @@ const UpdatedPositionInfo = ({
     action != positionData.order_side &&
     baseAmount >
       positionData.position_size /
-        10 ** DECIMALS_PER_ASSET[positionData.synthetic_token]
+        10 ** DECIMALS_PER_ASSET[positionData.position_header.synthetic_token]
   ) {
     if (positionData.order_side == "Long") {
       colorAfter = "red";
@@ -68,7 +68,10 @@ const UpdatedPositionInfo = ({
                 >
                   {(
                     positionData.position_size /
-                    10 ** DECIMALS_PER_ASSET[positionData.synthetic_token]
+                    10 **
+                      DECIMALS_PER_ASSET[
+                        positionData.position_header.synthetic_token
+                      ]
                   ).toFixed(3)}
                 </a>
                 {"  =>  "}
@@ -86,7 +89,10 @@ const UpdatedPositionInfo = ({
               <strong>
                 {(
                   positionData.entry_price /
-                  10 ** PRICE_DECIMALS_PER_ASSET[positionData.synthetic_token]
+                  10 **
+                    PRICE_DECIMALS_PER_ASSET[
+                      positionData.position_header.synthetic_token
+                    ]
                 ).toFixed(3)}
                 {"  =>  "}
                 {calculateAvgEntryPrice(
@@ -105,7 +111,10 @@ const UpdatedPositionInfo = ({
               <strong>
                 {(
                   positionData.liquidation_price /
-                  10 ** PRICE_DECIMALS_PER_ASSET[positionData.synthetic_token]
+                  10 **
+                    PRICE_DECIMALS_PER_ASSET[
+                      positionData.position_header.synthetic_token
+                    ]
                 ).toFixed(3)}
                 {"  =>   ~"}
                 {calculateNewLiqPrice(

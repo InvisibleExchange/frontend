@@ -39,7 +39,7 @@ const AdjustMarginModal = ({ position }: any) => {
     setSelected(types[0]);
   }, [position, user]);
 
-  let price = getMarkPrice(position.synthetic_token, true);
+  let price = getMarkPrice(position.position_header.synthetic_token, true);
   const minViableMargin = Math.max(getMinViableMargin(position, price), 0);
 
   let [isOpen, setIsOpen] = useState(false);
@@ -77,11 +77,11 @@ const AdjustMarginModal = ({ position }: any) => {
       setToastMessage({ type: "error", message: "select an amount" });
       return;
     }
-
+    
     await sendChangeMargin(
       user,
-      position.position_address,
-      position.synthetic_token,
+      position.position_header.position_address,
+      position.position_header.synthetic_token,
       marginChange ? Number.parseFloat(marginChange) : 0,
       selected.name
     );
@@ -252,7 +252,9 @@ const AdjustMarginModal = ({ position }: any) => {
                     <div className="flex justify-between mt-6 text-sm dakr:text-gray_lighter">
                       <p>
                         Current Margin for{" "}
-                        {IDS_TO_SYMBOLS[position.synthetic_token] + "-PERP"}{" "}
+                        {IDS_TO_SYMBOLS[
+                          position.position_header.synthetic_token
+                        ] + "-PERP"}{" "}
                         Position
                         <br />
                       </p>
@@ -292,7 +294,9 @@ const AdjustMarginModal = ({ position }: any) => {
                               : 0
                           ) /
                           10 **
-                            PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+                            PRICE_DECIMALS_PER_ASSET[
+                              position.position_header.synthetic_token
+                            ]
                         ).toFixed(2)}{" "}
                         USDC
                       </p>

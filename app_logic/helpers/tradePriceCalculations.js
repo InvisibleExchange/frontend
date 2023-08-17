@@ -99,9 +99,10 @@ function _getLiquidationPrice(
 function calcAvgEntryInIncreaseSize(position, sizeChange, indexPrice) {
   let scaledPrice =
     Number(indexPrice) *
-    10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token];
   let scaledSize =
-    Number(sizeChange) * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    Number(sizeChange) *
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let avgEntryPrice =
     (Number(position.position_size) * Number(position.entry_price) +
@@ -109,7 +110,8 @@ function calcAvgEntryInIncreaseSize(position, sizeChange, indexPrice) {
     (Number(position.position_size) + scaledSize);
 
   return (
-    avgEntryPrice / 10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token]
+    avgEntryPrice /
+    10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token]
   );
 }
 
@@ -123,7 +125,7 @@ function calulateLiqPriceInMarginChangeModal(position, marginChange) {
     Number(position.margin) + marginChange,
     Number(position.position_size),
     position.order_side,
-    position.synthetic_token,
+    position.position_header.synthetic_token,
     true
   );
 
@@ -133,9 +135,10 @@ function calulateLiqPriceInMarginChangeModal(position, marginChange) {
 function calulateLiqPriceInIncreaseSize(position, sizeChange, indexPrice) {
   let scaledPrice =
     Number(indexPrice) *
-    10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token];
   let scaledSize =
-    Number(sizeChange) * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    Number(sizeChange) *
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let avgEntryPrice =
     (Number(position.position_size) * Number(position.entry_price) +
@@ -147,7 +150,7 @@ function calulateLiqPriceInIncreaseSize(position, sizeChange, indexPrice) {
     Number(position.margin),
     Number(position.position_size) + scaledSize,
     position.order_side,
-    position.synthetic_token,
+    position.position_header.synthetic_token,
     true
   );
 
@@ -156,7 +159,8 @@ function calulateLiqPriceInIncreaseSize(position, sizeChange, indexPrice) {
 
 function calulateLiqPriceInDecreaseSize(position, sizeChange) {
   let scaledSize =
-    Number(sizeChange) * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    Number(sizeChange) *
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let new_size = Number(position.position_size) - scaledSize;
 
@@ -165,7 +169,7 @@ function calulateLiqPriceInDecreaseSize(position, sizeChange) {
     Number(position.margin),
     new_size,
     position.order_side,
-    position.synthetic_token,
+    position.position_header.synthetic_token,
     true
   );
 
@@ -174,10 +178,11 @@ function calulateLiqPriceInDecreaseSize(position, sizeChange) {
 
 function calulateLiqPriceInFlipSide(position, sizeChange, indexPrice) {
   let scaledSize =
-    Number(sizeChange) * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    Number(sizeChange) *
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
   let scaledPrice =
     Number(indexPrice) *
-    10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let new_size = scaledSize - Number(position.position_size);
 
@@ -188,7 +193,7 @@ function calulateLiqPriceInFlipSide(position, sizeChange, indexPrice) {
     Number(position.margin),
     new_size,
     newOrderSide,
-    position.synthetic_token,
+    position.position_header.synthetic_token,
     true
   );
 
@@ -220,9 +225,12 @@ function getCurrentLeverage(indexPrice, size, margin) {
 function getMinViableMargin(position, indexPrice) {
   let size =
     Number(position.position_size) /
-    10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
-  const maxLeverage = getMaxLeverage(Number(position.synthetic_token), size);
+  const maxLeverage = getMaxLeverage(
+    Number(position.position_header.synthetic_token),
+    size
+  );
 
   // ? Assume a 1% slippage
   let minMargin = (Number(indexPrice) * size * 1.05) / maxLeverage;
@@ -250,11 +258,11 @@ function getMaxLeverage(token, amount) {
 function getPnl(position, indexPrice, slippage = 0) {
   let size =
     Number(position.position_size) /
-    10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let entryPrice =
     Number(position.entry_price) /
-    10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let pnl = 0;
   if (position.order_side == "Long") {
@@ -268,7 +276,8 @@ function getPnl(position, indexPrice, slippage = 0) {
 
 function getNewMaxLeverage(position, indexPrice) {
   indexPrice = Number(indexPrice);
-  let min_bound = LEVERAGE_BOUNDS_PER_ASSET[position.synthetic_token][0];
+  let min_bound =
+    LEVERAGE_BOUNDS_PER_ASSET[position.position_header.synthetic_token][0];
 
   let pnl = getPnl(position, indexPrice, 0.0);
   let margin = Number(position.margin) / 10 ** COLLATERAL_TOKEN_DECIMALS + pnl;
@@ -293,10 +302,13 @@ function getNewMaxLeverage(position, indexPrice) {
 function checkViableSizeAfterIncrease(position, added_size, added_price) {
   let new_size =
     Number(position.position_size) /
-      10 ** DECIMALS_PER_ASSET[position.synthetic_token] +
+      10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token] +
     Number(added_size);
 
-  const maxLeverage = getMaxLeverage(position.synthetic_token, new_size);
+  const maxLeverage = getMaxLeverage(
+    position.position_header.synthetic_token,
+    new_size
+  );
 
   let priceWithSlippage =
     position.order_side == "Long"
@@ -305,9 +317,10 @@ function checkViableSizeAfterIncrease(position, added_size, added_price) {
 
   let scaledPrice =
     Number(priceWithSlippage) *
-    10 ** PRICE_DECIMALS_PER_ASSET[position.synthetic_token];
+    10 ** PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token];
   let scaledSize =
-    Number(added_size) * 10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+    Number(added_size) *
+    10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   let avgEntryPrice =
     (Number(position.position_size) * Number(position.entry_price) +
@@ -320,8 +333,8 @@ function checkViableSizeAfterIncrease(position, added_size, added_price) {
 
   let multiplier =
     10 **
-    (DECIMALS_PER_ASSET[position.synthetic_token] +
-      PRICE_DECIMALS_PER_ASSET[position.synthetic_token] -
+    (DECIMALS_PER_ASSET[position.position_header.synthetic_token] +
+      PRICE_DECIMALS_PER_ASSET[position.position_header.synthetic_token] -
       COLLATERAL_TOKEN_DECIMALS);
 
   leverage = leverage / multiplier;
@@ -333,10 +346,10 @@ function checkViableSizeAfterFlip(position, added_size, added_price) {
   let new_size =
     Number(added_size) -
     Number(position.position_size) /
-      10 ** DECIMALS_PER_ASSET[position.synthetic_token];
+      10 ** DECIMALS_PER_ASSET[position.position_header.synthetic_token];
 
   const maxLeverage = getMaxLeverage(
-    Number(position.synthetic_token),
+    Number(position.position_header.synthetic_token),
     new_size
   );
 

@@ -11,6 +11,8 @@ import {
 } from "../TradeFormHelpers/FormHelpers";
 import { UserContext } from "../../../../../context/UserContext";
 
+import _debounce from "lodash/debounce";
+
 const {
   _renderActionButtons,
   _renderConnectButton,
@@ -170,6 +172,7 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       setBaseAmount(formatInputNum(baseAmount.toString(), 4));
     }
   };
+
   const handleBaseAmountChange = (e: any) => {
     let baseAmount_ = formatInputNum(e.target.value, 4);
     setBaseAmount(baseAmount_);
@@ -183,6 +186,7 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       setQuoteAmount(formatInputNum(quoteAmount.toString(), 4));
     }
   };
+
   const handleQuoteAmountChange = (e: any) => {
     let quoteAmount = formatInputNum(e.target.value, 2);
     setQuoteAmount(quoteAmount);
@@ -198,7 +202,8 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       setBaseAmount(null);
     }
   };
-  const handleSliderChange = (val: any) => {
+
+  const _handleSliderChange = (val: any) => {
     if (action == "buy") {
       let quoteAmount = (val * maxQuote) / 100;
       setQuoteAmount(formatInputNum(quoteAmount.toString(), 4));
@@ -217,6 +222,7 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
       }
     }
   };
+  const handleSliderChange = _debounce(_handleSliderChange, 100);
 
   const [refundNow, setRefundNow] = useState<boolean>(true);
 
@@ -228,6 +234,7 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
   return (
     <div className="mt-2">
       {/* Price ====================================== */}
+
       <div className="relative">
         <input
           name="price"

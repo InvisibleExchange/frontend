@@ -9,6 +9,7 @@ const { sendDeposit } = require("../../app_logic/transactions/constructOrders");
 const {
   SYMBOLS_TO_IDS,
   DUST_AMOUNT_PER_ASSET,
+  CHAIN_IDS,
 } = require("../../app_logic/helpers/utils");
 
 const PendingPanel = ({ type, user, showToast }: any) => {
@@ -16,6 +17,7 @@ const PendingPanel = ({ type, user, showToast }: any) => {
 
   let amounts = { ETH: 5, USDC: 15_000, BTC: 0.4 };
   let icons = { ETH: ethLogo, USDC: usdcLogo, BTC: btcLogo };
+  let chainIds = { ETH: "ETH Mainnet", USDC: "Starknet", BTC: "ZkSync" };
   if (user?.userId) {
     for (let token_ of ["ETH", "USDC", "BTC"]) {
       let token = SYMBOLS_TO_IDS[token_];
@@ -23,7 +25,7 @@ const PendingPanel = ({ type, user, showToast }: any) => {
       let bal = user.getAvailableAmount(token);
       if (bal < DUST_AMOUNT_PER_ASSET[token]) {
         deposits.push({
-          depositId: 112412412412, //CHAIN_IDS["L1"] * 2 ** 32 + 12345,
+          depositId: CHAIN_IDS[chainIds[token_]] * 2 ** 32 + 12345,
           amount: amounts[token_],
           token: token_,
           pubKey: 1234,

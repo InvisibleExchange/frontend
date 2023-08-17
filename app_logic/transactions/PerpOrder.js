@@ -66,10 +66,10 @@ class PerpOrder {
         position_address = this.open_order_fields.position_address;
         break;
       case "Modify":
-        position_address = this.position.position_address;
+        position_address = this.position.position_header.position_address;
         break;
       case "Close":
-        position_address = this.position.position_address;
+        position_address = this.position.position_header.position_address;
         break;
       default:
         throw "invalid position effect type (should be 0-3)";
