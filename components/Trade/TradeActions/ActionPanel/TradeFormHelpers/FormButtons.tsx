@@ -244,18 +244,6 @@ const _renderBuyButton = (
               }
             }
 
-            // user,
-            // order_side,
-            // expirationTime,
-            // position_effect_type,
-            // positionAddress,
-            // syntheticToken,
-            // syntheticAmount,
-            // price,
-            // initial_margin,
-            // feeLimit,
-            // slippage,
-            // isMarket
             await sendPerpOrder(
               user,
               "Long",
@@ -430,6 +418,7 @@ const _renderAskButton = (
               // }
             } else {
               let leverage = getCurrentLeverage(price, baseAmount, quoteAmount);
+
               let maxLeverage = getMaxLeverage(
                 SYMBOLS_TO_IDS[token],
                 baseAmount

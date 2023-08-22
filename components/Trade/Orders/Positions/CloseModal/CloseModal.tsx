@@ -21,6 +21,8 @@ import _debounce from "lodash/debounce";
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -71,6 +73,9 @@ const CloseModal = ({ position, setToastMessage }: any) => {
 
     setPercent(closePercent);
   }
+
+  let sizeRoundingDecimals =
+    SIZE_ROUNDING_DECIMALS[position.position_header.synthetic_token];
 
   return (
     <div>
@@ -179,26 +184,9 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                               </div>
                             </Tab.Panel>
 
-                            <Tab.Panel className={classNames("rounded-xl")}>
-                              {/* PRICE =================================== */}
-                              {/* <div className="flex justify-between text-sm dark:text-gray_lighter ">
-                                <p>Price(USD)</p>
-                              </div>
-                              <div className="relative">
-                                <input
-                                  disabled={true}
-                                  className="w-full py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-fg_below_color ring-border_color disabled:opacity-75  no-arrows"
-                                  value={
-                                    price
-                                      ? price.toFixed(2)
-                                      : getMarkPrice(
-                                          position.position_header.synthetic_token,
-                                          true
-                                        ).toFixed(2)
-                                  }
-                                />
-                              </div> */}
-                            </Tab.Panel>
+                            <Tab.Panel
+                              className={classNames("rounded-xl")}
+                            ></Tab.Panel>
                           </Tab.Panels>
                         </Tab.Group>
 
@@ -237,7 +225,7 @@ const CloseModal = ({ position, setToastMessage }: any) => {
                               color: "white",
                             }}
                             className="w-full py-1.5 pl-4 font-light tracking-wider  rounded-md outline-none ring-1 dark:bg-fg_below_color ring-border_color disabled:opacity-75 no-arrows"
-                            value={amount.toFixed(3)}
+                            value={amount.toFixed(sizeRoundingDecimals)}
                             onChange={(e) =>
                               handleAmountChange(Number(e.target.value))
                             }

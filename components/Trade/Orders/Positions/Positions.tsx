@@ -5,14 +5,17 @@ import CloseModal from "./CloseModal";
 
 import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
+import pepeLogo from "../../../../public/tokenIcons/PEPE.png";
+
 import { UserContext } from "../../../../context/UserContext";
 
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
-  LEVERAGE_DECIMALS,
   COLLATERAL_TOKEN_DECIMALS,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../app_logic/helpers/utils");
 
 const {
@@ -64,19 +67,14 @@ const Positions = () => {
           {/* */}
           {user && user.userId
             ? positions.map((pos, idx) => {
-                let markPrice = getMarkPrice(
-                  pos.position_header.synthetic_token,
-                  true
-                );
+                let syntheticToken = pos.position_header.synthetic_token;
+
+                let markPrice = getMarkPrice(syntheticToken, true);
                 let entryPrice =
                   pos.entry_price /
-                  10 **
-                    PRICE_DECIMALS_PER_ASSET[
-                      pos.position_header.synthetic_token
-                    ];
+                  10 ** PRICE_DECIMALS_PER_ASSET[syntheticToken];
                 let size =
-                  pos.position_size /
-                  10 ** DECIMALS_PER_ASSET[pos.position_header.synthetic_token];
+                  pos.position_size / 10 ** DECIMALS_PER_ASSET[syntheticToken];
                 let margin = pos.margin / 10 ** COLLATERAL_TOKEN_DECIMALS;
 
                 let pnl =
@@ -93,22 +91,28 @@ const Positions = () => {
 
                 let fundingPnl = calculateFundingPnl(
                   pos,
-                  fundingRates[pos.position_header.synthetic_token],
-                  fundingPrices[pos.position_header.synthetic_token]
+                  fundingRates[syntheticToken],
+                  fundingPrices[syntheticToken]
                 );
                 let fundingPnlPercent = (fundingPnl / margin) * 100;
 
                 let logo;
 
-                switch (pos.position_header.synthetic_token) {
+                let priceRoundingDecimals =
+                  PRICE_ROUNDING_DECIMALS[syntheticToken];
+                let sizeRoundingDecimals =
+                  SIZE_ROUNDING_DECIMALS[syntheticToken];
+
+                switch (syntheticToken) {
                   case 12345:
                     logo = btcLogo;
                     break;
-
                   case 54321:
                     logo = ethLogo;
                     break;
-
+                  case 66666:
+                    logo = pepeLogo;
+                    break;
                   default:
                     break;
                 }
@@ -141,9 +145,7 @@ const Positions = () => {
                             className="logo_icon"
                           />
                           <div className="ml-3">
-                            {IDS_TO_SYMBOLS[
-                              pos.position_header.synthetic_token
-                            ] + "-PERP"}
+                            {IDS_TO_SYMBOLS[syntheticToken] + "-PERP"}
                             <p
                               className={classNames(
                                 "text-[12px] " + symbolColor.toString()
@@ -161,29 +163,26 @@ const Positions = () => {
                     <td className="font-medium ">
                       <div className="flex items-center gap-2">
                         <p className="text-sm">
-                          {size.toFixed(3)}{" "}
-                          {IDS_TO_SYMBOLS[pos.position_header.synthetic_token]}
+                          {size.toFixed(sizeRoundingDecimals)}{" "}
+                          {IDS_TO_SYMBOLS[syntheticToken]}
                         </p>
                         {/* <AdjustSizeModal /> */}
                       </div>
                     </td>
                     {/*  */}
                     <td className={classNames("pr-3 font-medium")}>
-                      {entryPrice.toFixed(2)}
+                      {entryPrice.toFixed(priceRoundingDecimals)}
                     </td>
                     {/*  */}
                     <td className={classNames("pr-3 font-medium ")}>
-                      {markPrice.toFixed(2)} USD
+                      {markPrice.toFixed(priceRoundingDecimals)} USD
                     </td>
                     {/*  */}
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
                         pos.liquidation_price /
-                        10 **
-                          PRICE_DECIMALS_PER_ASSET[
-                            pos.position_header.synthetic_token
-                          ]
-                      ).toFixed(2)}{" "}
+                        10 ** PRICE_DECIMALS_PER_ASSET[syntheticToken]
+                      ).toFixed(priceRoundingDecimals)}{" "}
                       USD
                     </td>
                     {/*  */}

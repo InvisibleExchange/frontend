@@ -6,11 +6,13 @@ const SYMBOLS_TO_IDS = {
   BTC: 12345,
   ETH: 54321,
   USDC: 55555,
+  PEPE: 66666,
 };
 const IDS_TO_SYMBOLS = {
   12345: "BTC",
   54321: "ETH",
   55555: "USDC",
+  66666: "PEPE",
 };
 
 const CHAIN_IDS = {
@@ -23,32 +25,35 @@ const DECIMALS_PER_ASSET = {
   12345: 9, // BTC
   54321: 9, // ETH
   55555: 6, // USDC
+  66666: 0, // PEPE
 };
 
 const PRICE_DECIMALS_PER_ASSET = {
   12345: 6, // BTC
   54321: 6, // ETH
+  66666: 10, // PEPE
 };
 
 const DUST_AMOUNT_PER_ASSET = {
   12345: 2500, // BTC ~ 5c
   54321: 25000, // ETH ~ 5c
   55555: 50000, // USDC ~ 5c
+  66666: 50000, // PEPE ~ 5c
 };
 
-const LEVERAGE_DECIMALS = 6;
+const LEVERAGE_DECIMALS = 4;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-// const SERVER_URL = "localhost";
-// const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
-// const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
-// const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
+const SERVER_URL = "localhost";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
+const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
 
-const SERVER_URL = "54.212.28.196";
-const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
-const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
-const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
+// const SERVER_URL = "54.212.28.196";
+// const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
+// const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
+// const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
 
 /// Things we keep track of
 /// Index prices
@@ -62,6 +67,7 @@ const SPOT_MARKET_IDS = {
 const PERP_MARKET_IDS = {
   12345: 21,
   54321: 22,
+  66666: 23,
 };
 
 const SPOT_MARKET_IDS_2_TOKENS = {
@@ -72,6 +78,23 @@ const SPOT_MARKET_IDS_2_TOKENS = {
 const PERP_MARKET_IDS_2_TOKENS = {
   21: 12345,
   22: 54321,
+  23: 66666,
+};
+
+// How many decimals to round to on the frontend
+const PRICE_ROUNDING_DECIMALS = {
+  12345: 2,
+  54321: 2,
+  55555: 2,
+  66666: 9,
+};
+
+// How many decimals to round to on the frontend
+const SIZE_ROUNDING_DECIMALS = {
+  12345: 4,
+  54321: 4,
+  55555: 2,
+  66666: 0,
 };
 
 /**
@@ -588,6 +611,8 @@ module.exports = {
   SPOT_MARKET_IDS,
   SPOT_MARKET_IDS_2_TOKENS,
   PERP_MARKET_IDS_2_TOKENS,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 };
 
 //

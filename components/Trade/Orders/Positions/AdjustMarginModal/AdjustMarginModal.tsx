@@ -12,11 +12,11 @@ import { formatInputNum } from "../../../TradeActions/ActionPanel/TradeFormHelpe
 
 const {
   IDS_TO_SYMBOLS,
-  DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
-  LEVERAGE_DECIMALS,
   COLLATERAL_TOKEN_DECIMALS,
   COLLATERAL_TOKEN,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -77,7 +77,7 @@ const AdjustMarginModal = ({ position }: any) => {
       setToastMessage({ type: "error", message: "select an amount" });
       return;
     }
-    
+
     await sendChangeMargin(
       user,
       position.position_header.position_address,
@@ -107,6 +107,9 @@ const AdjustMarginModal = ({ position }: any) => {
   function openModal() {
     setIsOpen(true);
   }
+
+  let priceRoundingDecimals =
+    PRICE_ROUNDING_DECIMALS[position.position_header.synthetic_token];
 
   return (
     <div>
@@ -297,8 +300,8 @@ const AdjustMarginModal = ({ position }: any) => {
                             PRICE_DECIMALS_PER_ASSET[
                               position.position_header.synthetic_token
                             ]
-                        ).toFixed(2)}{" "}
-                        USDC
+                        ).toFixed(priceRoundingDecimals)}{" "}
+                        USD
                       </p>
                     </div>
                   </div>

@@ -3,8 +3,9 @@ import React from "react";
 const {
   SYMBOLS_TO_IDS,
   DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../app_logic/helpers/utils");
-
 
 type Props = {
   token: string;
@@ -23,7 +24,6 @@ export default function Book({
   setFormInputs,
   forceRerender,
 }: Props) {
-
   askQueue = askQueue.slice(-7);
   bidQueue = bidQueue.slice(0, 7);
 
@@ -32,6 +32,9 @@ export default function Book({
       ? 0
       : askQueue[askQueue.length - 1].price - bidQueue[0].price;
   let spreadPercentage = spread == 0 ? 0 : (spread / askQueue[0].price) * 100;
+
+  let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+  let sizeRoundingDecimals = SIZE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
 
   return (
     <div className="border rounded-sm h-2/3 border-border_color">
@@ -76,10 +79,12 @@ export default function Book({
                     key={index}
                   >
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
-                      <strong>{order.price.toFixed(2)}</strong>
+                      <strong>
+                        {order.price.toFixed(priceRoundingDecimals)}
+                      </strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
-                      <strong>{amount.toFixed(4)}</strong>
+                      <strong>{amount.toFixed(sizeRoundingDecimals)}</strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-red">
                       <strong>{(amount * order.price).toFixed(2)}</strong>
@@ -92,7 +97,9 @@ export default function Book({
 
         {/* SPREAD */}
         <div className="flex my-2 p-1 border-y-2 border-y-border_color">
-          <div className="flex justify-center flex-1">{spread.toFixed(2)}</div>
+          <div className="flex justify-center flex-1">
+            {spread.toFixed(priceRoundingDecimals)}
+          </div>
           <div className="flex justify-center flex-1">
             {spreadPercentage.toFixed(2) + "%"}
           </div>
@@ -125,10 +132,12 @@ export default function Book({
                     key={index}
                   >
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                      <strong>{order.price.toFixed(2)}</strong>
+                      <strong>
+                        {order.price.toFixed(priceRoundingDecimals)}
+                      </strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
-                      <strong>{amount.toFixed(4)}</strong>
+                      <strong>{amount.toFixed(sizeRoundingDecimals)}</strong>
                     </div>
                     <div className="flex items-center justify-center flex-grow py-0.5 text-sm text-green_lighter">
                       <strong>{(amount * order.price).toFixed(2)}</strong>

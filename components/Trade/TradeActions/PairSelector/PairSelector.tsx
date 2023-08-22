@@ -12,7 +12,7 @@ import { setSelectTradeType } from "../../../../lib/store/features/apiSlice";
 import { marketList } from "../../../../data/markets";
 import { UserContext } from "../../../../context/UserContext";
 
-const types = [{ name: "PERPETUAL" }, { name: "SPOT" }];
+// const types = [{ name: "PERPETUAL" }, { name: "SPOT" }];
 
 export default function PairSelector() {
   const { selectedType, setSelectedType, selectedMarket, setSelectedMarket } =
@@ -23,6 +23,14 @@ export default function PairSelector() {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const dispatch = useDispatch();
+
+  let types: { name: string }[] = [];
+  if (selectedMarket.isPerp) {
+    types.push({ name: "PERPETUAL" });
+  }
+  if (selectedMarket.isSpot) {
+    types.push({ name: "SPOT" });
+  }
 
   // const selectedType = useSelector(tradeTypeSelector);
 
@@ -76,6 +84,7 @@ export default function PairSelector() {
                   <Listbox.Options className="absolute w-32 py-1 overflow-auto text-base shadow-lg rounded-xl bg-fg_above_color">
                     {types.map((type, index) => (
                       <Listbox.Option
+                        defaultValue={types[0].name}
                         key={index}
                         className={({ active }) =>
                           `relative cursor-pointer select-none py-2 pl-2 pr-4 ${

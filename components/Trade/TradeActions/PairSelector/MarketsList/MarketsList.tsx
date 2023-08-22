@@ -15,20 +15,20 @@ interface Props {
   isCurrentMarket: any;
 }
 
-const filterTokens = [
-  {
-    name: "ALL",
-    value: "",
-  },
-  {
-    name: "BTC",
-    value: "btc",
-  },
-  {
-    name: "ETH",
-    value: "eth",
-  },
-];
+// const filterTokens = [
+//   {
+//     name: "ALL",
+//     value: "",
+//   },
+// {
+//   name: "BTC",
+//   value: "btc",
+// },
+// {
+//   name: "ETH",
+//   value: "eth",
+// },
+// ];
 
 export default function MarketsList({
   close,
@@ -76,7 +76,7 @@ export default function MarketsList({
         />
         <FiSearch className="absolute top-6 left-6" />
       </div>
-      <div className="flex items-center gap-6 p-3 bg-border_color">
+      {/* <div className="flex items-center gap-6 p-3 bg-border_color">
         <HiStar className="w-3 h-3" />
         {filterTokens.map((item, index) => {
           return (
@@ -92,7 +92,7 @@ export default function MarketsList({
             </button>
           );
         })}
-      </div>
+      </div> */}
 
       <div className="block table-wrp">
         <table className="w-full table-fixed">

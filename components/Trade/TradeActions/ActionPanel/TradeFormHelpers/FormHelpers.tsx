@@ -277,6 +277,9 @@ function formatInputNum(val: any, decimals: number) {
   if (!val) {
     return null;
   }
+  if (decimals == 0) {
+    return Math.ceil(val);
+  }
 
   val = val.toString();
   let decimalPointIndex = val.indexOf(".");

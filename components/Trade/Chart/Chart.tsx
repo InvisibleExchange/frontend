@@ -34,7 +34,11 @@ const Chart = () => {
 export default Chart;
 
 const ChartInner = ({ token, height }: any) => {
-  const symbols = { BTC: "COINBASE:BTCUSD", ETH: "COINBASE:ETHUSD" };
+  const symbols = {
+    BTC: "COINBASE:BTCUSD",
+    ETH: "COINBASE:ETHUSD",
+    PEPE: "BINANCE:PEPEUSDT",
+  };
 
   useEffect(() => {}, [token, height]);
 

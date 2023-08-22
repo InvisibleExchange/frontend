@@ -16,6 +16,8 @@ const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../app_logic/helpers/utils");
 
 const FillHistory = () => {
@@ -43,6 +45,12 @@ const FillHistory = () => {
                   fill.side == "Buy" ? "text-green_lighter" : "text-red";
 
                 const timestamp = new Date(fill.time * 1000);
+
+                let priceRoundingDecimals =
+                  PRICE_ROUNDING_DECIMALS[fill.base_token];
+                let sizeRoundingDecimals =
+                  SIZE_ROUNDING_DECIMALS[fill.base_token];
+
                 return (
                   <tr
                     key={idx}
@@ -78,14 +86,14 @@ const FillHistory = () => {
                       {(
                         fill.amount /
                         10 ** DECIMALS_PER_ASSET[fill.base_token]
-                      ).toFixed(3)}{" "}
+                      ).toFixed(sizeRoundingDecimals)}{" "}
                       {IDS_TO_SYMBOLS[fill.base_token]}
                     </td>
                     <td className={classNames("pr-3 font-medium text-left")}>
                       {(
                         fill.price /
                         10 ** PRICE_DECIMALS_PER_ASSET[fill.base_token]
-                      ).toFixed(2)}{" "}
+                      ).toFixed(priceRoundingDecimals)}{" "}
                       USD
                     </td>
                     <td className="pr-3 font-medium text-left">

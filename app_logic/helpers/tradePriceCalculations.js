@@ -9,12 +9,14 @@ const {
 const LEVERAGE_BOUNDS_PER_ASSET = {
   12345: [1.5, 30.0], // BTC
   54321: [15.0, 150.0], // ETH
+  66666: [1_000_000_000, 140_000_000_000.0], // PEPE
 };
 const MAX_LEVERAGE = 15;
 
 const MIN_PARTIAL_LIQUIDATION_SIZE = {
   12345: 50_000_000,
   54321: 500_000_000,
+  66666: 350_000_000, // PEPE
 };
 
 function _getBankruptcyPrice(

@@ -32,6 +32,8 @@ const {
   SYMBOLS_TO_IDS,
   COLLATERAL_TOKEN,
   DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -62,6 +64,9 @@ const TradeForm = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [action, setAction] = useState<"Long" | "Short">(action_);
 
+  let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+  let sizeRoundingDecimals = SIZE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+
   useEffect(() => {
     setAction(action_);
   }, [user, action_]);
@@ -74,11 +79,11 @@ const TradeForm = ({
     formInputs.token == SYMBOLS_TO_IDS[token]
   ) {
     price_ = formInputs.price
-      ? formatInputNum(formInputs.price.toString(), 2)
+      ? formatInputNum(formInputs.price.toString(), priceRoundingDecimals)
       : null;
 
     baseAmount_ = formInputs.amount
-      ? formatInputNum(formInputs.amount.toString(), 4)
+      ? formatInputNum(formInputs.amount.toString(), sizeRoundingDecimals)
       : null;
 
     if (!positionData && user) {
@@ -132,7 +137,7 @@ const TradeForm = ({
 
   // * Form input handles
   function handlePriceChange(e: any) {
-    let price = formatInputNum(e.target.value, 2);
+    let price = formatInputNum(e.target.value, priceRoundingDecimals);
 
     newMinMaxLeverage = positionData
       ? getMinMaxLeverage(positionData, token, action, Number(price))
@@ -149,11 +154,12 @@ const TradeForm = ({
       token,
       newMinMaxLeverage,
       setLeverage,
-      price
+      price,
+      sizeRoundingDecimals
     );
   }
   function handleBaseAmountChange(e: any) {
-    let baseAmount_ = formatInputNum(e.target.value, 4);
+    let baseAmount_ = formatInputNum(e.target.value, sizeRoundingDecimals);
     _handleBaseAmountChange(
       setQuoteAmount,
       setBaseAmount,
@@ -190,7 +196,8 @@ const TradeForm = ({
       price,
       setBaseAmount,
       newMinMaxLeverage,
-      leverage_
+      leverage_,
+      sizeRoundingDecimals
     );
   }
   const handleSliderChange = _debounce(_handleSliderChange_, 10);
@@ -235,7 +242,9 @@ const TradeForm = ({
 
   const [price, setPrice] = useState<string | null>(
     type == "market"
-      ? getMarkPrice(SYMBOLS_TO_IDS[token], true).toFixed(2) ?? "0.00"
+      ? getMarkPrice(SYMBOLS_TO_IDS[token], true).toFixed(
+          priceRoundingDecimals
+        ) ?? "0.00"
       : price_
   );
 
@@ -261,7 +270,11 @@ const TradeForm = ({
           readOnly={type === "market"}
           type="number"
           step={0.01}
-          value={type == "market" ? markPrice.toFixed(2) : price?.toString()}
+          value={
+            type == "market"
+              ? markPrice.toFixed(priceRoundingDecimals)
+              : price?.toString()
+          }
           onChange={handlePriceChange}
           placeholder="Price"
         />

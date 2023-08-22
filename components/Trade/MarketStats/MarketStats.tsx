@@ -10,6 +10,8 @@ import {
 const {
   SYMBOLS_TO_IDS,
   DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../app_logic/helpers/utils");
 
 export default function MarketStats() {
@@ -61,22 +63,27 @@ export default function MarketStats() {
 
   useEffect(() => {}, [priceChange24h]);
 
+  let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+  let sizeRoundingDecimals = SIZE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+
   return (
     <div
       className={classNames(
         styles.container,
-        "border-t border-l border-r border-border_color"
+        "border-t border-l border-r border-border_color w-full"
       )}
     >
       <div className={styles.price_container}>
-        <div className={styles.price}>${marketPrice.toFixed(2)}</div>
+        <div className={styles.price}>
+          ${marketPrice.toFixed(priceRoundingDecimals)}
+        </div>
         {/* <div className={styles.price_usd}>$0.00</div> */}
       </div>
       <div className={styles.twentyfour_change}>
         <div className={styles.label}>24h Change</div>
         <div className={`${styles.value} ${colorStyle}`}>
           {priceChange24h[token]
-            ? priceChange24h[token].absolute.toFixed(2)
+            ? priceChange24h[token].absolute.toFixed(priceRoundingDecimals)
             : 0}{" "}
           (
           {priceChange24h[token]
@@ -90,7 +97,9 @@ export default function MarketStats() {
         <div className={styles.value}>
           $
           {addCommasToNumber(
-            Number(formatInputNum(nominalVolume.toString(), 2)).toFixed(2)
+            Number(
+              formatInputNum(nominalVolume.toString(), sizeRoundingDecimals)
+            ).toFixed(sizeRoundingDecimals)
           )}
         </div>
       </div>

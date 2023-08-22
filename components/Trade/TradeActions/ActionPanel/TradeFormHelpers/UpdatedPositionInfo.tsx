@@ -8,6 +8,8 @@ const {
 const {
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../../app_logic/helpers/utils");
 
 const UpdatedPositionInfo = ({
@@ -44,6 +46,11 @@ const UpdatedPositionInfo = ({
     colorAfter = positionColor;
   }
 
+  let priceRoundingDecimals =
+    PRICE_ROUNDING_DECIMALS[positionData.position_header.synthetic_token];
+  let sizeRoundingDecimals =
+    SIZE_ROUNDING_DECIMALS[positionData.position_header.synthetic_token];
+
   return (
     <div>
       {/* <div className="ml-5 pl-5">Estimated:</div> */}
@@ -72,11 +79,11 @@ const UpdatedPositionInfo = ({
                       DECIMALS_PER_ASSET[
                         positionData.position_header.synthetic_token
                       ]
-                  ).toFixed(3)}
+                  ).toFixed(sizeRoundingDecimals)}
                 </a>
                 {"  =>  "}
                 <a style={{ color: colorAfter }}>
-                  {newPositionSize.toFixed(3)}{" "}
+                  {newPositionSize.toFixed(sizeRoundingDecimals)}{" "}
                 </a>
                 {token}
               </strong>
@@ -93,14 +100,14 @@ const UpdatedPositionInfo = ({
                     PRICE_DECIMALS_PER_ASSET[
                       positionData.position_header.synthetic_token
                     ]
-                ).toFixed(3)}
+                ).toFixed(priceRoundingDecimals)}
                 {"  =>  "}
                 {calculateAvgEntryPrice(
                   positionData,
                   Number(baseAmount),
                   Number(price),
                   action == "Long"
-                ).toFixed(2)}{" "}
+                ).toFixed(priceRoundingDecimals)}{" "}
                 USD
               </strong>
             </div>
@@ -115,14 +122,14 @@ const UpdatedPositionInfo = ({
                     PRICE_DECIMALS_PER_ASSET[
                       positionData.position_header.synthetic_token
                     ]
-                ).toFixed(3)}
+                ).toFixed(priceRoundingDecimals)}
                 {"  =>   ~"}
                 {calculateNewLiqPrice(
                   positionData,
                   Number(baseAmount),
                   Number(price),
                   action == "Long"
-                ).toFixed(2)}{" "}
+                ).toFixed(priceRoundingDecimals)}{" "}
                 USD
               </strong>
             </div>

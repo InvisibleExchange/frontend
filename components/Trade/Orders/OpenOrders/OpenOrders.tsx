@@ -9,11 +9,13 @@ import { UserContext } from "../../../../context/UserContext";
 import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
+import pepeLogo from "../../../../public/tokenIcons/PEPE.png";
 
 const tokenLogos = {
   54321: ethLogo,
   12345: btcLogo,
   55555: usdcLogo,
+  66666: pepeLogo,
 };
 
 const {
@@ -22,6 +24,8 @@ const {
   SPOT_MARKET_IDS,
   PERP_MARKET_IDS,
   COLLATERAL_TOKEN,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../app_logic/helpers/utils");
 
 const {
@@ -30,8 +34,6 @@ const {
 
 const OpenOrders = () => {
   const { user, forceRerender } = useContext(UserContext);
-
-  // let [cancelling, setCancelling] = React.useState(false);
 
   const cancelOrder = async (
     orderId: any,
@@ -107,12 +109,11 @@ const OpenOrders = () => {
                 ? order.base_asset
                 : order.quote_asset;
 
-              // let [edittingPrice, setEditingPrice] = React.useState(false);
-              // let [newPrice, setNewPrice] = React.useState<number | null>(
-              //   Number(order.price)
-              // );
-
               let color = !order.order_side ? "text-red" : "text-green_lighter";
+
+              let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[baseAsset];
+              let sizeRoundingDecimals = SIZE_ROUNDING_DECIMALS[baseAsset];
+
               return (
                 <tbody key={idx} className="overflow-y-auto max-h-24">
                   <tr
@@ -156,72 +157,14 @@ const OpenOrders = () => {
                     </td>
                     {/* Price ============= */}
                     <td className={classNames("pr-3 font-medium")}>
-                      {Number(order.price).toFixed(2)} USD
-                      {/* {edittingPrice ? (
-                        <div className="flex items-center">
-                          <input
-                            name="amount"
-                            className="py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
-                            type="number"
-                            step={0.001}
-                            style={{ width: "7rem" }}
-                            value={newPrice ? newPrice : ""}
-                            onChange={(e) => {
-                              setNewPrice(
-                                e.target.value ? Number(e.target.value) : null
-                              );
-                            }}
-                          />
-
-                          <button
-                            type="button"
-                            onClick={() => console.log("submit")}
-                            className="ml-3 rounded-m hover:opacity-75"
-                          >
-                            <BsFillCheckCircleFill
-                              style={{
-                                color: "#00ff00",
-                                fontSize: "1.2rem",
-                                marginLeft: "0.5rem",
-                                marginRight: "0.1em",
-                              }}
-                            />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setNewPrice(Number(order.price));
-                              setEditingPrice(false);
-                            }}
-                            className="ml-3 rounded-m hover:opacity-75"
-                          >
-                            <FcCancel
-                              style={{
-                                color: "red",
-                                fontSize: "1.5rem",
-                              }}
-                            />
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          {Number(order.price).toFixed(2)} USD
-                          <button
-                            type="button"
-                            onClick={() => setEditingPrice(true)}
-                            className="ml-3 rounded-m hover:opacity-75"
-                          >
-                            <FaEdit className="w-5 h-4" />
-                          </button>
-                        </div>
-                      )} */}
+                      {Number(order.price).toFixed(priceRoundingDecimals)} USD
                     </td>
                     {/* Amount  =============*/}
                     <td className={classNames("pr-3 font-medium ")}>
                       {(
                         Number(order.qty_left) /
                         10 ** DECIMALS_PER_ASSET[receivedToken]
-                      ).toFixed(3)}{" "}
+                      ).toFixed(sizeRoundingDecimals)}{" "}
                       {IDS_TO_SYMBOLS[receivedToken]}
                     </td>
 
@@ -331,3 +274,62 @@ async function cancelAllOrders(user, orders) {
 }
 
 async function Order(order: any, idx: number) {}
+
+// {/* {edittingPrice ? (
+//                         <div className="flex items-center">
+//                           <input
+//                             name="amount"
+//                             className="py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
+//                             type="number"
+//                             step={0.001}
+//                             style={{ width: "7rem" }}
+//                             value={newPrice ? newPrice : ""}
+//                             onChange={(e) => {
+//                               setNewPrice(
+//                                 e.target.value ? Number(e.target.value) : null
+//                               );
+//                             }}
+//                           />
+
+//                           <button
+//                             type="button"
+//                             onClick={() => console.log("submit")}
+//                             className="ml-3 rounded-m hover:opacity-75"
+//                           >
+//                             <BsFillCheckCircleFill
+//                               style={{
+//                                 color: "#00ff00",
+//                                 fontSize: "1.2rem",
+//                                 marginLeft: "0.5rem",
+//                                 marginRight: "0.1em",
+//                               }}
+//                             />
+//                           </button>
+//                           <button
+//                             type="button"
+//                             onClick={() => {
+//                               setNewPrice(Number(order.price));
+//                               setEditingPrice(false);
+//                             }}
+//                             className="ml-3 rounded-m hover:opacity-75"
+//                           >
+//                             <FcCancel
+//                               style={{
+//                                 color: "red",
+//                                 fontSize: "1.5rem",
+//                               }}
+//                             />
+//                           </button>
+//                         </div>
+//                       ) : (
+//                         <div>
+//                           {Number(order.price).toFixed(2)} USD
+//                           <button
+//                             type="button"
+//                             onClick={() => setEditingPrice(true)}
+//                             className="ml-3 rounded-m hover:opacity-75"
+//                           >
+//                             <FaEdit className="w-5 h-4" />
+//                           </button>
+//                         </div>
+//                       )} */}

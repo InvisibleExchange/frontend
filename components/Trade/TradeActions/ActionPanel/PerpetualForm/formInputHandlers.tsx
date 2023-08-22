@@ -3,7 +3,6 @@ import { formatInputNum } from "../TradeFormHelpers/FormHelpers";
 const {
   COLLATERAL_TOKEN_DECIMALS,
   SYMBOLS_TO_IDS,
-
   COLLATERAL_TOKEN,
   DECIMALS_PER_ASSET,
 } = require("../../../../../app_logic/helpers/utils");
@@ -26,7 +25,8 @@ const _handlePriceChange = (
   token,
   newMinMaxLeverage,
   setLeverage,
-  price
+  price,
+  sizeRoundingDecimals
 ) => {
   setPrice(price);
 
@@ -66,7 +66,9 @@ const _handlePriceChange = (
   } else {
     if (quoteAmount) {
       let baseAmount_ = (Number(quoteAmount) * leverage) / Number(price);
-      setBaseAmount(formatInputNum(baseAmount_.toString(), 4));
+      setBaseAmount(
+        formatInputNum(baseAmount_.toString(), sizeRoundingDecimals)
+      );
     }
   }
 };
@@ -124,7 +126,7 @@ const _handleBaseAmountChange = (
       let nominalValue = Number(baseAmount_) * Number(price);
       let initMargin = nominalValue / leverage;
 
-      setQuoteAmount(formatInputNum(initMargin.toString(), 4));
+      setQuoteAmount(formatInputNum(initMargin.toString(), 2));
     }
 
     let max_leverage = getMaxLeverage(SYMBOLS_TO_IDS[token], baseAmount_);
@@ -163,7 +165,8 @@ const _handleSliderChange = (
   price,
   setBaseAmount,
   newMinMaxLeverage,
-  leverage_: any
+  leverage_: any,
+  sizeRoundingDecimals
 ) => {
   if (newMinMaxLeverage) {
     leverage_ = Math.min(leverage_, newMinMaxLeverage?.upperBound);
@@ -201,13 +204,17 @@ const _handleSliderChange = (
               DECIMALS_PER_ASSET[positionData.position_header.synthetic_token]
       );
 
-      setBaseAmount(formatInputNum(sizeChange.toString(), 4));
+      setBaseAmount(
+        formatInputNum(sizeChange.toString(), sizeRoundingDecimals)
+      );
     }
   } else {
     if (price && quoteAmount) {
       let baseAmount_ = (Number(quoteAmount) * leverage_) / Number(price);
 
-      setBaseAmount(formatInputNum(baseAmount_.toString(), 4));
+      setBaseAmount(
+        formatInputNum(baseAmount_.toString(), sizeRoundingDecimals)
+      );
     }
   }
 };

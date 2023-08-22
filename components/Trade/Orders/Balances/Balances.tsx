@@ -19,7 +19,6 @@ const tokenLogos = {
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
-  PRICE_DECIMALS_PER_ASSET,
 } = require("../../../../app_logic/helpers/utils");
 
 const Balances = () => {

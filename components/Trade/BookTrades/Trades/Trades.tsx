@@ -6,6 +6,8 @@ const {
   SYMBOLS_TO_IDS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
+  SIZE_ROUNDING_DECIMALS,
 } = require("../../../../app_logic/helpers/utils");
 
 interface Props {
@@ -15,6 +17,9 @@ interface Props {
 }
 
 export default function Trades({ token, type, fills }: Props) {
+  let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+  let sizeRoundingDecimals = SIZE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];
+
   return (
     <div className="flex flex-col flex-1 mt-2 border rounded-sm h-[calc(36%-1.25rem)] border-border_color">
       <div className="px-4 py-2 text-sm tracking-wider font-overpass bg-fg_above_color">
@@ -53,10 +58,10 @@ export default function Trades({ token, type, fills }: Props) {
                         color
                     )}
                   >
-                    {amount.toFixed(3)}
+                    {amount.toFixed(sizeRoundingDecimals)}
                   </div>
                   <div className="flex items-center justify-center flex-grow py-0.5 text-sm ">
-                    {price.toFixed(2)}
+                    {price.toFixed(priceRoundingDecimals)}
                   </div>
                   <div className="flex items-center justify-center flex-grow py-0.5 text-sm ">
                     {timestamp.toLocaleTimeString()}

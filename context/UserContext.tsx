@@ -119,7 +119,18 @@ function UserProvider({ children }: Props) {
   const [username, setUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [selectedMarket, setSelectedMarket] = useState(marketList[0]);
+  const [selectedMarket, _setSelectedMarketInner] = useState(marketList[0]);
+  const setSelectedMarket = (market) => {
+    if (!market) return;
+
+    if (!market.isSpot) {
+      setSelectedType("perpetual");
+    }
+    if (!market.isPerp) {
+      setSelectedType("spot");
+    }
+    _setSelectedMarketInner(market);
+  };
   const [selectedType, setSelectedType] = useState<"spot" | "perpetual">(
     "perpetual"
   );
