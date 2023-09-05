@@ -14,33 +14,25 @@ const Chart = () => {
     height: "100%",
   };
 
-  const [parentHeight, setParentHeight] = useState<number | undefined>();
   const parentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (parentRef.current) {
-      const height = parentRef.current.offsetHeight; // get height in pixels
-      setParentHeight(height);
-    }
-  }, [selectedType, selectedMarket]);
 
   return (
     <div style={divStyle} ref={parentRef}>
-      {parentHeight && <ChartInner token={token} height={parentHeight} />}
+      <ChartInner token={token} />
     </div>
   );
 };
 
 export default Chart;
 
-const ChartInner = ({ token, height }: any) => {
+const ChartInner = ({ token }: any) => {
   const symbols = {
     BTC: "COINBASE:BTCUSD",
     ETH: "COINBASE:ETHUSD",
     PEPE: "BINANCE:PEPEUSDT",
   };
 
-  useEffect(() => {}, [token, height]);
+  useEffect(() => {}, [token]);
 
   return (
     <TradingViewWidget
@@ -54,7 +46,7 @@ const ChartInner = ({ token, height }: any) => {
       locale="en"
       enable_publishing={false}
       hide_legend={true}
-      height={Number.parseInt((height * 0.95).toString())}
+      autosize
     />
   );
 };
