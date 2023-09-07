@@ -930,7 +930,6 @@ async function sendChangeMargin(
 ) {
   let margin_change = amount * 10 ** COLLATERAL_TOKEN_DECIMALS;
 
-  //todo: if (direction == "decrease" && margin_change >= MARGIN_LEFT?) {}
   let { notes_in, refund_note, close_order_fields, position, signature } =
     user.changeMargin(
       positionAddress,
@@ -1021,6 +1020,7 @@ async function sendChangeMargin(
               pos.entry_price,
               pos.liquidation_price,
               pos.last_funding_idx,
+              pos.vlp_supply,
             ]);
 
             pos.hash = hash.toString();

@@ -11,7 +11,7 @@ const Chart = () => {
       : selectedMarket.pairs.split("/")[0];
 
   const divStyle: React.CSSProperties = {
-    height: "100%",
+    height: "95%",
   };
 
   const parentRef = useRef<HTMLDivElement>(null);
