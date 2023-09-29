@@ -1,5 +1,5 @@
+const { computeHashOnElements } = require("../helpers/pedersen");
 const { getKeyPair, sign } = require("starknet").ec;
-const { pedersen, computeHashOnElements } = require("../../helpers/pedersen");
 
 /* global BigInt */
 

@@ -1,7 +1,7 @@
 .container {
   margin-right: 1.5rem;
   margin-left: 0.5rem;
-  /* padding: 0.3rem 0; */
+
 
   display: flex;
   align-items: center;
@@ -9,5 +9,5 @@
 }
 
 .container svg {
-  height: 2rem;
+  height: 5em;
 }
