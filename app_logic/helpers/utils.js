@@ -45,15 +45,15 @@ const LEVERAGE_DECIMALS = 4;
 const COLLATERAL_TOKEN_DECIMALS = 6;
 const COLLATERAL_TOKEN = 55555;
 
-// const SERVER_URL = "localhost";
-// const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
-// const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
-// const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
+const SERVER_URL = "localhost";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
+const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
 
-const SERVER_URL = "54.212.28.196";
-const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
-const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
-const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
+// const SERVER_URL = "54.212.28.196";
+// const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
+// const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
+// const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
 
 /// Things we keep track of
 /// Index prices

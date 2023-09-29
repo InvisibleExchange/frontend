@@ -679,7 +679,12 @@ export default class User {
     return deposit;
   }
 
-  makeWithdrawalOrder(withdrawAmount, withdrawToken, withdrawStarkKey) {
+  makeWithdrawalOrder(
+    withdrawAmount,
+    withdrawToken,
+    withdrawStarkKey,
+    whitdrawalChainId
+  ) {
     // ? Get the notesIn and priv keys for these notes
     let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
       withdrawToken,
@@ -705,10 +710,12 @@ export default class User {
       notesIn,
       privKeys,
       refundNote,
-      withdrawStarkKey
+      withdrawStarkKey,
+      whitdrawalChainId
     );
 
     let withdrawal = new Withdrawal(
+      whitdrawalChainId,
       withdrawToken,
       withdrawAmount,
       withdrawStarkKey,

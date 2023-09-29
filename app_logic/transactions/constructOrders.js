@@ -832,7 +832,8 @@ async function sendWithdrawal(
   withdrawalChainId,
   amount,
   token,
-  starkKey
+  starkKey,
+  chainId
 ) {
   if (!user || !amount || !withdrawalChainId || !token || !starkKey) {
     throw new Error("Invalid input");
@@ -841,7 +842,12 @@ async function sendWithdrawal(
   let tokenDecimals = DECIMALS_PER_ASSET[token];
   amount = amount * 10 ** tokenDecimals;
 
-  let withdrawal = user.makeWithdrawalOrder(amount, token, starkKey);
+  let withdrawal = user.makeWithdrawalOrder(
+    amount,
+    token,
+    starkKey,
+    withdrawalChainId
+  );
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_withdrawal`, withdrawal.toGrpcObject())
