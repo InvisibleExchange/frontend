@@ -165,7 +165,7 @@ export default function MarketsList({
                       colorStyle
                     )}
                   >
-                    {(priceChange24h[token]?.percentage).toFixed(2)}%
+                    {priceChange24h[token]?.percentage?.toFixed(2)}%
                   </td>
                 </tr>
               );
