@@ -787,10 +787,7 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
   let tokenDecimals = DECIMALS_PER_ASSET[token];
   amount = amount * 10 ** tokenDecimals;
 
-  console.log(depositId);
   let deposit = user.makeDepositOrder(depositId, amount, token, pubKey);
-
-  console.log(deposit);
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_deposit`, deposit.toGrpcObject())

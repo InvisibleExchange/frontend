@@ -8,10 +8,12 @@ import { useState, useContext } from "react";
 // import useTranslation from "next-translate/useTranslation"
 import { WalletContext } from "../../../context/WalletContext";
 import { hideAddress } from "../../../utils/utils";
+import { UserContext } from "../../../context/UserContext";
 
 function ConnectWallet() {
   const { userAddress, username, connect, disconnect } =
     useContext(WalletContext);
+  const { logout } = useContext(UserContext);
 
   if (!userAddress) {
     return (
@@ -35,7 +37,10 @@ function ConnectWallet() {
     return (
       <div
         className="flex items-center gap-3 pl-6 mr-5 border-l cursor-pointer hover:opacity-75 border-border_color"
-        onClick={disconnect}
+        onClick={() => {
+          disconnect();
+          logout();
+        }}
       >
         <div className="w-3 h-3 rounded-full bg-green" />
         <div>{usernameOrAddress}</div>

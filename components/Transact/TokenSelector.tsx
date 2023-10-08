@@ -17,19 +17,20 @@ const TokenSelector = ({ selected, onSelect, options, label }: props) => {
       <p className="text-sm ml-3">{label}</p>
       <Listbox value={selected} onChange={onSelect}>
         <div className="mr-2">
-          {/* <div className="relative mt-1">           */}
           <div className="relative w-full overflow-hidden text-left rounded-lg dark:shadow-md cursor-defaul hover:ring-1 hover:dark:ring-fg_below_color">
             <Listbox.Button className="w-full py-4 pl-4 pr-10 text-base leading-5 border-none rounded-lg outline-none bg-border_color">
               <div className="flex">
-                <button className="text-sm pr-2 ">
-                  <img
-                    src={selected.icon.src}
-                    alt="Currency Logo"
-                    className="logo_icon"
-                  />
-                </button>
+                <img
+                  src={selected.icon.src}
+                  alt="Currency Logo"
+                  className="logo_icon"
+                />
+
                 <p className="pt-1">{selected.name}</p>
               </div>
+
+              {/*  // TODO: Hydration error occures here !!! 
+              // TODO: Hydration error occures here !!!  */}
 
               <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <HiChevronUpDown

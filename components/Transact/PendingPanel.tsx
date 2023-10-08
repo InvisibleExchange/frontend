@@ -7,12 +7,16 @@ import usdcLogo from "../../public/tokenIcons/usdc-logo.png";
 const { sendDeposit } = require("../../app_logic/transactions/constructOrders");
 
 const {
+  DECIMALS_PER_ASSET,
+  IDS_TO_SYMBOLS,
   SYMBOLS_TO_IDS,
-  DUST_AMOUNT_PER_ASSET,
   CHAIN_IDS,
+  DUST_AMOUNT_PER_ASSET,
 } = require("../../app_logic/helpers/utils");
 
 const PendingPanel = ({ type, user, showToast }: any) => {
+  //
+
   let deposits: any[] = [];
 
   let amounts = { ETH: 5, USDC: 15_000, BTC: 0.4 };
@@ -26,13 +30,16 @@ const PendingPanel = ({ type, user, showToast }: any) => {
       if (bal < DUST_AMOUNT_PER_ASSET[token]) {
         deposits.push({
           depositId: CHAIN_IDS[chainIds[token_]] * 2 ** 32 + 12345,
-          amount: amounts[token_],
-          token: token_,
-          pubKey: 1234,
+          amount: amounts[token_] * 10 ** DECIMALS_PER_ASSET[token],
+          tokenId: token,
+          starkKey: 1234,
         });
       }
     }
   }
+
+  // depositId:  starkKey: tokenId: amount: timestamp:  txHash:
+  // let deposits = user?.deposits ?? [];
 
   let helperMessage =
     "** For ease of testing, we don't require you to have goerli eth given its scarcity, so you can mint yourself some test funds below. **";
@@ -44,16 +51,19 @@ const PendingPanel = ({ type, user, showToast }: any) => {
       </p>
       {type == "Deposit" ? <em>{helperMessage}</em> : null}
       {deposits?.length ? (
-        deposits.map((deposit) => {
+        deposits.map((deposit: any) => {
+          let depositAmount =
+            Number(deposit.amount) / 10 ** DECIMALS_PER_ASSET[deposit.tokenId];
+
           return (
             <div
               key={deposit.depositId}
               className="flex items-center w-full mt-5 rounded-l-lg bg-border_color"
             >
               <div className="w-full flex py-2.5 pl-5 text-gray_light">
-                <p> {deposit.amount.toFixed(2)}</p>
+                <p> {depositAmount.toFixed(2)}</p>
 
-                <p className="ml-3"> {deposit.token}</p>
+                <p className="ml-3"> {IDS_TO_SYMBOLS[deposit.tokenId]}</p>
 
                 {/* <img
                   src={icons[deposit.token].src}
@@ -64,22 +74,32 @@ const PendingPanel = ({ type, user, showToast }: any) => {
               <button
                 onClick={async () => {
                   if (type == "Deposit") {
+                    // * DEPOSITS  ==================================================
                     try {
                       await sendDeposit(
                         user,
                         deposit.depositId,
-                        deposit.amount,
-                        SYMBOLS_TO_IDS[deposit.token],
-                        deposit.pubKey
+                        depositAmount,
+                        deposit.tokenId,
+                        deposit.starkKey
                       );
+
+                      // console.log("deposit Executed: ", user.deposits);
+
+                      // user.deposits = user.deposits.filter(
+                      //   (d: any) => d.depositId != deposit.depositId
+                      // );
+
+                      // console.log("user.deposits: ", depositAmount);
+                      // console.log("symbol: ", IDS_TO_SYMBOLS[deposit.tokenId]);
 
                       showToast({
                         type: "info",
                         message:
                           "Deposit successful: " +
-                          deposit.amount.toFixed(2) +
+                          depositAmount.toFixed(2) +
                           " " +
-                          deposit.token,
+                          IDS_TO_SYMBOLS[deposit.tokenId],
                       });
                     } catch (error) {
                       showToast({
@@ -88,6 +108,7 @@ const PendingPanel = ({ type, user, showToast }: any) => {
                       });
                     }
                   } else {
+                    // * WITHDRAWAL  ================================================
                     // await sendWithdrawal(user, user.amount, user.token, pubKey);
                   }
                 }}

@@ -5,13 +5,13 @@ import { UserContext } from "../../../../context/UserContext";
 import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
-import pepeLogo from "../../../../public/tokenIcons/PEPE.png";
+import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
 
 const tokenLogos = {
   54321: ethLogo,
   12345: btcLogo,
   55555: usdcLogo,
-  66666: pepeLogo,
+  66666: solLogo,
 };
 
 const FundingPayments = () => {

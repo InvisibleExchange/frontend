@@ -87,7 +87,7 @@ export default function MarketStats() {
             : 0}{" "}
           (
           {priceChange24h[token]
-            ? (priceChange24h[token].percentage * 100).toFixed(2)
+            ? priceChange24h[token].percentage.toFixed(2)
             : 0}
           %)
         </div>

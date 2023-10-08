@@ -14,6 +14,7 @@ const {
   removeOrderId,
   fetchUserFills,
   fetchDeprecatedKeys,
+  fetchOnchainDeposits,
 } = require("../helpers/firebaseConnection");
 
 const {
@@ -116,6 +117,9 @@ export default class User {
     this.orders = []; // {base_asset,expiration_timestamp,fee_limit,notes_in,order_id,order_side,price,qty_left,quote_asset,refund_note}
     this.perpetualOrders = []; // {order_id,expiration_timestamp,qty_left,price,synthetic_token,order_side,position_effect_type,fee_limit,position_address,notes_in,refund_note,initial_margin}
 
+    this.depositIds = []; // these ids are in encrypted format
+    this.deposits = []; // {depositId, tokenId, depositAmount, starkKey, timestamp, txHash}
+
     // this.noteData structure is as follows:  {token1: [note1,..., noteN],...,tokenN: ...]}
     this.noteData = {};
     this.notePrivKeys = {}; // Maps {noteAddress: privKey}
@@ -150,6 +154,14 @@ export default class User {
     let userData = await fetchUserData(this.userId, this.privateSeed).catch(
       console.log
     );
+
+    // ? Get Pending Deposits =====================================
+    let { deposits, newDepositIds } = await fetchOnchainDeposits(
+      userData.depositIds,
+      this.privateSeed
+    );
+    this.deposits = deposits;
+    this.depositIds = newDepositIds;
 
     // ? Get Note Data ============================================
     let keyPairs =
@@ -997,6 +1009,7 @@ export default class User {
 
       return user;
     } catch (e) {
+      console.log(e);
       throw Error("Enter a hexademical private key");
     }
   }

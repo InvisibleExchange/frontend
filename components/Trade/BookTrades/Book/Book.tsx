@@ -61,6 +61,8 @@ export default function Book({
                   order.amount /
                   10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
 
+                  
+
                 return (
                   <div
                     className="flex cursor-pointer border-border_color hover:bg-border_color"

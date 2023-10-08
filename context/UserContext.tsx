@@ -11,6 +11,7 @@ const {
   SPOT_MARKET_IDS,
   PERP_MARKET_IDS,
   DECIMALS_PER_ASSET,
+  PRICE_ROUNDING_DECIMALS,
   fetchLiquidity,
   EXPRESS_APP_URL,
   SERVER_WS_URL,
@@ -33,6 +34,7 @@ interface Props {
 export type UserContextType = {
   user: typeof User | null;
   isLoading: boolean;
+  setIsLoading: any;
   forceRerender: () => void;
 
   getSelectedPosition: any;
@@ -43,9 +45,10 @@ export type UserContextType = {
   selectedType: "spot" | "perpetual";
   setSelectedType: any;
 
-  login: (signer: any) => any;
+  login: (signer: any, privKey: any) => any;
   initialize: () => void;
   initialized: boolean;
+  logout: () => void;
 
   setFormInputs: any;
   formInputs: any;
@@ -75,6 +78,7 @@ export type UserContextType = {
 export const UserContext = createContext<UserContextType>({
   user: null,
   isLoading: false,
+  setIsLoading: () => {},
   forceRerender: () => {},
 
   getSelectedPosition: null,
@@ -90,6 +94,7 @@ export const UserContext = createContext<UserContextType>({
   login: async () => {},
   initialize: () => {},
   initialized: false,
+  logout: () => {},
 
   liquidity: {},
   perpLiquidity: {},
@@ -109,14 +114,13 @@ export const UserContext = createContext<UserContextType>({
 // ================================================================================
 
 function UserProvider({ children }: Props) {
-  const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
+  const [_, forceUpdate] = useReducer((x) => x + 1, 0);
 
   function forceRerender() {
     forceUpdate();
   }
 
   const [user, setUser] = useState<typeof User | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const [selectedMarket, _setSelectedMarketInner] = useState(marketList[0]);
@@ -249,12 +253,15 @@ function UserProvider({ children }: Props) {
 
   // ============================================================================
 
-  const login = async (signer: any) => {
+  const login = async (signer: any, privKey: any) => {
     const { loginUser } = require("../app_logic/helpers/utils");
 
     let user_;
     try {
-      user_ = await loginUser(signer);
+      let { user: __user, privKey: pk } = await loginUser(signer, privKey);
+      user_ = __user;
+
+      sessionStorage.setItem("privKey", pk.toString());
     } catch (error) {
       setToastMessage({ type: "error", message: "Login failed - " + error });
     }
@@ -266,13 +273,24 @@ function UserProvider({ children }: Props) {
     }
   };
 
+  const logout = () => {
+    sessionStorage.removeItem("privKey");
+
+    setUser(null);
+  };
+
   const getMarkPrice = (token: number, isPerp: boolean) => {
+    let roundingDecimals = PRICE_ROUNDING_DECIMALS[token];
+
     let bidLiq, askLiq;
     if (isPerp) {
-      // Todo: Fetch it from cryptowatch
       if (!perpLiquidity[token]) {
         if (priceChange24h[IDS_TO_SYMBOLS[token]])
-          return priceChange24h[IDS_TO_SYMBOLS[token]].price;
+          return Number(
+            priceChange24h[IDS_TO_SYMBOLS[token]].price.toFixed(
+              roundingDecimals
+            )
+          );
         else return 0;
       }
 
@@ -281,10 +299,13 @@ function UserProvider({ children }: Props) {
       bidLiq = bidQueue;
       askLiq = askQueue;
     } else {
-      // Todo: Fetch it from cryptowatch
       if (!liquidity[token]) {
         if (priceChange24h[IDS_TO_SYMBOLS[token]])
-          return priceChange24h[IDS_TO_SYMBOLS[token]].price;
+          return Number(
+            priceChange24h[IDS_TO_SYMBOLS[token]].price.toFixed(
+              roundingDecimals
+            )
+          );
         else return 0;
       }
 
@@ -297,16 +318,17 @@ function UserProvider({ children }: Props) {
     let topBidPrice = bidLiq[0]?.price;
     let topAskPrice = askLiq[askLiq.length - 1]?.price ?? 0;
 
-    // Todo: Fetch it from cryptowatch
     if (!topBidPrice || !topAskPrice) {
       if (priceChange24h[IDS_TO_SYMBOLS[token]])
-        return priceChange24h[IDS_TO_SYMBOLS[token]].price;
+        return Number(
+          priceChange24h[IDS_TO_SYMBOLS[token]].price.toFixed(roundingDecimals)
+        );
       else return 0;
     }
 
     let markPrice = (topBidPrice + topAskPrice) / 2;
 
-    return markPrice;
+    return Number(markPrice.toFixed(roundingDecimals));
   };
 
   const [initialized, setInitialized] = useState<boolean>(false);
@@ -319,6 +341,15 @@ function UserProvider({ children }: Props) {
     initialized_ = true;
 
     await init();
+
+    // ? If prev priv key exists, use it to login the user
+    const privKey = sessionStorage.getItem("privKey");
+    if (privKey) {
+      setIsLoading(true);
+      login(null, privKey).then((_) => {
+        setIsLoading(false);
+      });
+    }
 
     await fetchMarketinfo();
 
@@ -519,6 +550,7 @@ function UserProvider({ children }: Props) {
       value={{
         user: user,
         isLoading: isLoading,
+        setIsLoading: setIsLoading,
         forceRerender: forceRerender,
 
         selectedType: selectedType,
@@ -532,6 +564,7 @@ function UserProvider({ children }: Props) {
         login: login,
         initialize: initialize,
         initialized,
+        logout: logout,
 
         setFormInputs,
         formInputs,

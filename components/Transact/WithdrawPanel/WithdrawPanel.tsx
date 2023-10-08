@@ -17,6 +17,7 @@ import { WalletContext } from "../../../context/WalletContext";
 import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { UserContext } from "../../../context/UserContext";
+import { ethers } from "ethers";
 
 const {
   _renderConnectButton,
@@ -123,9 +124,7 @@ const WithdrawPanel = () => {
             className="w-1/4 py-3 mt-2 ml-2 text-center text-white bg-blue rounded-lg hover:opacity-70 hover:cursor-pointer"
             data-tooltip-id="my-tooltip"
             data-tooltip-content="For your security, we ask you to sign a message to prevent accidental withdrawals to the wrong address."
-            onClick={() => {
-              console.log("sign");
-            }}
+            onClick={() => {}}
           >
             Sign
           </a>

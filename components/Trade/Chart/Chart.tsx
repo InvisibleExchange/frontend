@@ -29,7 +29,7 @@ const ChartInner = ({ token }: any) => {
   const symbols = {
     BTC: "COINBASE:BTCUSD",
     ETH: "COINBASE:ETHUSD",
-    PEPE: "BINANCE:PEPEUSDT",
+    SOL: "BINANCE:SOLUSDT",
   };
 
   useEffect(() => {}, [token]);

@@ -20,31 +20,78 @@ const {
   _renderLoginButton,
 } = require("../../Trade/TradeActions/ActionPanel/TradeFormHelpers/FormButtons");
 
+const {
+  executeDepositTx,
+} = require("../../../app_logic/helpers/onchainConnection");
+
+const {
+  storeDepositIds,
+} = require("../../../app_logic/helpers/firebaseConnection");
+
 const tokens = [
-  { id: 1, name: "ETH", icon: ethLogo },
-  { id: 2, name: "BTC", icon: btcLogo },
-  { id: 3, name: "USDC", icon: usdcLogo },
+  { id: 54321, name: "ETH", icon: ethLogo },
+  { id: 12345, name: "BTC", icon: btcLogo },
+  { id: 55555, name: "USDC", icon: usdcLogo },
 ];
 
 const chains = [
   { id: 1, name: "ETH Mainnet", icon: ethMainnet },
-  { id: 2, name: "Starknet", icon: starknet },
-  { id: 3, name: "ZkSync", icon: zksync },
+  // { id: 2, name: "Starknet", icon: starknet },
+  // { id: 3, name: "ZkSync", icon: zksync },
 ];
 
 const DepositPanel = ({ showToast }: any) => {
-  let { userAddress, connect, signer, forceRerender } =
-    useContext(WalletContext);
-  let { user, login } = useContext(UserContext);
-
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  let {
+    userAddress,
+    connect,
+    signer,
+    updateWalletBalances,
+    getTokenBalance,
+    smartContracts,
+  } = useContext(WalletContext);
+  let { user, login, forceRerender, setToastMessage, isLoading, setIsLoading } =
+    useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
   const [chain, setChain] = useState(chains[0]);
   const [amount, setAmount] = useState(null);
 
+  let tokenBalance = getTokenBalance(token.id);
+
   const makeDeposit = async () => {
     // TODO:
+
+    let depositResponse = await executeDepositTx(
+      user,
+      smartContracts,
+      amount,
+      token.id,
+      tokenBalance,
+      userAddress
+    );
+
+    updateWalletBalances([], [token.id]);
+
+    storeDepositIds(
+      user.userId,
+      user.depositIds,
+      depositResponse.depositId,
+      user.privateSeed
+    );
+
+    if (depositResponse) {
+      setToastMessage({
+        type: "info",
+        message:
+          "Deposit transaction was successful! Tx hash: " +
+          depositResponse.txHash,
+      });
+    } else {
+      setToastMessage({
+        type: "error",
+        message: "Deposit transaction failed!",
+      });
+    }
   };
 
   function renderConnectButton() {
@@ -92,13 +139,19 @@ const DepositPanel = ({ showToast }: any) => {
         </div>
       </div>
 
-      <AmountInput selected={token} setAmount={setAmount} amount={amount} />
+      <AmountInput
+        selected={token}
+        setAmount={setAmount}
+        amount={amount}
+        tokenBalance={tokenBalance}
+      />
 
       {userAddress ? (
         user && user.userId ? (
           <button
-            className="w-full py-3 mt-8 text-center rounded-lg bg-green hover:opacity-70 opacity-70"
+            className="w-full py-3 mt-8 text-center rounded-lg bg-green  hover:opacity-70 opacity-70"
             disabled={true}
+            onClick={makeDeposit}
           >
             Make Deposit
           </button>

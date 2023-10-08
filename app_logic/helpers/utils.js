@@ -6,13 +6,13 @@ const SYMBOLS_TO_IDS = {
   BTC: 12345,
   ETH: 54321,
   USDC: 55555,
-  PEPE: 66666,
+  SOL: 66666,
 };
 const IDS_TO_SYMBOLS = {
   12345: "BTC",
   54321: "ETH",
   55555: "USDC",
-  66666: "PEPE",
+  66666: "SOL",
 };
 
 const CHAIN_IDS = {
@@ -22,23 +22,23 @@ const CHAIN_IDS = {
 };
 
 const DECIMALS_PER_ASSET = {
-  12345: 9, // BTC
-  54321: 9, // ETH
+  12345: 8, // BTC
+  54321: 8, // ETH
   55555: 6, // USDC
-  66666: 0, // PEPE
+  66666: 8, // SOL
 };
 
 const PRICE_DECIMALS_PER_ASSET = {
   12345: 6, // BTC
   54321: 6, // ETH
-  66666: 10, // PEPE
+  66666: 6, // SOL
 };
 
 const DUST_AMOUNT_PER_ASSET = {
-  12345: 2500, // BTC ~ 5c
-  54321: 25000, // ETH ~ 5c
-  55555: 50000, // USDC ~ 5c
-  66666: 50000, // PEPE ~ 5c
+  12345: 250, // BTC ~ 5c
+  54321: 2500, // ETH ~ 5c
+  55555: 50_000, // USDC ~ 5c
+  66666: 250_000, // SOL ~ 5c
 };
 
 const LEVERAGE_DECIMALS = 4;
@@ -86,7 +86,7 @@ const PRICE_ROUNDING_DECIMALS = {
   12345: 2,
   54321: 2,
   55555: 2,
-  66666: 9,
+  66666: 2,
 };
 
 // How many decimals to round to on the frontend
@@ -94,7 +94,7 @@ const SIZE_ROUNDING_DECIMALS = {
   12345: 4,
   54321: 4,
   55555: 2,
-  66666: 0,
+  66666: 3,
 };
 
 /**
@@ -525,17 +525,19 @@ function handleNoteSplit(user, zero_idxs, notesIn, notesOut) {
  * and use it to login and fetch all the user's data.
  * @param  signer  ethers.js signer
  */
-async function loginUser(signer) {
-  const keyDerivation =
-    require("@starkware-industries/starkware-crypto-utils").keyDerivation;
+async function loginUser(signer, privKey) {
+  if (!privKey) {
+    const keyDerivation =
+      require("@starkware-industries/starkware-crypto-utils").keyDerivation;
 
-  let sig = await signer.signMessage(
-    "Sign this message to access your Invisibl3 account. \nIMPORTANT: Be careful to only sign this message on the official website!"
-  );
+    let sig = await signer.signMessage(
+      "Sign this message to access your Invisibl3 account. \nIMPORTANT: Be careful to only sign this message on the official website!"
+    );
 
-  let pk = keyDerivation.getPrivateKeyFromEthSignature(sig);
+    privKey = keyDerivation.getPrivateKeyFromEthSignature(sig);
+  }
 
-  let user = User.fromPrivKey(pk);
+  let user = User.fromPrivKey(privKey);
 
   let { emptyPrivKeys, emptyPositionPrivKeys } = await user.login();
 
@@ -552,7 +554,7 @@ async function loginUser(signer) {
     emptyPositionPrivKeys
   );
 
-  return user;
+  return { user, privKey };
 }
 
 async function getActiveOrders(order_ids, perp_order_ids) {

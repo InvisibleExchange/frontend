@@ -267,11 +267,13 @@ async function fetchUserData(userId, privateSeed) {
       perpetualOrderIds: [],
       noteCounts: {},
       positionCounts: {},
+      depositIds: [],
     };
   }
 
   let noteCounts = userData.data().noteCounts;
   let positionCounts = userData.data().positionCounts;
+  let depositIds = userData.data().depositIds;
 
   let pfrKeys = {};
 
@@ -349,6 +351,7 @@ async function fetchUserData(userId, privateSeed) {
     perpetualOrderIds,
     positionPrivKeys,
     pfrKeys,
+    depositIds,
   };
 }
 
@@ -378,7 +381,7 @@ async function storeOnchainDeposit(deposit) {
       depositId: deposit.depositId.toString(),
       starkKey: deposit.starkKey.toString(),
       tokenId: deposit.tokenId.toString(),
-      depositAmountScaled: deposit.depositAmountScaled.toString(),
+      amount: deposit.amount.toString(),
       timestamp: deposit.timestamp,
     });
   } else {
@@ -386,29 +389,25 @@ async function storeOnchainDeposit(deposit) {
       depositId: deposit.depositId.toString(),
       starkKey: deposit.starkKey.toString(),
       tokenId: deposit.tokenId.toString(),
-      depositAmountScaled: deposit.depositAmountScaled.toString(),
+      amount: deposit.amount.toString(),
       timestamp: deposit.timestamp,
     });
   }
 }
 
-async function storeDepositId(userId, depositId, privateSeed) {
-  if (!depositId) return;
+async function storeDepositIds(userId, depositIds, newDepositId, privateSeed) {
+  if (!depositIds) depositIds = [];
   // ? Stores the depositId of the user
 
   let userDataDoc = doc(db, "users", userId.toString());
-  let userDataData = await getDoc(userDataDoc);
 
   let mask = trimHash(privateSeed, 64);
-  let encryptedDepositId = bigInt(depositId).xor(mask).toString();
+  let encryptedDepositId = bigInt(newDepositId).xor(mask).toString();
 
-  let depositIdData = userDataData.data().depositIds;
-  if (!depositIdData.includes(encryptedDepositId.toString())) {
-    depositIdData.push(encryptedDepositId.toString());
-  }
+  depositIds.push(encryptedDepositId);
 
   await updateDoc(userDataDoc, {
-    depositIds: depositIdData,
+    depositIds: depositIds,
   });
 }
 
@@ -427,17 +426,12 @@ async function removeDepositFromDb(depositId) {
   await setDoc(docRef2, {});
 }
 
-async function fetchOnchainDeposits(userId, privateSeed) {
-  if (!userId) {
+async function fetchOnchainDeposits(depositIds, privateSeed) {
+  if (!depositIds || depositIds.length == 0) {
     return [];
   }
 
-  let userDataDoc = doc(db, "users", userId.toString());
-  let userDataData = await getDoc(userDataDoc);
-
-  let depositIds = userDataData.data().depositIds;
-
-  let badDepositIds = [];
+  let newDepositIds = [];
   let deposits = [];
   for (const depositId of depositIds) {
     let mask = trimHash(privateSeed, 64);
@@ -447,21 +441,22 @@ async function fetchOnchainDeposits(userId, privateSeed) {
     let depositData = await getDoc(depositDoc);
 
     if (!depositData.exists()) {
-      badDepositIds.push(depositId);
       continue;
     }
+
+    newDepositIds.push(depositId);
 
     deposits.push({
       depositId: depositData.data().depositId,
       starkKey: depositData.data().starkKey,
       tokenId: depositData.data().tokenId,
-      depositAmountScaled: depositData.data().depositAmountScaled,
+      amount: depositData.data().amount,
       timestamp: depositData.data().timestamp,
+      txHash: depositData.data().txHash,
     });
   }
 
-  // return badDepositIds;
-  return deposits;
+  return { deposits, newDepositIds };
 }
 
 // ---- FILLS ---- //
@@ -578,7 +573,7 @@ module.exports = {
   fetchUserData,
   fetchStoredPosition,
   storeOnchainDeposit,
-  storeDepositId,
+  storeDepositIds,
   removeDepositFromDb,
   fetchOnchainDeposits,
   storePrivKey,

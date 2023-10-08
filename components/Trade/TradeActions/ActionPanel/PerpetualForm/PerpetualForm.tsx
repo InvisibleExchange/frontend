@@ -57,11 +57,18 @@ const TradeForm = ({
   positionData,
   formInputs,
 }: props) => {
-  let { user, login, forceRerender, getMarkPrice, setToastMessage } =
-    useContext(UserContext);
+  let {
+    user,
+    login,
+    isLoading,
+    setIsLoading,
+    forceRerender,
+    getMarkPrice,
+    setToastMessage,
+  } = useContext(UserContext);
   let { userAddress, connect, signer } = useContext(WalletContext);
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // const [isLoading, setIsLoading] = useState<boolean>(false);
   const [action, setAction] = useState<"Long" | "Short">(action_);
 
   let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[SYMBOLS_TO_IDS[token]];

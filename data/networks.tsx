@@ -1,5 +1,8 @@
 import { ethers } from "ethers";
 
+import btcLogo from "../public/tokenIcons/bitcoin.png";
+import usdcLogo from "../public/tokenIcons/usdc-logo.png";
+
 // this is used to sort the networks in the selector
 export const networkSelectorOrder = [42161];
 
@@ -73,6 +76,7 @@ export const NETWORK = {
   Starknet: 0,
   ZkSync: 324,
   Arbitrum: 42161,
+  localhost: 31337,
 };
 
 type NetworkObject = {
@@ -93,49 +97,38 @@ export const NETWORKS: NetworkObject = {
       decimals: 18,
       address: ethers.constants.AddressZero,
     },
-    provider: new ethers.providers.JsonRpcProvider(
-      "https://arb1.arbitrum.io/rpc"
-    ),
-    wethContractAddress: "0x82af49447d8a07e3bd95bd0d56f35241523fbab1",
-    offChainOracle: "0x735247fb0a604c0adC6cab38ACE16D0DbA31295F",
-    usdcToken: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
+
+    secondaryTokens: [],
   },
 
-  // 1: {
-  //   name: "Ethereum Mainnet",
-  //   networkId: 1,
-  //   explorerUrl: "https://etherscan.io/",
-  //   rpcUrl: "https://mainnet.infura.io/v3/",
-  //   provider: new ethers.providers.JsonRpcProvider(
-  //     "https://mainnet.infura.io/v3/"
-  //   ),
-  //   nativeCurrency: {
-  //     name: "Ethereum",
-  //     symbol: "ETH",
-  //     decimals: 18,
-  //     address: ethers.constants.AddressZero,
-  //   },
-  //   wethContractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-  //   usdcToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-  // },
+  31337: {
+    name: "localhost",
+    networkId: 31337,
+    token: "GO",
+    label: "localhost",
+    rpcUrl: "http://127.0.0.1:8545",
+    nativeCurrency: {
+      name: "Ethereum",
+      symbol: "GO",
+      decimals: 18,
+      address: ethers.constants.AddressZero,
+    },
 
-  // 324: {
-  //   name: "zkSync Era Mainnet",
-  //   networkId: 324,
-  //   explorerUrl: "https://etherscan.io/",
-  //   rpcUrl: "https://mainnet.era.zksync.io",
-  //   provider: new ethers.providers.JsonRpcProvider(
-  //     "https://mainnet.era.zksync.io"
-  //   ),
-  //   nativeCurrency: {
-  //     name: "Ethereum",
-  //     symbol: "ETH",
-  //     decimals: 18,
-  //     address: ethers.constants.AddressZero,
-  //   },
-  //   wethContractAddress: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-  //   usdcToken: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-  // },
+    // name: TokenSymbol
+    // balance: string
+    // icon?: string
+
+    secondaryTokens: [
+      {
+        address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        icon: usdcLogo.src,
+      },
+      {
+        address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        icon: btcLogo.src,
+      },
+    ],
+  },
 };
 
 export function isValidNetwork(networkId: number) {

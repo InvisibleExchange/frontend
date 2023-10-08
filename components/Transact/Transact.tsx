@@ -58,6 +58,7 @@ const Transact = () => {
   return (
     <div className="flex justify-center w-full">
       <LandingModal shouldOpen={!initialized} />
+
       <div className="w-[500px] mt-10  rounded-lg">
         <Tab.Group>
           <Tab.List className="flex p-1 space-x-2 rounded-xl bg-blue-900/20">
@@ -86,6 +87,7 @@ const Transact = () => {
               </Tab>
             ))}
           </Tab.List>
+
           <Tab.Panels className="mt-2">
             <Tab.Panel>
               <DepositPanel showToast={setToastMessage} />
@@ -111,7 +113,6 @@ const Transact = () => {
           ))}
         </div>
       ) : null}
-      {/*  */}
     </div>
   );
 };

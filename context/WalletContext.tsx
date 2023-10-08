@@ -9,7 +9,7 @@ import {
 
 import { BigNumber, ethers, utils } from "ethers";
 
-import zzLogo from "../public/tokenIcons/zzLogo.png";
+import invLogo from "../public/tokenIcons/invisible-logo-small.png";
 
 import Onboard, { WalletState } from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
@@ -26,6 +26,12 @@ import {
   NetworkType,
   NETWORK,
 } from "../data/networks";
+import {
+  tokenAddress2Id,
+  tokenAddressList,
+  tokenId2Address,
+  tokenId2Name,
+} from "../data/markets";
 
 interface Props {
   children: React.ReactNode;
@@ -43,13 +49,19 @@ export type WalletContextType = {
   connect: () => void;
   disconnect: () => void;
   switchNetwork: (network: number) => Promise<boolean>;
-  updateWalletBalance: (tokenAddressList: string[]) => void;
+  updateWalletBalances: (
+    tokenAddressList_: string[],
+    tokenIdsList_: number[]
+  ) => void;
+  getTokenBalance: (tokenId: number) => string | null;
 
   balances: TokenBalanceObject;
   allowances: TokenAllowanceObject;
 
   setBalances: Dispatch<SetStateAction<TokenBalanceObject>>;
   setAllowances: Dispatch<SetStateAction<TokenAllowanceObject>>;
+
+  smartContracts: any;
 };
 
 export const WalletContext = createContext<WalletContextType>({
@@ -66,13 +78,19 @@ export const WalletContext = createContext<WalletContextType>({
   switchNetwork: async (network: number) => {
     return false;
   },
-  updateWalletBalance: (tokenAddressList: string[]) => {},
+  updateWalletBalances: async (
+    tokenAddressList_: string[],
+    tokenIdsList_: number[]
+  ) => {},
+  getTokenBalance: (tokenId: number) => null,
 
   balances: {},
   allowances: {},
 
   setBalances: () => {},
   setAllowances: () => {},
+
+  smartContracts: {},
 });
 
 // export type TokenBalanceType = { value: BigNumber; valueReadable: number }
@@ -82,38 +100,41 @@ export type TokenAllowanceObject = Record<string, BigNumber | undefined>;
 
 const wallets = [
   injectedModule(),
-  walletConnectModule(),
   coinbaseWalletModule({ darkMode: true }),
-  ledgerModule(),
+  ledgerModule({ walletConnectVersion: 1 }),
+  walletConnectModule({
+    version: 1,
+    bridge: "https://bridge.walletconnect.org",
+  }),
   mewWallet(),
   tallyHoWalletModule(),
 ];
 
 const chains = Object.keys(NETWORKS).map((key: string) => {
   const network = NETWORKS[Number(key)];
+
   return {
     id: "0x" + network.networkId.toString(16),
     token: network.nativeCurrency.symbol,
     label: network.name,
     rpcUrl: network.rpcUrl,
+    secondaryTokens: network.secondaryTokens,
   };
 });
 
 const onboard = Onboard({
   wallets,
   chains,
-
   appMetadata: {
     name: "Invisible Exchange",
-    // icon: logo.src,
-    // logo: logo.src,
-    icon: zzLogo.src,
-    logo: zzLogo.src,
+    icon: invLogo.src,
+    logo: invLogo.src,
 
     description: "Invisible Exchange",
     recommendedInjectedWallets: [
       { name: "MetaMask", url: "https://metamask.io" },
     ],
+    gettingStartedGuide: "https://docs.zigzag.exchange",
   },
 
   accountCenter: {
@@ -146,12 +167,15 @@ function WalletProvider({ children }: Props) {
   const [balances, setBalances] = useState<TokenBalanceObject>({});
   const [allowances, setAllowances] = useState<TokenAllowanceObject>({});
 
+  const [smartContracts, setSmartContracts] = useState<any>({});
+
   const walletsSub = onboard.state.select("wallets");
   walletsSub.subscribe((wallets) => {
     // this is used to store the last connected wallet
     const connectedWallets = wallets.map(({ label }) => label);
     if (!connectedWallets) return;
-    window.localStorage.setItem(
+
+    sessionStorage.setItem(
       "connectedWallets",
       JSON.stringify(connectedWallets)
     );
@@ -169,20 +193,15 @@ function WalletProvider({ children }: Props) {
   // Reconnect if previously connected
   useEffect(() => {
     const previouslyConnectedWalletsString =
-      window.localStorage.getItem("connectedWallets");
+      sessionStorage.getItem("connectedWallets");
     if (!previouslyConnectedWalletsString) return;
-
     // JSON.parse()[0] => previously primary wallet
     const label = previouslyConnectedWalletsString
       ? JSON.parse(previouslyConnectedWalletsString)[0]
       : null;
-
-    if (label !== null && label !== undefined) connectWallet(label);
-
-    // const user = window.localStorage.getItem("user");
-    // if (user) {
-    //   setUser(user);
-    // }
+    if (label !== null && label !== undefined) {
+      connectWallet(label);
+    }
   }, []);
 
   const connectWallet = async (label?: string) => {
@@ -197,7 +216,13 @@ function WalletProvider({ children }: Props) {
         wallets = await onboard.connectWallet();
       }
       if (!wallets) throw new Error("No connected wallet found");
-      updateWallet(wallets[0]);
+      let signer_ = updateWallet(wallets[0]);
+
+      let contracts = initContractConnections(signer_);
+      setSmartContracts(contracts);
+
+      updateWalletBalances(tokenAddressList, []);
+
       setIsLoading(false);
     } catch (error: any) {
       console.error(error);
@@ -216,6 +241,8 @@ function WalletProvider({ children }: Props) {
 
     const signer = ethersProvider?.getSigner();
     setSigner(signer);
+
+    return signer;
   };
 
   const _switchNetwork = async (_networkId: number): Promise<boolean> => {
@@ -239,35 +266,118 @@ function WalletProvider({ children }: Props) {
     await onboard.disconnectWallet({ label: primaryWallet.label });
   };
 
-  const updateWalletBalance = (tokenAddressList: string[]) => {
-    if (tokenAddressList.length > 0) {
-      onboard.state.actions.updateBalances(tokenAddressList);
+  const updateWalletBalances = (
+    tokenAddressList_: string[],
+    tokenIdsList_: number[]
+  ) => {
+    if (tokenAddressList_.length > 0) {
+      onboard.state.actions.updateBalances(tokenAddressList_);
+    } else if (tokenIdsList_.length > 0) {
+      let addresses_: string[] | undefined = [];
+      for (let i = 0; i < tokenIdsList_.length; i++) {
+        let tokenId = tokenIdsList_[i];
+        let addr = tokenId2Address[tokenId];
+
+        if (!addr) continue;
+
+        addresses_.push(addr);
+      }
+
+      addresses_ = addresses_.length > 0 ? addresses_ : undefined;
+      onboard.state.actions.updateBalances(addresses_);
     } else {
       onboard.state.actions.updateBalances();
     }
   };
 
+  const getTokenBalance = (tokenId: number) => {
+    const currentState = onboard.state.get();
+    if (!currentState || !currentState.wallets.length) return null;
+
+    if (tokenId == 54321) {
+      // TODO: Change GO to ETH in prod
+      let tokenBalance = currentState.wallets[0].accounts[0].balance?.GO;
+
+      return tokenBalance ?? null;
+    }
+
+    let symbol = tokenId2Name[tokenId];
+
+    let tokenBalance =
+      currentState.wallets[0].accounts[0].secondaryTokens?.find(
+        (token: any) => token.name == symbol
+      )?.balance;
+
+    return tokenBalance ?? null;
+  };
+
+  const initContractConnections = (signer: ethers.Signer | null) => {
+    const invisibleL1Address = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"; //Todo
+    const invisibleL1Abi =
+      require("../app_logic/helpers/abis/InvisibleL1.json").abi;
+
+    const TestTokenAbi =
+      require("../app_logic/helpers/abis/TestToken.json").abi;
+
+    const WbtcAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"; //Todo
+    const WbtcContract = new ethers.Contract(
+      WbtcAddress,
+      TestTokenAbi,
+      signer ?? undefined
+    );
+
+    const UsdcAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; //Todo
+    const UsdcContract = new ethers.Contract(
+      UsdcAddress,
+      TestTokenAbi,
+      signer ?? undefined
+    );
+
+    const invisibleL1Contract = new ethers.Contract(
+      invisibleL1Address,
+      invisibleL1Abi,
+      signer ?? undefined
+    );
+
+    const contracts = {
+      invisibleL1: invisibleL1Contract,
+      12345: WbtcContract,
+      55555: UsdcContract,
+    };
+
+    return contracts;
+  };
+
+  const signMessage = async () => {
+    let wallet = await onboard.connectWallet();
+
+    console.log("wallet", wallet);
+  };
+
   return (
     <WalletContext.Provider
       value={{
-        username: username,
-        signer: signer,
-        userAddress: userAddress,
-        ethersProvider: ethersProvider,
-        network: network,
-        isLoading: isLoading,
-        forceRerender: forceRerender,
+        username,
+        signer,
+        userAddress,
+        ethersProvider,
+        network,
+        isLoading,
+        forceRerender,
 
         connect: connectWallet,
         disconnect: disconnectWallet,
         switchNetwork: _switchNetwork,
-        updateWalletBalance: updateWalletBalance,
+        updateWalletBalances,
+        getTokenBalance,
 
         balances,
         allowances,
 
         setBalances,
         setAllowances,
+
+        smartContracts,
       }}
     >
       {children}

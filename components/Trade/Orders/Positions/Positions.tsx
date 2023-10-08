@@ -5,7 +5,7 @@ import CloseModal from "./CloseModal";
 
 import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
-import pepeLogo from "../../../../public/tokenIcons/PEPE.png";
+import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
 
 import { UserContext } from "../../../../context/UserContext";
 
@@ -111,7 +111,7 @@ const Positions = () => {
                     logo = ethLogo;
                     break;
                   case 66666:
-                    logo = pepeLogo;
+                    logo = solLogo;
                     break;
                   default:
                     break;
