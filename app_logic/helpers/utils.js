@@ -2,48 +2,36 @@ const axios = require("axios");
 const User = require("../users/Invisibl3User").default;
 const { Note, trimHash } = require("../users/Notes");
 
-const SYMBOLS_TO_IDS = {
-  BTC: 12345,
-  ETH: 54321,
-  USDC: 55555,
-  SOL: 66666,
-};
-const IDS_TO_SYMBOLS = {
-  12345: "BTC",
-  54321: "ETH",
-  55555: "USDC",
-  66666: "SOL",
-};
+const EXCHANGE_CONFIG = require("../../exchange-config.json");
 
-const CHAIN_IDS = {
-  "ETH Mainnet": 9090909,
-  Starknet: 7878787,
-  ZkSync: 5656565,
-};
+const SYMBOLS_TO_IDS = EXCHANGE_CONFIG["SYMBOLS_TO_IDS"];
+const IDS_TO_SYMBOLS = EXCHANGE_CONFIG["IDS_TO_SYMBOLS"];
 
-const DECIMALS_PER_ASSET = {
-  12345: 8, // BTC
-  54321: 8, // ETH
-  55555: 6, // USDC
-  66666: 8, // SOL
-};
+const CHAIN_IDS = EXCHANGE_CONFIG["CHAIN_IDS"];
 
-const PRICE_DECIMALS_PER_ASSET = {
-  12345: 6, // BTC
-  54321: 6, // ETH
-  66666: 6, // SOL
-};
+const DECIMALS_PER_ASSET = EXCHANGE_CONFIG["DECIMALS_PER_ASSET"];
 
-const DUST_AMOUNT_PER_ASSET = {
-  12345: 250, // BTC ~ 5c
-  54321: 2500, // ETH ~ 5c
-  55555: 50_000, // USDC ~ 5c
-  66666: 250_000, // SOL ~ 5c
-};
+const PRICE_DECIMALS_PER_ASSET = EXCHANGE_CONFIG["PRICE_DECIMALS_PER_ASSET"];
 
-const LEVERAGE_DECIMALS = 4;
-const COLLATERAL_TOKEN_DECIMALS = 6;
-const COLLATERAL_TOKEN = 55555;
+const DUST_AMOUNT_PER_ASSET = EXCHANGE_CONFIG["DUST_AMOUNT_PER_ASSET"];
+
+const LEVERAGE_DECIMALS = EXCHANGE_CONFIG["LEVERAGE_DECIMALS"];
+const COLLATERAL_TOKEN_DECIMALS = EXCHANGE_CONFIG["COLLATERAL_TOKEN_DECIMALS"];
+const COLLATERAL_TOKEN = EXCHANGE_CONFIG["COLLATERAL_TOKEN"];
+
+const SPOT_MARKET_IDS = EXCHANGE_CONFIG["SPOT_MARKET_IDS"];
+
+const PERP_MARKET_IDS = EXCHANGE_CONFIG["PERP_MARKET_IDS"];
+
+const SPOT_MARKET_IDS_2_TOKENS = EXCHANGE_CONFIG["SPOT_MARKET_IDS_2_TOKENS"];
+
+const PERP_MARKET_IDS_2_TOKENS = EXCHANGE_CONFIG["PERP_MARKET_IDS_2_TOKENS"];
+
+// How many decimals to round to on the frontend
+const PRICE_ROUNDING_DECIMALS = EXCHANGE_CONFIG["PRICE_ROUNDING_DECIMALS"];
+
+// How many decimals to round to on the frontend
+const SIZE_ROUNDING_DECIMALS = EXCHANGE_CONFIG["SIZE_ROUNDING_DECIMALS"];
 
 // const SERVER_URL = "localhost";
 // const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
@@ -54,48 +42,6 @@ const SERVER_URL = "54.212.28.196";
 const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
 const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
 const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
-
-/// Things we keep track of
-/// Index prices
-/// Orderbooks
-
-const SPOT_MARKET_IDS = {
-  12345: 11,
-  54321: 12,
-};
-
-const PERP_MARKET_IDS = {
-  12345: 21,
-  54321: 22,
-  66666: 23,
-};
-
-const SPOT_MARKET_IDS_2_TOKENS = {
-  11: { base: 12345, quote: 55555 },
-  12: { base: 54321, quote: 55555 },
-};
-
-const PERP_MARKET_IDS_2_TOKENS = {
-  21: 12345,
-  22: 54321,
-  23: 66666,
-};
-
-// How many decimals to round to on the frontend
-const PRICE_ROUNDING_DECIMALS = {
-  12345: 2,
-  54321: 2,
-  55555: 2,
-  66666: 2,
-};
-
-// How many decimals to round to on the frontend
-const SIZE_ROUNDING_DECIMALS = {
-  12345: 4,
-  54321: 4,
-  55555: 2,
-  66666: 3,
-};
 
 /**
  * gets the order book entries for a given market

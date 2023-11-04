@@ -12,7 +12,7 @@ const Orders = () => {
     "Positions",
     "Open Orders",
     "Fill History",
-    "Funding Payments",
+    // "Funding Payments",
     "Balances",
   ]);
 
@@ -46,9 +46,9 @@ const Orders = () => {
           <Tab.Panel className={classNames("outline-none")}>
             <FillHistory />
           </Tab.Panel>
-          <Tab.Panel className={classNames("outline-none")}>
+          {/* <Tab.Panel className={classNames("outline-none")}>
             <FundingPayments />
-          </Tab.Panel>
+          </Tab.Panel> */}
           <Tab.Panel className={classNames("outline-none")}>
             <Balances />
           </Tab.Panel>

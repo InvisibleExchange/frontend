@@ -35,28 +35,18 @@ export const token2Market = {
   66666: marketList[2],
 };
 
-export const tokenAddressList = [
-  "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-];
+const exchange_config = require("../exchange-config.json");
 
-export const tokenAddress2Id = {
-  "0x5FbDB2315678afecb367f032d93F642f64180aa3": 55555,
-  "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512": 12345,
-};
+export const tokenAddressList = exchange_config["TOKEN_ADDRESS_LIST"];
 
-export const tokenId2Address = {
-  55555: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  12345: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-};
+export const tokenAddress2Id = exchange_config["TOKEN_ADDRESS_2_ID"];
 
-export const tokenId2Name = {
-  55555: "USDC",
-  12345: "WBTC",
-};
+export const tokenId2Address = exchange_config["TOKEN_ID_2_ADDRESS"];
 
-export const onchainDecimalsPerAsset = {
-  55555: 18,
-  12345: 18,
-  54321: 18,
-};
+export const tokenId2Name = exchange_config["TOKEN_ID_2_NAME"];
+
+export const invisibleContractAddress =
+  exchange_config["INVISIBL1_ETH_ADDRESS"];
+
+export const onchainDecimalsPerAsset =
+  exchange_config["ONCHAIN_DECIMALS_PER_ASSET"];

@@ -9,28 +9,37 @@ type props = {
   selected: any;
   onSelect: any;
   label: string;
+  isWalletConnected?: boolean;
 };
 
-const TokenSelector = ({ selected, onSelect, options, label }: props) => {
+const TokenSelector = ({
+  selected,
+  onSelect,
+  options,
+  label,
+  isWalletConnected,
+}: props) => {
   return (
     <div className=" mt-5">
       <p className="text-sm ml-3">{label}</p>
       <Listbox value={selected} onChange={onSelect}>
         <div className="mr-2">
+          {/* // * ------------------------------------------------------------- */}
           <div className="relative w-full overflow-hidden text-left rounded-lg dark:shadow-md cursor-defaul hover:ring-1 hover:dark:ring-fg_below_color">
-            <Listbox.Button className="w-full py-4 pl-4 pr-10 text-base leading-5 border-none rounded-lg outline-none bg-border_color">
+            <Listbox.Button className="w-full py-4 pl-4 pr-10 text-base leading-5 border-none rounded-lg outline-none  bg-border_color ">
               <div className="flex">
-                <img
-                  src={selected.icon.src}
-                  alt="Currency Logo"
-                  className="logo_icon"
-                />
+                {selected ? (
+                  <img
+                    src={selected.icon.src}
+                    alt="Currency Logo"
+                    className="logo_icon"
+                  />
+                ) : null}
 
-                <p className="pt-1">{selected.name}</p>
+                <p className={`pt-1 ${selected ? "" : "opacity-50"}`}>
+                  {selected ? selected.name : "Select network"}
+                </p>
               </div>
-
-              {/*  // TODO: Hydration error occures here !!! 
-              // TODO: Hydration error occures here !!!  */}
 
               <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                 <HiChevronUpDown
@@ -41,8 +50,7 @@ const TokenSelector = ({ selected, onSelect, options, label }: props) => {
             </Listbox.Button>
           </div>
 
-          {/*  =============================================== */}
-
+          {/* // * ------------------------------------------------------------- */}
           <div className="relative w-full">
             <Transition
               as={Fragment}
@@ -61,11 +69,12 @@ const TokenSelector = ({ selected, onSelect, options, label }: props) => {
                       }`
                     }
                     value={option}
+                    disabled={!isWalletConnected}
                   >
                     <>
                       <span
                         className={`block truncate ${
-                          option.id == selected.id
+                          option.id == selected?.id
                             ? "font-medium"
                             : "font-normal"
                         }`}
@@ -81,7 +90,7 @@ const TokenSelector = ({ selected, onSelect, options, label }: props) => {
                           <p className="pt-1">{option.name}</p>
                         </div>
                       </span>
-                      {option.id == selected.id ? (
+                      {option.id == selected?.id ? (
                         <span
                           className={`absolute inset-y-0 left-0 flex items-center ml-5 pl-3 font-bold`}
                         >

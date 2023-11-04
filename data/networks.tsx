@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 
 import btcLogo from "../public/tokenIcons/bitcoin.png";
 import usdcLogo from "../public/tokenIcons/usdc-logo.png";
+import { tokenId2Address } from "./markets";
 
 // this is used to sort the networks in the selector
 export const networkSelectorOrder = [42161];
@@ -72,11 +73,11 @@ export type NetworkType = {
 };
 
 export const NETWORK = {
-  "ETH Mainnet": 324,
+  "ETH Mainnet": 1,
   Starknet: 0,
   ZkSync: 324,
   Arbitrum: 42161,
-  localhost: 31337,
+  localhost: 33535,
 };
 
 type NetworkObject = {
@@ -101,30 +102,41 @@ export const NETWORKS: NetworkObject = {
     secondaryTokens: [],
   },
 
-  31337: {
-    name: "localhost",
-    networkId: 31337,
-    token: "GO",
-    label: "localhost",
-    rpcUrl: "http://127.0.0.1:8545",
+  1: {
+    name: "ETH Mainnet",
+    networkId: 1,
+    explorerUrl: "https://etherscan.io/",
+    rpcUrl: "https://mainnet.infura.io/v3/6bfbf1b6d3f74c7e8a7f0a0e6c8a8d2c",
     nativeCurrency: {
       name: "Ethereum",
-      symbol: "GO",
+      symbol: "ETH",
       decimals: 18,
       address: ethers.constants.AddressZero,
     },
 
-    // name: TokenSymbol
-    // balance: string
-    // icon?: string
+    secondaryTokens: [],
+  },
+
+  33535: {
+    name: "localhost",
+    networkId: 33535,
+    token: "ETH",
+    label: "localhost",
+    rpcUrl: "http://127.0.0.1:8545",
+    nativeCurrency: {
+      name: "Ethereum",
+      symbol: "ETH",
+      decimals: 18,
+      address: ethers.constants.AddressZero,
+    },
 
     secondaryTokens: [
       {
-        address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+        address: tokenId2Address[55555],
         icon: usdcLogo.src,
       },
       {
-        address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+        address: tokenId2Address[12345],
         icon: btcLogo.src,
       },
     ],
