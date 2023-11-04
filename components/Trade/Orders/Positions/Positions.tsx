@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import classNames from "classnames";
 import AdjustMarginModal from "./AdjustMarginModal";
 import CloseModal from "./CloseModal";
@@ -56,7 +56,7 @@ const Positions = () => {
             <th className="pr-3 ">Leverage</th>
             <th className="pr-3 ">Margin</th>
             <th className="pr-3 ">Unrealized PNL(%)</th>
-            <th className="pr-3 ">Realized PNL(%)</th>
+            <th className="pr-3 ">Funding Payments(%)</th>
             <th className="pr-3"></th>
           </tr>
         </thead>
@@ -95,6 +95,11 @@ const Positions = () => {
                   fundingPrices[syntheticToken]
                 );
                 let fundingPnlPercent = (fundingPnl / margin) * 100;
+                let fundingPnlColor =
+                  (fundingPnl >= 0 && pos.order_side == "Short") ||
+                  (fundingPnl < 0 && pos.order_side == "Long")
+                    ? "text-green_lighter"
+                    : "text-red";
 
                 let logo;
 
@@ -218,9 +223,11 @@ const Positions = () => {
                       <p>{pnl.toFixed(2)} USD</p>
                       <p className="text-[12px]">({pnlPercent.toFixed(2)}%)</p>
                     </td>
-                    {/* Realized PNL */}
+                    {/* Funding Payments */}
                     <td
-                      className={classNames("pr-3 font-medium " + pnlColor)}
+                      className={classNames(
+                        "pr-3 font-medium " + fundingPnlColor
+                      )}
                       style={{
                         fontStyle: "italic",
                       }}

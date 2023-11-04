@@ -27,21 +27,40 @@ const BN = require("bn.js");
 
 /* global BigInt */
 
-// ---- NOTES ---- //
-async function fetchStoredNotes(address, blinding) {
-  // Address should be the x coordinate of the address in decimal format
-
+async function getAddressIndexes(address) {
   const querySnapshot = await getDocs(
-    collection(db, `notes/${address}/indexes`)
+    collection(db, `addr2idx/addresses/${address}`)
   );
 
   if (querySnapshot.empty) {
     return [];
   }
 
-  let notes = [];
+  let indexes = [];
   querySnapshot.forEach((doc) => {
-    let noteData = doc.data();
+    let index = doc.id;
+
+    indexes.push(index);
+  });
+
+  return indexes;
+}
+
+// ---- NOTES ---- //
+async function fetchStoredNotes(address, blinding) {
+  // Address should be the x coordinate of the address in decimal format
+
+  let indexes = await getAddressIndexes(address);
+
+  let notes = [];
+  for (let index of indexes) {
+    const noteDoc = await getDoc(doc(db, `notes`, index.toString()));
+
+    if (!noteDoc.exists()) {
+      continue;
+    }
+
+    let noteData = noteDoc.data();
 
     let addr = ec
       .keyFromPublic({
@@ -69,7 +88,7 @@ async function fetchStoredNotes(address, blinding) {
     );
 
     notes.push(note);
-  });
+  }
 
   return notes;
 }
@@ -77,31 +96,31 @@ async function fetchStoredNotes(address, blinding) {
 async function checkNoteExistance(address) {
   // Address should be the x coordinate of the address in decimal format
 
-  const querySnapshot = await getDocs(
-    collection(db, `notes/${address}/indexes`)
-  );
+  const indexes = await getAddressIndexes(address);
 
-  return !querySnapshot.empty;
+  return indexes && indexes.length > 0;
 }
 
 // ---- POSITIONS ---- //
 async function fetchStoredPosition(address) {
   // returns the position at this address from the db
 
-  const querySnapshot = await getDocs(
-    collection(db, `positions/${address}/indexes`)
-  );
+  let indexes = await getAddressIndexes(address);
 
-  if (querySnapshot.empty) {
-    return [];
-  }
+  console.log(indexes);
 
   let positions = [];
-  querySnapshot.forEach((doc) => {
-    let position = doc.data();
+  for (let index of indexes) {
+    const posDoc = await getDoc(doc(db, `positions`, index.toString()));
+
+    if (!posDoc.exists()) {
+      continue;
+    }
+
+    let position = posDoc.data();
 
     positions.push(position);
-  });
+  }
 
   return positions;
 }
@@ -109,9 +128,7 @@ async function fetchStoredPosition(address) {
 async function fetchIndividualPosition(address, index) {
   // returns the position at this address from the db
 
-  const positionData = await getDoc(
-    doc(db, `positions/${address}/indexes`, index.toString())
-  );
+  const positionData = await getDoc(doc(db, `positions/`, index.toString()));
 
   if (!positionData.exists()) {
     return null;
@@ -125,11 +142,9 @@ async function fetchIndividualPosition(address, index) {
 async function checkPositionExistance(address) {
   // Address should be the x coordinate of the address in decimal format
 
-  const querySnapshot = await getDocs(
-    collection(db, `positions/${address}/indexes`)
-  );
+  const indexes = await getAddressIndexes(address);
 
-  return !querySnapshot.empty;
+  return indexes && indexes.length > 0;
 }
 
 // ---- USER INFO ---- //
@@ -372,28 +387,6 @@ async function fetchDeprecatedKeys(userId, privateSeed) {
 }
 
 // ---- DEPOSIT ---- //
-async function storeOnchainDeposit(deposit) {
-  let depositDoc = doc(db, "deposits", deposit.depositId.toString());
-  let depositData = await getDoc(depositDoc);
-
-  if (depositData.exists()) {
-    await updateDoc(depositDoc, {
-      depositId: deposit.depositId.toString(),
-      starkKey: deposit.starkKey.toString(),
-      tokenId: deposit.tokenId.toString(),
-      amount: deposit.amount.toString(),
-      timestamp: deposit.timestamp,
-    });
-  } else {
-    await setDoc(depositDoc, {
-      depositId: deposit.depositId.toString(),
-      starkKey: deposit.starkKey.toString(),
-      tokenId: deposit.tokenId.toString(),
-      amount: deposit.amount.toString(),
-      timestamp: deposit.timestamp,
-    });
-  }
-}
 
 async function storeDepositIds(userId, depositIds, newDepositId, privateSeed) {
   if (!depositIds) depositIds = [];
@@ -409,21 +402,6 @@ async function storeDepositIds(userId, depositIds, newDepositId, privateSeed) {
   await updateDoc(userDataDoc, {
     depositIds: depositIds,
   });
-}
-
-async function removeDepositFromDb(depositId) {
-  //
-  if (!depositId) return;
-
-  let depositDoc = doc(db, `deposits`, depositId.toString());
-  let depositData = await getDoc(depositDoc);
-
-  if (depositData.exists()) {
-    await deleteDoc(depositDoc);
-  }
-
-  let docRef2 = doc(db, `users/${userId}/deprecatedDeposits`, depositId);
-  await setDoc(docRef2, {});
 }
 
 async function fetchOnchainDeposits(depositIds, privateSeed) {
@@ -446,15 +424,10 @@ async function fetchOnchainDeposits(depositIds, privateSeed) {
 
     newDepositIds.push(depositId);
 
-    deposits.push({
-      depositId: depositData.data().depositId,
-      starkKey: depositData.data().starkKey,
-      tokenId: depositData.data().tokenId,
-      amount: depositData.data().amount,
-      timestamp: depositData.data().timestamp,
-      txHash: depositData.data().txHash,
-    });
+    deposits.push(depositData.data());
   }
+
+  console.log("deposits: ", deposits);
 
   return { deposits, newDepositIds };
 }
@@ -572,9 +545,7 @@ module.exports = {
   storeUserData,
   fetchUserData,
   fetchStoredPosition,
-  storeOnchainDeposit,
   storeDepositIds,
-  removeDepositFromDb,
   fetchOnchainDeposits,
   storePrivKey,
   removePrivKey,

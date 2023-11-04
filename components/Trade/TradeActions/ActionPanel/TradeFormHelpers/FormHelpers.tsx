@@ -275,7 +275,7 @@ function calculateNewLiqPrice(
 
 function formatInputNum(val: any, decimals: number) {
   if (!val) {
-    return null;
+    return val;
   }
   if (decimals == 0) {
     return Math.ceil(val);

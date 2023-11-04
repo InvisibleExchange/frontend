@@ -17,23 +17,27 @@ import { WalletContext } from "../../../context/WalletContext";
 import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { UserContext } from "../../../context/UserContext";
-import { ethers } from "ethers";
+
+import { utils } from "ethers";
 
 const {
   _renderConnectButton,
   _renderLoginButton,
 } = require("../../Trade/TradeActions/ActionPanel/TradeFormHelpers/FormButtons");
 
+const { DECIMALS_PER_ASSET } = require("../../../app_logic/helpers/utils");
+
 const tokens = [
-  { id: 1, name: "ETH", icon: ethLogo },
-  { id: 2, name: "BTC", icon: btcLogo },
-  { id: 3, name: "USDC", icon: usdcLogo },
+  { id: 54321, name: "ETH", icon: ethLogo },
+  { id: 12345, name: "BTC", icon: btcLogo },
+  { id: 55555, name: "USDC", icon: usdcLogo },
 ];
 
 const chains = [
-  { id: 1, name: "ETH Mainnet", icon: ethMainnet, networkId: 1 },
-  { id: 2, name: "Starknet", icon: starknet, networkId: 0 },
-  { id: 3, name: "ZkSync", icon: zksync, networkId: 324 },
+  // { id: 1, name: "ETH Mainnet", icon: ethMainnet, networkId: 1 },
+  { id: 33535, name: "localhost", icon: ethMainnet },
+  // { id: 2, name: "Starknet", icon: starknet },
+  // { id: 3, name: "ZkSync", icon: zksync },
 ];
 
 const WithdrawPanel = () => {
@@ -42,15 +46,13 @@ const WithdrawPanel = () => {
   let { user, login, forceRerender } = useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
-  const [chain, setChain_] = useState(chains[0]);
-  function setChain(chain_) {
-    setChain_(chain_);
-    switchNetwork(chain_.networkId);
-  }
+  const [chain, setChain] = useState(chains[0]);
 
   const [amount, setAmount] = useState(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [withdrawalAddress, setWithdrawalAddress] = useState("");
 
   const makeWithdrawal = async () => {
     // TODO:
@@ -83,6 +85,7 @@ const WithdrawPanel = () => {
             options={tokens}
             selected={token}
             onSelect={setToken}
+            isWalletConnected={!!user}
             label={"Select an asset: "}
           />
         </div>
@@ -96,12 +99,21 @@ const WithdrawPanel = () => {
             options={chains}
             selected={chain}
             onSelect={setChain}
+            isWalletConnected={!!user}
             label={"Select chain: "}
           />
         </div>
       </div>
 
-      <AmountInput selected={token} setAmount={setAmount} amount={amount} />
+      <AmountInput
+        selected={token}
+        setAmount={setAmount}
+        amount={amount}
+        tokenBalance={
+          (user?.getAvailableAmount(token.id) ?? 0) /
+          10 ** DECIMALS_PER_ASSET[token.id]
+        }
+      />
 
       <div className="mt-5">
         <div className="w-full flex justify-between">
@@ -115,29 +127,39 @@ const WithdrawPanel = () => {
             placeholder={
               chain.name + " address to withdrawal your " + token.name
             }
-            // disabled={true}
+            onChange={(e) => {
+              setWithdrawalAddress(e.target.value);
+            }}
+            value={withdrawalAddress}
           />
 
           <ReactTooltip id="my-tooltip" opacity={1} />
 
           <a
-            className="w-1/4 py-3 mt-2 ml-2 text-center text-white bg-blue rounded-lg hover:opacity-70 hover:cursor-pointer"
+            className="w-1/3 py-3 mt-2 ml-2 text-center text-white bg-blue rounded-lg hover:opacity-70 hover:cursor-pointer"
             data-tooltip-id="my-tooltip"
-            data-tooltip-content="For your security, we ask you to sign a message to prevent accidental withdrawals to the wrong address."
+            data-tooltip-content="You can connect wallet to prevent signing with wrong address."
             onClick={() => {}}
           >
-            Sign
+            Connect Wallet
           </a>
         </div>
       </div>
 
-      {/* =============================================0 */}
+      {/* ============================================= */}
 
       {userAddress ? (
         user && user.userId ? (
           <button
             disabled={true}
             className="w-full py-3 mt-8 text-center rounded-lg bg-red hover:opacity-70 opacity-70"
+            onClick={() => {
+              console.log("withdrawalAddress", withdrawalAddress);
+              console.log(
+                "is valid address",
+                utils.isAddress(withdrawalAddress)
+              );
+            }}
           >
             Make Withdrawal
           </button>

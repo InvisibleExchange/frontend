@@ -813,7 +813,7 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
           "Deposit failed with error: \n" + deposit_response.error_message;
         console.log(msg);
 
-        if (order_response.error_message.includes("Note does not exist")) {
+        if (deposit_response.error_message.includes("Note does not exist")) {
           restoreUserState(user, true, false);
         }
 

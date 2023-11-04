@@ -35,7 +35,8 @@ const tokens = [
 ];
 
 const chains = [
-  { id: 1, name: "ETH Mainnet", icon: ethMainnet },
+  // { id: 1, name: "ETH Mainnet", icon: ethMainnet },
+  { id: 33535, name: "localhost", icon: ethMainnet },
   // { id: 2, name: "Starknet", icon: starknet },
   // { id: 3, name: "ZkSync", icon: zksync },
 ];
@@ -43,6 +44,7 @@ const chains = [
 const DepositPanel = ({ showToast }: any) => {
   let {
     userAddress,
+    switchNetwork,
     connect,
     signer,
     updateWalletBalances,
@@ -53,8 +55,16 @@ const DepositPanel = ({ showToast }: any) => {
     useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
-  const [chain, setChain] = useState(chains[0]);
+  const [chain, _setChain] = useState(null);
   const [amount, setAmount] = useState(null);
+
+  const setChain = async (chain) => {
+    _setChain(chain);
+
+    let networkId = chain.id;
+
+    await switchNetwork(networkId);
+  };
 
   let tokenBalance = getTokenBalance(token.id);
 
@@ -68,7 +78,15 @@ const DepositPanel = ({ showToast }: any) => {
       token.id,
       tokenBalance,
       userAddress
-    );
+    ).catch((err) => {
+      setToastMessage({
+        type: "error",
+        message: err.message,
+      });
+      return null;
+    });
+
+    if (!depositResponse) return;
 
     updateWalletBalances([], [token.id]);
 
@@ -80,6 +98,21 @@ const DepositPanel = ({ showToast }: any) => {
     );
 
     if (depositResponse) {
+      // user.deposits.push();
+      console.log("depositResponse", depositResponse);
+
+      let deposit = {
+        deposit_id: depositResponse.depositId.toString(),
+        stark_key: depositResponse.starkKey.toString(),
+        deposit_token: depositResponse.tokenId.toString(),
+        deposit_amount: depositResponse.amount.toString(),
+        timestamp: depositResponse.timestamp.toString(),
+      };
+
+      user.deposits.push(deposit);
+
+      // TODO: REFRESH STATE
+
       setToastMessage({
         type: "info",
         message:
@@ -121,6 +154,7 @@ const DepositPanel = ({ showToast }: any) => {
             options={tokens}
             selected={token}
             onSelect={setToken}
+            isWalletConnected={!!userAddress}
             label={"Select an asset: "}
           />
         </div>
@@ -134,6 +168,7 @@ const DepositPanel = ({ showToast }: any) => {
             options={chains}
             selected={chain}
             onSelect={setChain}
+            isWalletConnected={!!userAddress}
             label={"Select chain: "}
           />
         </div>
@@ -149,7 +184,7 @@ const DepositPanel = ({ showToast }: any) => {
       {userAddress ? (
         user && user.userId ? (
           <button
-            className="w-full py-3 mt-8 text-center rounded-lg bg-green  hover:opacity-70 opacity-70"
+            className="w-full py-3 mt-8 text-center rounded-lg bg-green hover:opacity-70 opacity-70"
             disabled={true}
             onClick={makeDeposit}
           >

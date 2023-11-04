@@ -42,13 +42,13 @@ export default function Book({
         Order Book
       </div>
       <div className="flex py-0.5 text-sm">
-        <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
+        <div className="flex items-center justify-center flex-grow text-[12px]  opacity-50">
           Price <div className="px-1 py-0.5 ml-1">(USDC)</div>
         </div>
-        <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
+        <div className="flex items-center justify-center flex-grow text-[12px] opacity-50">
           Size{" "}
         </div>
-        <div className="flex items-center justify-center flex-grow text-[12px]  text-fg_below_color">
+        <div className="flex items-center justify-center flex-grow text-[12px]  opacity-50">
           Total(USDC)
         </div>
       </div>
@@ -60,8 +60,6 @@ export default function Book({
                 let amount =
                   order.amount /
                   10 ** DECIMALS_PER_ASSET[SYMBOLS_TO_IDS[token]];
-
-                  
 
                 return (
                   <div
@@ -102,7 +100,7 @@ export default function Book({
           <div className="flex justify-center flex-1">
             {spread.toFixed(priceRoundingDecimals)}
           </div>
-          <div className="flex justify-center flex-1">
+          <div className="flex justify-center flex-1  ">
             {spreadPercentage.toFixed(2) + "%"}
           </div>
           <div className="flex justify-center flex-1">Spread</div>
