@@ -1,6 +1,10 @@
 const User = require("../users/Invisibl3User");
 
-const { IDS_TO_SYMBOLS, PRICE_DECIMALS_PER_ASSET } = require("./utils");
+const EXCHANGE_CONFIG = require("../../exchange-config.json");
+
+const PRICE_DECIMALS_PER_ASSET = EXCHANGE_CONFIG["PRICE_DECIMALS_PER_ASSET"];
+const IDS_TO_SYMBOLS = EXCHANGE_CONFIG["IDS_TO_SYMBOLS"];
+
 const {
   checkNoteExistance,
   checkPositionExistance,
@@ -91,21 +95,19 @@ async function restoreUserState(user, restoreNotes, restorePositions) {
   let posPrivKeys = {};
   if (restoreNotes) {
     privKeys = await restoreKeyData(user, false);
-    console.log("note keyData: ", privKeys);
 
     user.notePrivKeys = privKeys;
   }
   if (restorePositions) {
     posPrivKeys = await restoreKeyData(user, true);
-    console.log("position keyData: ", posPrivKeys);
 
     user.positionPrivKeys = posPrivKeys;
   }
 
-  for (let pk of privKeys) {
+  for (let pk of Object.values(privKeys)) {
     storePrivKey(user.userId, pk, false, user.privateSeed);
   }
-  for (let pk of posPrivKeys) {
+  for (let pk of Object.values(posPrivKeys)) {
     storePrivKey(user.userId, pk, true, user.privateSeed);
   }
 }

@@ -483,12 +483,18 @@ async function loginUser(signer, privKey) {
     privKey = keyDerivation.getPrivateKeyFromEthSignature(sig);
   }
 
+  console.log("1");
+
   let user = User.fromPrivKey(privKey);
 
   let { emptyPrivKeys, emptyPositionPrivKeys } = await user.login();
 
+  console.log("2");
+
   let { badOrderIds, orders, badPerpOrderIds, perpOrders, pfrNotes } =
     await getActiveOrders(user.orderIds, user.perpetualOrderIds);
+
+  console.log("3");
 
   await user.handleActiveOrders(
     badOrderIds,
@@ -499,6 +505,8 @@ async function loginUser(signer, privKey) {
     emptyPrivKeys,
     emptyPositionPrivKeys
   );
+
+  console.log("4");
 
   return { user, privKey };
 }

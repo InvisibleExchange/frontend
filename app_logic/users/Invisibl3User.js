@@ -1,4 +1,5 @@
 import { match } from "assert";
+import { restoreUserState } from "../helpers/keyRetrieval.js";
 
 const { LiquidationOrder } = require("../transactions/LiquidationOrder");
 
@@ -169,10 +170,13 @@ export default class User {
         ? userData.privKeys.map((pk) => getKeyPair(pk))
         : [];
 
-    let { emptyPrivKeys, noteData, notePrivKeys } = await fetchNoteData(
+    let { emptyPrivKeys, noteData, notePrivKeys, error } = await fetchNoteData(
       keyPairs,
       this.privateSeed
     );
+    if (error) {
+      restoreUserState(this, true, false).catch(console.log);
+    }
 
     // ? Get Position Data ============================================
     let addressData =
@@ -182,8 +186,15 @@ export default class User {
           })
         : [];
 
-    let { emptyPositionPrivKeys, positionData, posPrivKeys } =
-      await fetchPositionData(addressData);
+    let {
+      emptyPositionPrivKeys,
+      positionData,
+      posPrivKeys,
+      error: error2,
+    } = await fetchPositionData(addressData);
+    if (error2) {
+      restoreUserState(this, false, true).catch(console.log);
+    }
 
     // ? Get Fill Data ============================================
 

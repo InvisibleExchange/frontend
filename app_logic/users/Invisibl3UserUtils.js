@@ -8,6 +8,7 @@ const {
   fetchStoredNotes,
   storePrivKey,
 } = require("../helpers/firebaseConnection");
+const { restoreUserState } = require("../helpers/keyRetrieval.js");
 
 /* global BigInt */
 
@@ -18,41 +19,41 @@ async function fetchNoteData(keyPairs, privateSeed) {
   let noteData = {};
   let notePrivKeys = {}; // {addr : privKey}
 
-  let count = 0;
-  for (let i = 0; i < keyPairs.length; i++) {
-    let addr = keyPairs[i].getPublic();
-    let privKey = BigInt(keyPairs[i].getPrivate());
+  let error;
+  let promises = keyPairs.map((keyPair) => {
+    let addr = keyPair.getPublic();
+    let privKey = BigInt(keyPair.getPrivate());
 
     let blinding = _generateNewBliding(addr.getX(), privateSeed);
 
-    fetchStoredNotes(addr.getX().toString(), blinding).then((notes_) => {
-      count++;
+    return fetchStoredNotes(addr.getX().toString(), blinding)
+      .then((notes_) => {
+        if (!notes_ || notes_.length == 0) {
+          emptyPrivKeys.push(privKey);
 
-      if (!notes_ || notes_.length == 0) {
-        emptyPrivKeys.push(privKey);
+          return;
+        }
 
-        return;
-      }
+        if (noteData[notes_[0].token]) {
+          noteData[notes_[0].token].push(notes_[0]);
+        } else {
+          noteData[notes_[0].token] = [notes_[0]];
+        }
 
-      if (noteData[notes_[0].token]) {
-        noteData[notes_[0].token].push(notes_[0]);
-      } else {
-        noteData[notes_[0].token] = [notes_[0]];
-      }
+        for (let j = 1; j < notes_.length; j++) {
+          noteData[notes_[j].token].push(notes_[j]);
+        }
 
-      for (let j = 1; j < notes_.length; j++) {
-        noteData[notes_[j].token].push(notes_[j]);
-      }
+        notePrivKeys[BigInt(addr.getX())] = privKey;
+      })
+      .catch((err) => {
+        error = err;
+      });
+  });
 
-      notePrivKeys[BigInt(addr.getX())] = privKey;
-    });
-  }
+  await Promise.all(promises);
 
-  while (count < keyPairs.length) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  return { emptyPrivKeys, noteData, notePrivKeys };
+  return { emptyPrivKeys, noteData, notePrivKeys, error };
 }
 
 async function fetchPositionData(addressData) {
@@ -60,45 +61,46 @@ async function fetchPositionData(addressData) {
   let positionData = {};
   let posPrivKeys = {};
 
-  let count = 0;
-  for (let i = 0; i < addressData.length; i++) {
-    let addr = addressData[i].address;
-    let privKey = BigInt(addressData[i].pk);
+  let error;
+  let promises = addressData.map((address) => {
+    let addr = address.address;
+    let privKey = BigInt(address.pk);
 
-    fetchStoredPosition(addr.getX().toString()).then((positions) => {
-      count++;
+    return fetchStoredPosition(addr.getX().toString())
+      .then((positions) => {
+        if (!positions || positions.length == 0) {
+          emptyPositionPrivKeys.push(privKey);
+          return;
+        }
 
-      if (!positions || positions.length == 0) {
-        emptyPositionPrivKeys.push(privKey);
-        return;
-      }
+        if (positionData[positions[0].position_header.synthetic_token]) {
+          positionData[positions[0].position_header.synthetic_token].push(
+            positions[0]
+          );
+        } else {
+          positionData[positions[0].position_header.synthetic_token] = [
+            positions[0],
+          ];
+        }
 
-      if (positionData[positions[0].position_header.synthetic_token]) {
-        positionData[positions[0].position_header.synthetic_token].push(
-          positions[0]
-        );
-      } else {
-        positionData[positions[0].position_header.synthetic_token] = [
-          positions[0],
-        ];
-      }
+        for (let j = 1; j < positions.length; j++) {
+          positionData[positions[j].position_header.synthetic_token].push(
+            positions[j]
+          );
+        }
 
-      for (let j = 1; j < positions.length; j++) {
-        positionData[positions[j].position_header.synthetic_token].push(
-          positions[j]
-        );
-      }
+        posPrivKeys[BigInt(addr.getX())] = privKey;
+      })
+      .catch((err) => {
+        error = err;
+      });
+  });
 
-      posPrivKeys[BigInt(addr.getX())] = privKey;
-    });
-  }
+  await Promise.all(promises);
 
-  while (count < addressData.length) {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  return { emptyPositionPrivKeys, positionData, posPrivKeys };
+  return { emptyPositionPrivKeys, positionData, posPrivKeys, error };
 }
+
 
 // *
 function signMarginChange(

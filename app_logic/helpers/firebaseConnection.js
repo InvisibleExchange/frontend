@@ -22,6 +22,7 @@ const { pedersen } = require("./pedersen.js");
 const { ec, getKeyPair } = require("starknet").ec; //require("starknet/utils/ellipticCurve.js");
 
 const BN = require("bn.js");
+const { restoreUserState } = require("./keyRetrieval.js");
 
 // TODO: fetch deposit ids on login and remove them if they've been used
 
@@ -106,8 +107,6 @@ async function fetchStoredPosition(address) {
   // returns the position at this address from the db
 
   let indexes = await getAddressIndexes(address);
-
-  console.log(indexes);
 
   let positions = [];
   for (let index of indexes) {
@@ -426,8 +425,6 @@ async function fetchOnchainDeposits(depositIds, privateSeed) {
 
     deposits.push(depositData.data());
   }
-
-  console.log("deposits: ", deposits);
 
   return { deposits, newDepositIds };
 }
