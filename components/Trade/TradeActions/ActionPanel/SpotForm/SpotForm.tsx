@@ -356,8 +356,8 @@ const TradeForm = ({ type, token, action_, formInputs }: props) => {
         : renderConnectButton()}
       {/* Fee ====================================== */}
       <div className="flex items-center justify-between mt-5 text-sm font-overpass text-fg_below_color dark:text-white">
-        <p className="font-light text-[12px]">Protocol fee</p>
-        <p>{"0.00%-0.05%"}</p>
+        <p className="font-light text-[13px]">Protocol fee</p>
+        <p className="font-light text-[13px]">{"0.00%-0.05%"}</p>
       </div>
 
       <div className="mt-5">

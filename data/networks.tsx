@@ -106,7 +106,7 @@ export const NETWORKS: NetworkObject = {
     name: "ETH Mainnet",
     networkId: 1,
     explorerUrl: "https://etherscan.io/",
-    rpcUrl: "https://mainnet.infura.io/v3/6bfbf1b6d3f74c7e8a7f0a0e6c8a8d2c",
+    rpcUrl: "https://eth.llamarpc.com",
     nativeCurrency: {
       name: "Ethereum",
       symbol: "ETH",

@@ -438,7 +438,8 @@ function WalletProvider({ children }: Props) {
 export default WalletProvider;
 
 function _getDefaultNetwork(): NetworkType {
-  return NETWORKS[NETWORK["localhost"]];
+  return NETWORKS[NETWORK["ETH Mainnet"]];
+  // return NETWORKS[NETWORK["localhost"]];
 }
 
 function _getDefaultProvider(): ethers.providers.BaseProvider {

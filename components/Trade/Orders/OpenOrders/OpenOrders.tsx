@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { use, useContext, useEffect } from "react";
 import classNames from "classnames";
 import LoadingSpinner from "../../../Layout/LoadingSpinner/LoadingSpinner";
 
@@ -49,6 +49,10 @@ const OpenOrders = () => {
     }
 
     await sendCancelOrder(user, orderId, orderSide, isPerp, marketId);
+
+    user.orders = user.orders.filter((order) => {
+      return order.order_id != orderId;
+    });
   };
 
   let orders: any[] = [];
@@ -254,7 +258,7 @@ function getPosEffectType(position_effect_type: number) {
 
 async function cancelAllOrders(user, orders) {
   for (let order of orders) {
-    let isPerp = order.synthetic_token ? true : false;
+    let isPerp = !!order.synthetic_token;
 
     let marketId: any;
     if (isPerp) {
@@ -272,64 +276,3 @@ async function cancelAllOrders(user, orders) {
     );
   }
 }
-
-async function Order(order: any, idx: number) {}
-
-// {/* {edittingPrice ? (
-//                         <div className="flex items-center">
-//                           <input
-//                             name="amount"
-//                             className="py-1.5 pl-4 font-light tracking-wider bg-white rounded-md outline-none ring-1 dark:bg-border_color ring-border_color no-arrows"
-//                             type="number"
-//                             step={0.001}
-//                             style={{ width: "7rem" }}
-//                             value={newPrice ? newPrice : ""}
-//                             onChange={(e) => {
-//                               setNewPrice(
-//                                 e.target.value ? Number(e.target.value) : null
-//                               );
-//                             }}
-//                           />
-
-//                           <button
-//                             type="button"
-//                             onClick={() => console.log("submit")}
-//                             className="ml-3 rounded-m hover:opacity-75"
-//                           >
-//                             <BsFillCheckCircleFill
-//                               style={{
-//                                 color: "#00ff00",
-//                                 fontSize: "1.2rem",
-//                                 marginLeft: "0.5rem",
-//                                 marginRight: "0.1em",
-//                               }}
-//                             />
-//                           </button>
-//                           <button
-//                             type="button"
-//                             onClick={() => {
-//                               setNewPrice(Number(order.price));
-//                               setEditingPrice(false);
-//                             }}
-//                             className="ml-3 rounded-m hover:opacity-75"
-//                           >
-//                             <FcCancel
-//                               style={{
-//                                 color: "red",
-//                                 fontSize: "1.5rem",
-//                               }}
-//                             />
-//                           </button>
-//                         </div>
-//                       ) : (
-//                         <div>
-//                           {Number(order.price).toFixed(2)} USD
-//                           <button
-//                             type="button"
-//                             onClick={() => setEditingPrice(true)}
-//                             className="ml-3 rounded-m hover:opacity-75"
-//                           >
-//                             <FaEdit className="w-5 h-4" />
-//                           </button>
-//                         </div>
-//                       )} */}

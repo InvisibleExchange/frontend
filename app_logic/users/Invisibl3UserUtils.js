@@ -8,7 +8,6 @@ const {
   fetchStoredNotes,
   storePrivKey,
 } = require("../helpers/firebaseConnection");
-const { restoreUserState } = require("../helpers/keyRetrieval.js");
 
 /* global BigInt */
 
@@ -100,7 +99,6 @@ async function fetchPositionData(addressData) {
 
   return { emptyPositionPrivKeys, positionData, posPrivKeys, error };
 }
-
 
 // *
 function signMarginChange(
