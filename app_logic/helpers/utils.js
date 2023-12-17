@@ -123,75 +123,59 @@ function handleLiquidityUpdate(
   perpLiquidity,
   setPerpLiquidity
 ) {
-  let isSpotUpdated = false;
-  let isPerpUpdated = false;
-
   for (let update of result.liquidity) {
     update = JSON.parse(update);
 
-    let isPerp = update.is_perp;
-    let marketId = update.market_id;
-
-    let liq = isPerp
-      ? { ...perpLiquidity[PERP_MARKET_IDS_2_TOKENS[marketId]] }
-      : { ...liquidity[SPOT_MARKET_IDS_2_TOKENS[marketId].base] };
-
-    if (!liq) {
-      liq = {
-        bidQueue: [],
-        askQueue: [],
-      };
-    }
-    if (!liq.bidQueue) {
-      liq.bidQueue = [];
-    }
-    if (!liq.askQueue) {
-      liq.askQueue = [];
-    }
-
-    if (update.ask_queue) {
-      let askQueue = update.ask_queue.map((item) => {
+    let askQueue;
+    if (update.ask_liquidity) {
+      let askQ = update.ask_liquidity.map((item) => {
         return {
           price: item[0],
           amount: item[1],
           timestamp: item[2],
         };
       });
+
       let revAq = [];
-      for (let i = askQueue.length - 1; i >= 0; i--) {
-        revAq.push(askQueue[i]);
+      for (let i = askQ.length - 1; i >= 0; i--) {
+        revAq.push(askQ[i]);
       }
 
-      liq.askQueue = revAq;
+      askQueue = revAq;
     }
 
-    if (update.bid_queue) {
-      let bidQueue = update.bid_queue.map((item) => {
+    let bidQueue;
+    if (update.bid_liquidity) {
+      bidQueue = update.bid_liquidity.map((item) => {
         return {
           price: item[0],
           amount: item[1],
           timestamp: item[2],
         };
       });
-
-      liq.bidQueue = bidQueue;
     }
 
-    if (isPerp) {
-      isPerpUpdated = true;
-      perpLiquidity[PERP_MARKET_IDS_2_TOKENS[marketId]] = liq;
+    if (update.type === "perpetual") {
+      let token = PERP_MARKET_IDS_2_TOKENS[update.market];
+
+      let pairLiquidity = {
+        bidQueue: bidQueue ?? perpLiquidity[token].bidQueue,
+        askQueue: askQueue ?? perpLiquidity[token].askQueue,
+      };
+
+      perpLiquidity[token] = pairLiquidity;
+      setPerpLiquidity(perpLiquidity);
     } else {
-      isSpotUpdated = true;
+      let token = SPOT_MARKET_IDS_2_TOKENS[update.market].base;
 
-      liquidity[SPOT_MARKET_IDS_2_TOKENS[marketId].base] = liq;
+      let pairLiquidity = {
+        bidQueue: bidQueue ?? liquidity[token].bidQueue,
+        askQueue: askQueue ?? liquidity[token].askQueue,
+      };
+
+      liquidity[token] = pairLiquidity;
+      setLiquidity(liquidity);
     }
-  }
-
-  if (isSpotUpdated) {
-    setLiquidity(liquidity);
-  }
-  if (isPerpUpdated) {
-    setPerpLiquidity(perpLiquidity);
   }
 }
 

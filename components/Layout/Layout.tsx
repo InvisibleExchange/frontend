@@ -14,6 +14,7 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   const { theme } = useContext(ThemeContext);
+
   return (
     <>
       <header className="flex justify-between py-3 border-b w-100 border-b-border_color">

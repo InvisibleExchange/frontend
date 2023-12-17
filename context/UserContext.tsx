@@ -1,6 +1,6 @@
 import { createContext, useState, useReducer, useContext } from "react";
 
-import init from "../pkg/starknet";
+import init from "../pedersen_pkg/starknet";
 
 const {
   handleSwapResult,
