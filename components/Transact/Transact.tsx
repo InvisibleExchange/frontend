@@ -22,7 +22,8 @@ const Transact = () => {
 
     const id = new Date().getTime();
 
-    let expiry = new Date().getTime() + 3000;
+    let exp = type == "pending_tx" ? 7500 : 3000;
+    let expiry = new Date().getTime() + exp;
 
     _toasts_ = [..._toasts_, { id, type, message, expiry }];
 

@@ -25,17 +25,21 @@ const {
   _renderLoginButton,
 } = require("../../Trade/TradeActions/ActionPanel/TradeFormHelpers/FormButtons");
 
-const { DECIMALS_PER_ASSET } = require("../../../app_logic/helpers/utils");
+const {
+  DECIMALS_PER_ASSET,
+  CHAIN_IDS,
+} = require("../../../app_logic/helpers/utils");
 
 const tokens = [
-  { id: 54321, name: "ETH", icon: ethLogo },
-  { id: 12345, name: "BTC", icon: btcLogo },
-  { id: 55555, name: "USDC", icon: usdcLogo },
+  { id: 453755560, name: "ETH", icon: ethLogo },
+  { id: 3592681469, name: "BTC", icon: btcLogo },
+  { id: 2413654107, name: "USDC", icon: usdcLogo },
 ];
 
 const chains = [
   // { id: 1, name: "ETH Mainnet", icon: ethMainnet, networkId: 1 },
-  { id: 33535, name: "localhost", icon: ethMainnet },
+  // { id: 33535, name: "localhost", icon: ethMainnet },
+  { id: 11155111, name: "Sepolia", icon: ethMainnet },
   // { id: 2, name: "Starknet", icon: starknet },
   // { id: 3, name: "ZkSync", icon: zksync },
 ];
@@ -56,6 +60,15 @@ const WithdrawPanel = () => {
 
   const makeWithdrawal = async () => {
     // TODO:
+
+    console.log(CHAIN_IDS, chain.name);
+
+    let withdrawal = user.makeWithdrawalOrder(
+      amount,
+      token.id,
+      withdrawalAddress,
+      CHAIN_IDS[chain.name] ?? 9090909
+    );
   };
 
   function renderConnectButton() {
@@ -151,15 +164,9 @@ const WithdrawPanel = () => {
       {userAddress ? (
         user && user.userId ? (
           <button
-            disabled={true}
-            className="w-full py-3 mt-8 text-center rounded-lg bg-red hover:opacity-70 opacity-70"
-            onClick={() => {
-              console.log("withdrawalAddress", withdrawalAddress);
-              console.log(
-                "is valid address",
-                utils.isAddress(withdrawalAddress)
-              );
-            }}
+            // disabled={true}
+            className="w-full py-3 mt-8 text-center rounded-lg bg-red hover:opacity-70"
+            onClick={makeWithdrawal}
           >
             Make Withdrawal
           </button>

@@ -14,6 +14,7 @@ import zksync from "../../../public/tokenIcons/zksync.png";
 
 import { WalletContext } from "../../../context/WalletContext";
 import { UserContext } from "../../../context/UserContext";
+import LoadingSpinner from "../../Layout/LoadingSpinner/LoadingSpinner";
 
 const {
   _renderConnectButton,
@@ -29,14 +30,15 @@ const {
 } = require("../../../app_logic/helpers/firebaseConnection");
 
 const tokens = [
-  { id: 54321, name: "ETH", icon: ethLogo },
-  { id: 12345, name: "BTC", icon: btcLogo },
-  { id: 55555, name: "USDC", icon: usdcLogo },
+  { id: 453755560, name: "ETH", icon: ethLogo },
+  { id: 3592681469, name: "BTC", icon: btcLogo },
+  { id: 2413654107, name: "USDC", icon: usdcLogo },
 ];
 
 const chains = [
   // { id: 1, name: "ETH Mainnet", icon: ethMainnet },
-  { id: 33535, name: "localhost", icon: ethMainnet },
+  // { id: 33535, name: "localhost", icon: ethMainnet },
+  { id: 11155111, name: "Sepolia", icon: ethMainnet },
   // { id: 2, name: "Starknet", icon: starknet },
   // { id: 3, name: "ZkSync", icon: zksync },
 ];
@@ -58,6 +60,8 @@ const DepositPanel = ({ showToast }: any) => {
   const [chain, _setChain] = useState(null);
   const [amount, setAmount] = useState(null);
 
+  const [isTxPending, setIsTxPending] = useState<boolean>(false);
+
   const setChain = async (chain) => {
     _setChain(chain);
 
@@ -69,7 +73,7 @@ const DepositPanel = ({ showToast }: any) => {
   let tokenBalance = getTokenBalance(token.id);
 
   const makeDeposit = async () => {
-    // TODO:
+    setIsTxPending(true);
 
     let depositResponse = await executeDepositTx(
       user,
@@ -77,7 +81,8 @@ const DepositPanel = ({ showToast }: any) => {
       amount,
       token.id,
       tokenBalance,
-      userAddress
+      userAddress,
+      setToastMessage
     ).catch((err) => {
       setToastMessage({
         type: "error",
@@ -85,6 +90,8 @@ const DepositPanel = ({ showToast }: any) => {
       });
       return null;
     });
+
+    setIsTxPending(false);
 
     if (!depositResponse) return;
 
@@ -99,7 +106,6 @@ const DepositPanel = ({ showToast }: any) => {
 
     if (depositResponse) {
       // user.deposits.push();
-      console.log("depositResponse", depositResponse);
 
       let deposit = {
         deposit_id: depositResponse.depositId.toString(),
@@ -110,8 +116,6 @@ const DepositPanel = ({ showToast }: any) => {
       };
 
       user.deposits.push(deposit);
-
-      // TODO: REFRESH STATE
 
       setToastMessage({
         type: "info",
@@ -173,7 +177,6 @@ const DepositPanel = ({ showToast }: any) => {
           />
         </div>
       </div>
-
       <AmountInput
         selected={token}
         setAmount={setAmount}
@@ -183,20 +186,25 @@ const DepositPanel = ({ showToast }: any) => {
 
       {userAddress ? (
         user && user.userId ? (
-          <button
-            className="w-full py-3 mt-8 text-center rounded-lg bg-green hover:opacity-70 opacity-70"
-            disabled={true}
-            onClick={makeDeposit}
-          >
-            Make Deposit
-          </button>
+          !isTxPending ? (
+            <button
+              className="w-full py-3 mt-8 text-center rounded-lg bg-green hover:opacity-70 "
+              // disabled={true} opacity-70
+              onClick={makeDeposit}
+            >
+              Make Deposit
+            </button>
+          ) : (
+            <div className="mt-14 ml-32 mr-32">
+              <LoadingSpinner />
+            </div>
+          )
         ) : (
           renderLoginButton()
         )
       ) : (
         renderConnectButton()
       )}
-
       <div className="w-full h-[2px] my-5 bg-border_color"></div>
       <PendingPanel user={user} type="Deposit" showToast={showToast} />
     </div>

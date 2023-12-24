@@ -30,9 +30,9 @@ export const marketList = [
 ];
 
 export const token2Market = {
-  12345: marketList[0],
-  54321: marketList[1],
-  66666: marketList[2],
+  3592681469: marketList[0],
+  453755560: marketList[1],
+  277158171: marketList[2],
 };
 
 const exchange_config = require("../exchange-config.json");

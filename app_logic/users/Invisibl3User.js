@@ -32,17 +32,11 @@ const {
   handlePfrNoteData,
 } = require("./Invisibl3UserUtils.js");
 
-const DUST_AMOUNT_PER_ASSET = {
-  12345: 2500, // BTC ~ 5c
-  54321: 25000, // ETH ~ 5c
-  55555: 50000, // USDC ~ 5c
-};
-const COLLATERAL_TOKEN = 55555;
-const CHAIN_IDS = {
-  "ETH Mainnet": 9090909,
-  Starknet: 7878787,
-  ZkSync: 5656565,
-};
+const EXCHANGE_CONFIG = require("../../exchange-config.json");
+
+const DUST_AMOUNT_PER_ASSET = EXCHANGE_CONFIG["DUST_AMOUNT_PER_ASSET"];
+const COLLATERAL_TOKEN = EXCHANGE_CONFIG["COLLATERAL_TOKEN"];
+const CHAIN_IDS = EXCHANGE_CONFIG["CHAIN_IDS"];
 
 const { Note, trimHash } = require("./Notes.js");
 // const {
@@ -161,8 +155,8 @@ export default class User {
       userData.depositIds,
       this.privateSeed
     );
-    this.deposits = deposits;
-    this.depositIds = newDepositIds;
+    this.deposits = deposits ?? [];
+    this.depositIds = newDepositIds ?? [];
 
     // ? Get Note Data ============================================
     let keyPairs =
@@ -177,6 +171,8 @@ export default class User {
     if (error) {
       restoreUserState(this, true, false).catch(console.log);
     }
+
+    console.log("noteData: ", noteData);
 
     // ? Get Position Data ============================================
     let addressData =
@@ -705,7 +701,7 @@ export default class User {
   makeWithdrawalOrder(
     withdrawAmount,
     withdrawToken,
-    withdrawStarkKey,
+    withdrawalAddress,
     whitdrawalChainId
   ) {
     // ? Get the notesIn and priv keys for these notes
@@ -733,7 +729,7 @@ export default class User {
       notesIn,
       privKeys,
       refundNote,
-      withdrawStarkKey,
+      withdrawalAddress,
       whitdrawalChainId
     );
 
@@ -741,7 +737,7 @@ export default class User {
       whitdrawalChainId,
       withdrawToken,
       withdrawAmount,
-      withdrawStarkKey,
+      withdrawalAddress,
       notesIn,
       refundNote,
       signature

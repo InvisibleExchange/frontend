@@ -8,10 +8,10 @@ import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
 import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
 
 const tokenLogos = {
-  54321: ethLogo,
-  12345: btcLogo,
-  55555: usdcLogo,
-  66666: solLogo,
+  453755560: ethLogo,
+  3592681469: btcLogo,
+  2413654107: usdcLogo,
+  277158171: solLogo,
 };
 
 const FundingPayments = () => {

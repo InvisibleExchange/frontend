@@ -8,7 +8,7 @@ import {
   useMemo,
 } from "react";
 
-import { BigNumber, ethers, utils } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import invLogo from "../public/tokenIcons/invisible-logo-small.png";
 
@@ -224,15 +224,17 @@ function WalletProvider({ children }: Props) {
       if (!wallets) throw new Error("No connected wallet found");
       let signer_ = updateWallet(wallets[0]);
 
-      // let contracts = initContractConnections(signer_);
-      // setSmartContracts(contracts);
+      // TODO ==========================================
+      let contracts = initContractConnections(signer_);
+      setSmartContracts(contracts);
 
       updateWalletBalances(tokenAddressList, []);
 
-      // await getWithdrawableAmounts(
-      //   wallets[0]?.accounts?.[0]?.address,
-      //   contracts
-      // )
+      await getWithdrawableAmounts(
+        wallets[0]?.accounts?.[0]?.address,
+        contracts
+      );
+      // TODO ==========================================
 
       setIsLoading(false);
     } catch (error: any) {
@@ -311,7 +313,7 @@ function WalletProvider({ children }: Props) {
     const currentState = onboard.state.get();
     if (!currentState || !currentState.wallets.length) return null;
 
-    if (tokenId == 54321) {
+    if (tokenId == 453755560) {
       let tokenBalance = currentState.wallets[0].accounts[0].balance?.ETH;
 
       return tokenBalance ?? null;
@@ -320,8 +322,8 @@ function WalletProvider({ children }: Props) {
     let symbol = tokenId2Name[tokenId];
 
     let tokenBalance =
-      currentState.wallets[0].accounts[0].secondaryTokens?.find(
-        (token: any) => token.name == symbol
+      currentState.wallets[0].accounts[0].secondaryTokens?.find((token: any) =>
+        token.name.includes(symbol)
       )?.balance;
 
     return tokenBalance ?? null;
@@ -347,7 +349,7 @@ function WalletProvider({ children }: Props) {
 
     let amount = await invisibleContract?.getETHWithdrawableAmount(userAddress);
 
-    withdrawbleAmounts[54321] = amount;
+    withdrawbleAmounts[453755560] = amount;
 
     setWithdrawablAmounts(withdrawbleAmounts);
   };
@@ -359,14 +361,14 @@ function WalletProvider({ children }: Props) {
     const TestTokenAbi =
       require("../app_logic/helpers/abis/TestToken.json").abi;
 
-    const WbtcAddress = tokenId2Address[12345];
+    const WbtcAddress = tokenId2Address[3592681469];
     const WbtcContract = new ethers.Contract(
       WbtcAddress,
       TestTokenAbi,
       signer ?? undefined
     );
 
-    const UsdcAddress = tokenId2Address[55555];
+    const UsdcAddress = tokenId2Address[2413654107];
     const UsdcContract = new ethers.Contract(
       UsdcAddress,
       TestTokenAbi,
@@ -379,11 +381,21 @@ function WalletProvider({ children }: Props) {
       signer ?? undefined
     );
 
+
+    // "IDS_TO_SYMBOLS": {
+    //   "3592681469": "BTC",
+    //   "453755560": "ETH",
+    //   "2413654107": "USDC",
+    //   "277158171": "SOL"
+    // },
+
     const contracts = {
       invisibleL1: invisibleL1Contract,
-      12345: WbtcContract,
-      55555: UsdcContract,
+      3592681469: WbtcContract,
+      2413654107: UsdcContract,
     };
+
+    // 0x2864e0B08dDF0e64FF7c7E8376A5170a8E325651 and TestWbtc to 0x27D6834e8D35CdAB5991b66ef1550326f1018F62
 
     return contracts;
   };
@@ -438,8 +450,8 @@ function WalletProvider({ children }: Props) {
 export default WalletProvider;
 
 function _getDefaultNetwork(): NetworkType {
-  return NETWORKS[NETWORK["ETH Mainnet"]];
-  // return NETWORKS[NETWORK["localhost"]];
+  // return NETWORKS[NETWORK["ETH Mainnet"]];
+  return NETWORKS[NETWORK["Sepolia"]];
 }
 
 function _getDefaultProvider(): ethers.providers.BaseProvider {

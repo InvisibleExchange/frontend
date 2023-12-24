@@ -9,6 +9,12 @@ import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
 
 import { UserContext } from "../../../../context/UserContext";
 
+const tokenLogos = {
+  453755560: ethLogo,
+  3592681469: btcLogo,
+  277158171: solLogo,
+};
+
 const {
   IDS_TO_SYMBOLS,
   DECIMALS_PER_ASSET,
@@ -101,26 +107,12 @@ const Positions = () => {
                     ? "text-green_lighter"
                     : "text-red";
 
-                let logo;
+                let logo = tokenLogos[syntheticToken];
 
                 let priceRoundingDecimals =
                   PRICE_ROUNDING_DECIMALS[syntheticToken];
                 let sizeRoundingDecimals =
                   SIZE_ROUNDING_DECIMALS[syntheticToken];
-
-                switch (syntheticToken) {
-                  case 12345:
-                    logo = btcLogo;
-                    break;
-                  case 54321:
-                    logo = ethLogo;
-                    break;
-                  case 66666:
-                    logo = solLogo;
-                    break;
-                  default:
-                    break;
-                }
 
                 return (
                   <tr

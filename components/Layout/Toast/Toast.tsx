@@ -39,14 +39,30 @@ const Toast = ({ message, expiry, onDismiss, type }) => {
       colorClass = "info_toast";
       break;
 
+    case "pending_tx":
+      colorClass = "tx_toast";
+      break;
+
     default:
       colorClass = "info_toast";
       break;
   }
 
+  let aTag;
+  if (type == "pending_tx") {
+    let txHash = message.split(": ")[1];
+    let txLink = "https://sepolia.etherscan.io/tx/" + txHash.toString();
+    aTag = (
+      <a href={txLink} target="_blank">
+        {message ?? ""}
+      </a>
+    );
+  }
+
   return (
     <div className={`toast ${visible ? "show" : ""} ${colorClass}`}>
-      {message || "Sample toast message"}
+      <div>{type == "pending_tx" ? aTag : message}</div>
+
       <button className="dismiss-btn" onClick={handleDismiss} title="Dismiss">
         &times;
       </button>

@@ -11,9 +11,9 @@ import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
 
 const tokenLogos = {
-  54321: ethLogo,
-  12345: btcLogo,
-  55555: usdcLogo,
+  453755560: ethLogo,
+  3592681469: btcLogo,
+  2413654107: usdcLogo,
 };
 
 const {
