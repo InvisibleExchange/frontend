@@ -172,8 +172,6 @@ export default class User {
       restoreUserState(this, true, false).catch(console.log);
     }
 
-    console.log("noteData: ", noteData);
-
     // ? Get Position Data ============================================
     let addressData =
       userData.positionPrivKeys.length > 0
@@ -661,18 +659,13 @@ export default class User {
 
     // TODO =============================================================
     // if (starkKey != depositStarkKey) {
-    //   throw new Error("Unknown stark key");
+    //   throw new Error("Invalid stark key");
     // }
 
-    let chainId = Number.parseInt(BigInt(depositId) / 2n ** 32n);
-    if (!Object.values(CHAIN_IDS).includes(chainId)) {
-      console.log("Unknown chain id");
-      console.log(chainId);
-      console.log(Object.values(CHAIN_IDS));
-      // throw new Error("Unknown chain id");
-
-      alert("Unknown chain id");
-    }
+    // let chainId = Number.parseInt(BigInt(depositId) / 2n ** 32n);
+    // if (!Object.values(CHAIN_IDS).includes(chainId)) {
+    //   throw new Error("Invalid Chain id");
+    // }
 
     // TODO =============================================================
 
@@ -704,6 +697,11 @@ export default class User {
     withdrawalAddress,
     whitdrawalChainId
   ) {
+    if (!withdrawalAddress) return null;
+    if (withdrawalAddress.toString().startsWith("0x")) {
+      withdrawalAddress = BigInt(withdrawalAddress, 16);
+    }
+
     // ? Get the notesIn and priv keys for these notes
     let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
       withdrawToken,

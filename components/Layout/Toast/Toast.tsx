@@ -49,8 +49,8 @@ const Toast = ({ message, expiry, onDismiss, type }) => {
   }
 
   let aTag;
-  if (type == "pending_tx") {
-    let txHash = message.split(": ")[1];
+  let txHash = message.split(": ")[1];
+  if (txHash?.startsWith("0x")) {
     let txLink = "https://sepolia.etherscan.io/tx/" + txHash.toString();
     aTag = (
       <a href={txLink} target="_blank">
@@ -61,7 +61,7 @@ const Toast = ({ message, expiry, onDismiss, type }) => {
 
   return (
     <div className={`toast ${visible ? "show" : ""} ${colorClass}`}>
-      <div>{type == "pending_tx" ? aTag : message}</div>
+      <div>{aTag ?? message}</div>
 
       <button className="dismiss-btn" onClick={handleDismiss} title="Dismiss">
         &times;

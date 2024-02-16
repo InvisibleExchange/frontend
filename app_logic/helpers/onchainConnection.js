@@ -1,5 +1,3 @@
-const ethers = require("ethers");
-
 const EXCHANGE_CONFIG = require("../../exchange-config.json");
 const ONCHAIN_DECIMALS_PER_ASSET =
   EXCHANGE_CONFIG["ONCHAIN_DECIMALS_PER_ASSET"];
@@ -90,9 +88,6 @@ async function executeDepositTx(
     let tokenContract = smartContracts[token];
 
     if (tokenBalance < amount) {
-      console.log("tokenBalance: ", typeof tokenBalance);
-      console.log("amount: ", typeof amount);
-      console.log(tokenBalance, amount);
       throw new Error("Not enough balance");
     }
 
@@ -129,11 +124,14 @@ async function executeDepositTx(
       type: "pending_tx",
       message: "Waiting for deposit confirmation: " + txRes.hash,
     });
-    let receipt = await txRes.wait();
+    let receipt = await txRes.wait().catch((err) => {
+      throw Error("Deposit failed");
+    });
     let txHash = receipt.transactionHash;
 
     // ? Get the events emitted by the transaction
     let deposit;
+
     receipt.logs.forEach((log) => {
       try {
         const event = invisibleL1Contract.interface.parseLog(log);

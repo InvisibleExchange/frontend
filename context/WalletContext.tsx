@@ -356,7 +356,7 @@ function WalletProvider({ children }: Props) {
 
   const initContractConnections = (signer: ethers.Signer | null) => {
     const invisibleL1Abi =
-      require("../app_logic/helpers/abis/InvisibleL1.json").abi;
+      require("../app_logic/helpers/abis/Invisible.json").abi;
 
     const TestTokenAbi =
       require("../app_logic/helpers/abis/TestToken.json").abi;
@@ -380,7 +380,6 @@ function WalletProvider({ children }: Props) {
       invisibleL1Abi,
       signer ?? undefined
     );
-
 
     // "IDS_TO_SYMBOLS": {
     //   "3592681469": "BTC",

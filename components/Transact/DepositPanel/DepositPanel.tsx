@@ -104,31 +104,23 @@ const DepositPanel = ({ showToast }: any) => {
       user.privateSeed
     );
 
-    if (depositResponse) {
-      // user.deposits.push();
+    let deposit = {
+      deposit_id: depositResponse.depositId.toString(),
+      stark_key: depositResponse.starkKey.toString(),
+      deposit_token: depositResponse.tokenId.toString(),
+      deposit_amount: depositResponse.amount.toString(),
+      timestamp: depositResponse.timestamp.toString(),
+    };
 
-      let deposit = {
-        deposit_id: depositResponse.depositId.toString(),
-        stark_key: depositResponse.starkKey.toString(),
-        deposit_token: depositResponse.tokenId.toString(),
-        deposit_amount: depositResponse.amount.toString(),
-        timestamp: depositResponse.timestamp.toString(),
-      };
 
-      user.deposits.push(deposit);
+    user.deposits.push(deposit);
 
-      setToastMessage({
-        type: "info",
-        message:
-          "Deposit transaction was successful! Tx hash: " +
-          depositResponse.txHash,
-      });
-    } else {
-      setToastMessage({
-        type: "error",
-        message: "Deposit transaction failed!",
-      });
-    }
+    setToastMessage({
+      type: "info",
+      message:
+        "Deposit transaction was successful! Tx hash: " +
+        depositResponse.txHash,
+    });
   };
 
   function renderConnectButton() {

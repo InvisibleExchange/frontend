@@ -1,3 +1,5 @@
+import { getEstimatedNewLiqPrice } from "./FormHelpers";
+
 const {
   formatInputNum,
   calculateNewSize,
@@ -140,4 +142,77 @@ const UpdatedPositionInfo = ({
   );
 };
 
-export default UpdatedPositionInfo;
+type inputArgs = {
+  entryPrice_: string | null;
+  margin_: string | null;
+  position_size_: string | null;
+  orderSide: any;
+  syntheticToken: number;
+  is_partial_liquidation: boolean;
+};
+const EstimateLiquidationPriceInfo = ({
+  entryPrice_,
+  margin_,
+  position_size_,
+  syntheticToken,
+  is_partial_liquidation,
+}: inputArgs) => {
+  if (!entryPrice_ || !margin_ || !position_size_) return null;
+
+  let entryPrice = Number(entryPrice_);
+  let margin = Number(margin_);
+  let position_size = Number(position_size_);
+
+  let longLiqPrice = getEstimatedNewLiqPrice(
+    entryPrice,
+    margin,
+    position_size,
+    "Long",
+    syntheticToken,
+    is_partial_liquidation
+  );
+
+  let shortLiqPrice = getEstimatedNewLiqPrice(
+    entryPrice,
+    margin,
+    position_size,
+    "Short",
+    syntheticToken,
+    is_partial_liquidation
+  );
+
+  let priceRoundingDecimals = PRICE_ROUNDING_DECIMALS[syntheticToken];
+
+  return (
+    <div>
+      {/* <div className="ml-5 pl-5">Estimated:</div> */}
+      <div
+        style={{
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+        }}
+        className="py-5 px-3  flex items-center justify-between mt-1 font-overpass text-fg_below_color dark:text-white"
+      >
+        {/* // <div className="mt-1 flex items-center justify-between text-sm font-overpass text-fg_below_color dark:text-white"> */}
+        <p className="text-[14px] w-full ">
+          <div className="items-left justify-between">
+            {/* // * EST. LIQ PRICE */}
+
+            <div className="mt-3 flex items-center justify-between px-1">
+              <strong> Long Liq. Price: </strong>
+              <strong>Short Liq.Price:</strong>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between px-1">
+              <strong>{longLiqPrice.toFixed(priceRoundingDecimals)} USD</strong>
+              <strong>
+                {shortLiqPrice.toFixed(priceRoundingDecimals)} USD
+              </strong>
+            </div>
+          </div>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export { UpdatedPositionInfo, EstimateLiquidationPriceInfo };

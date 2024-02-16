@@ -30,6 +30,10 @@ const {
   CHAIN_IDS,
 } = require("../../../app_logic/helpers/utils");
 
+const {
+  sendWithdrawal,
+} = require("../../../app_logic/transactions/constructOrders");
+
 const tokens = [
   { id: 453755560, name: "ETH", icon: ethLogo },
   { id: 3592681469, name: "BTC", icon: btcLogo },
@@ -47,7 +51,7 @@ const chains = [
 const WithdrawPanel = () => {
   let { userAddress, signer, connect, switchNetwork } =
     useContext(WalletContext);
-  let { user, login, forceRerender } = useContext(UserContext);
+  let { user, login, forceRerender, setToastMessage } = useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
   const [chain, setChain] = useState(chains[0]);
@@ -61,14 +65,29 @@ const WithdrawPanel = () => {
   const makeWithdrawal = async () => {
     // TODO:
 
-    console.log(CHAIN_IDS, chain.name);
-
-    let withdrawal = user.makeWithdrawalOrder(
+    await sendWithdrawal(
+      user,
       amount,
       token.id,
       withdrawalAddress,
       CHAIN_IDS[chain.name] ?? 9090909
-    );
+    )
+      .then((res) => {
+        setToastMessage({
+          type: "info",
+          message:
+            "Withdrawal transaction was successful: " +
+            amount +
+            " " +
+            token.name,
+        });
+      })
+      .catch((err) => {
+        setToastMessage({
+          type: "error",
+          message: err.message,
+        });
+      });
   };
 
   function renderConnectButton() {

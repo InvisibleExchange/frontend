@@ -45,7 +45,6 @@ module.exports = class Withdrawal {
     hashes.push(starkKey);
     hashes.push(chainId);
 
-    console.log("hashes: ", hashes);
     let withdrawal_hash = computeHashOnElements(hashes);
 
     let pkSum = 0n;

@@ -826,11 +826,10 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
 
 async function sendWithdrawal(
   user,
-  withdrawalChainId,
   amount,
   token,
   starkKey,
-  chainId
+  withdrawalChainId
 ) {
   if (!user || !amount || !withdrawalChainId || !token || !starkKey) {
     throw new Error("Invalid input");
@@ -854,10 +853,16 @@ async function sendWithdrawal(
       if (withdrawal_response.successful) {
         for (let i = 0; i < withdrawal.notes_in.length; i++) {
           let note = withdrawal.notes_in[i];
+
           user.noteData[note.token] = user.noteData[note.token].filter(
             (n) => n.index != note.index
           );
-          // removeNoteFromDb(note);
+        }
+
+        if (withdrawal.refund_note) {
+          user.noteData[withdrawal.refund_note.token].push(
+            withdrawal.refund_note
+          );
         }
       } else {
         let msg =
@@ -868,6 +873,8 @@ async function sendWithdrawal(
         if (order_response.error_message.includes("Note does not exist")) {
           restoreUserState(user, true, false);
         }
+
+        throw new Error(msg);
       }
     });
 }

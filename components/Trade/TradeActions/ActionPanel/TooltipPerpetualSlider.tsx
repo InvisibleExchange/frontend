@@ -180,6 +180,9 @@ const TooltipPerpetualSlider = ({
       {Math.abs(high_middle).toString() + "x"}{" "}
     </div>
   );
+  if (isNaN(minLeverage) || isNaN(maxLeverage)) {
+    marks = {};
+  }
 
   return (
     <Slider
