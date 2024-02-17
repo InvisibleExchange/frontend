@@ -43,9 +43,9 @@ function _getLiquidationPrice(
   syntheticToken,
   is_partial_liquidation
 ) {
-  entryPrice = Number.parseInt(entryPrice);
-  margin = Number.parseInt(margin);
-  position_size = Number.parseInt(position_size);
+  entryPrice = Number(entryPrice);
+  margin = Number(margin);
+  position_size = Number(position_size);
 
   let mm_fraction =
     is_partial_liquidation &&
@@ -83,8 +83,6 @@ function _getLiquidationPrice(
     let price_delta = ((d1 - d2) * 100) / ((100 + mm_fraction) * position_size);
 
     let liquidation_price = entryPrice + Number.parseInt(price_delta);
-
-    console.log("liquidation_price", liquidation_price);
 
     return liquidation_price;
   }

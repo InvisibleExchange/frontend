@@ -53,7 +53,7 @@ const Toast = ({ message, expiry, onDismiss, type }) => {
   if (txHash?.startsWith("0x")) {
     let txLink = "https://sepolia.etherscan.io/tx/" + txHash.toString();
     aTag = (
-      <a href={txLink} target="_blank">
+      <a href={txLink} target="_blank" rel="noopener noreferrer">
         {message ?? ""}
       </a>
     );
