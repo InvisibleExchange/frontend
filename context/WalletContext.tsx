@@ -115,14 +115,14 @@ const wallets = [
 ];
 
 const chains = Object.keys(NETWORKS).map((key: string) => {
-  const network = NETWORKS[Number(key)];
+  const network_ = NETWORKS[Number(key)];
 
   return {
-    id: "0x" + network.networkId.toString(16),
-    token: network.nativeCurrency.symbol,
-    label: network.name,
-    rpcUrl: network.rpcUrl,
-    secondaryTokens: network.secondaryTokens,
+    id: "0x" + network_.networkId.toString(16),
+    token: network_.nativeCurrency.symbol,
+    label: network_.name,
+    rpcUrl: network_.rpcUrl,
+    secondaryTokens: network_.secondaryTokens,
   };
 });
 
@@ -159,9 +159,8 @@ function WalletProvider({ children }: Props) {
   }
 
   const [username, setUsername] = useState<string | null>(null);
-  const [network, setNetwork] = useState<NetworkType | null>(
-    _getDefaultNetwork()
-  );
+  let network_ = _getDefaultNetwork();
+  let [network, setNetwork] = useState<NetworkType | null>(network_);
   const [ethersProvider, setEthersProvider] =
     useState<ethers.providers.BaseProvider>(_getDefaultProvider());
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
@@ -225,15 +224,20 @@ function WalletProvider({ children }: Props) {
       let signer_ = updateWallet(wallets[0]);
 
       // TODO ==========================================
-      let contracts = initContractConnections(signer_);
+      let contracts = initContractConnections(signer_, network?.chainId ?? 0);
       setSmartContracts(contracts);
 
-      updateWalletBalances(tokenAddressList, []);
+      updateWalletBalances(tokenAddressList(network?.chainId ?? 0), []);
 
-      await getWithdrawableAmounts(
-        wallets[0]?.accounts?.[0]?.address,
-        contracts
-      );
+      try {
+        await getWithdrawableAmounts(
+          wallets[0]?.accounts?.[0]?.address,
+          contracts
+        );
+      } catch (error) {
+        console.error("getWithdrawableAmounts error: ", error);
+      }
+
       // TODO ==========================================
 
       setIsLoading(false);
@@ -270,7 +274,15 @@ function WalletProvider({ children }: Props) {
 
     const chainId = "0x" + _networkId.toString(16);
     const success = await onboard.setChain({ chainId });
+
     if (success) setNetwork(NETWORKS[_networkId]);
+
+    let contracts = initContractConnections(
+      signer,
+      NETWORKS[_networkId]?.chainId ?? 0
+    );
+    setSmartContracts(contracts);
+
     return success;
   };
 
@@ -295,7 +307,7 @@ function WalletProvider({ children }: Props) {
       let addresses_: string[] | undefined = [];
       for (let i = 0; i < tokenIdsList_.length; i++) {
         let tokenId = tokenIdsList_[i];
-        let addr = tokenId2Address[tokenId];
+        let addr = tokenId2Address(network?.chainId ?? 0)[tokenId];
 
         if (!addr) continue;
 
@@ -319,7 +331,7 @@ function WalletProvider({ children }: Props) {
       return tokenBalance ?? null;
     }
 
-    let symbol = tokenId2Name[tokenId];
+    let symbol = tokenId2Name()[tokenId];
 
     let tokenBalance =
       currentState.wallets[0].accounts[0].secondaryTokens?.find((token: any) =>
@@ -336,8 +348,8 @@ function WalletProvider({ children }: Props) {
     let withdrawbleAmounts = {};
     let invisibleContract = contracts.invisibleL1;
 
-    for (let address of tokenAddressList) {
-      const tokenId = tokenAddress2Id[address];
+    for (let address of tokenAddressList[network?.chainId ?? 0]) {
+      const tokenId = tokenAddress2Id(network?.chainId ?? 0)[address];
 
       let amount = await invisibleContract?.getWithdrawableAmount(
         userAddress,
@@ -354,47 +366,43 @@ function WalletProvider({ children }: Props) {
     setWithdrawablAmounts(withdrawbleAmounts);
   };
 
-  const initContractConnections = (signer: ethers.Signer | null) => {
-    const invisibleL1Abi =
-      require("../app_logic/helpers/abis/Invisible.json").abi;
-
+  const initContractConnections = (
+    signer: ethers.Signer | null,
+    chainId: number
+  ) => {
     const TestTokenAbi =
       require("../app_logic/helpers/abis/TestToken.json").abi;
 
-    const WbtcAddress = tokenId2Address[3592681469];
+    const WbtcAddress = tokenId2Address(chainId ?? 0)[3592681469];
     const WbtcContract = new ethers.Contract(
       WbtcAddress,
       TestTokenAbi,
       signer ?? undefined
     );
 
-    const UsdcAddress = tokenId2Address[2413654107];
+    const UsdcAddress = tokenId2Address(chainId ?? 0)[2413654107];
     const UsdcContract = new ethers.Contract(
       UsdcAddress,
       TestTokenAbi,
       signer ?? undefined
     );
 
-    const invisibleL1Contract = new ethers.Contract(
-      invisibleContractAddress,
-      invisibleL1Abi,
+    const invisibleAbi =
+      chainId == _getDefaultNetwork().chainId
+        ? require("../app_logic/helpers/abis/Invisible.json").abi
+        : require("../app_logic/helpers/abis/InvisibleL2.json").abi;
+
+    const invisibleContract = new ethers.Contract(
+      invisibleContractAddress(chainId ?? 0),
+      invisibleAbi,
       signer ?? undefined
     );
 
-    // "IDS_TO_SYMBOLS": {
-    //   "3592681469": "BTC",
-    //   "453755560": "ETH",
-    //   "2413654107": "USDC",
-    //   "277158171": "SOL"
-    // },
-
     const contracts = {
-      invisibleL1: invisibleL1Contract,
+      invisible: invisibleContract,
       3592681469: WbtcContract,
       2413654107: UsdcContract,
     };
-
-    // 0x2864e0B08dDF0e64FF7c7E8376A5170a8E325651 and TestWbtc to 0x27D6834e8D35CdAB5991b66ef1550326f1018F62
 
     return contracts;
   };
@@ -451,6 +459,7 @@ export default WalletProvider;
 function _getDefaultNetwork(): NetworkType {
   // return NETWORKS[NETWORK["ETH Mainnet"]];
   return NETWORKS[NETWORK["Sepolia"]];
+  // return NETWORKS[NETWORK["ArbitrumSepolia"]];
 }
 
 function _getDefaultProvider(): ethers.providers.BaseProvider {

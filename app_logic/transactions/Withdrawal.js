@@ -8,7 +8,7 @@ module.exports = class Withdrawal {
     withdrawal_chain_id,
     withdrawal_token,
     withdrawal_amount,
-    stark_key,
+    recipient,
     notes_in,
     refund_note,
     signature
@@ -16,7 +16,7 @@ module.exports = class Withdrawal {
     this.withdrawal_chain_id = withdrawal_chain_id;
     this.withdrawal_token = withdrawal_token;
     this.withdrawal_amount = withdrawal_amount;
-    this.stark_key = stark_key;
+    this.recipient = recipient;
     this.notes_in = notes_in;
     this.refund_note = refund_note;
     this.signature = signature;
@@ -27,7 +27,7 @@ module.exports = class Withdrawal {
       withdrawal_chain_id: this.withdrawal_chain_id,
       withdrawal_token: this.withdrawal_token.toString(),
       withdrawal_amount: this.withdrawal_amount.toString(),
-      stark_key: this.stark_key.toString(),
+      recipient: this.recipient.toString(),
       notes_in: this.notes_in.map((n) => n.toGrpcObject()),
       refund_note: this.refund_note.toGrpcObject(),
       signature: {

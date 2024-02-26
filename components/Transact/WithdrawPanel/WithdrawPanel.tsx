@@ -9,8 +9,7 @@ import ethLogo from "../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../public/tokenIcons/usdc-logo.png";
 
 import ethMainnet from "../../../public/tokenIcons/eth-mainnet.png";
-import starknet from "../../../public/tokenIcons/starknet.png";
-import zksync from "../../../public/tokenIcons/zksync.png";
+import ArbitrumLogo from "../../../public/tokenIcons/Arbitrum-logo.png";
 
 import { WalletContext } from "../../../context/WalletContext";
 
@@ -43,14 +42,13 @@ const tokens = [
 const chains = [
   // { id: 1, name: "ETH Mainnet", icon: ethMainnet, networkId: 1 },
   // { id: 33535, name: "localhost", icon: ethMainnet },
+
   { id: 11155111, name: "Sepolia", icon: ethMainnet },
-  // { id: 2, name: "Starknet", icon: starknet },
-  // { id: 3, name: "ZkSync", icon: zksync },
+  { id: 421614, name: "Arbitrum Sepolia", icon: ArbitrumLogo },
 ];
 
 const WithdrawPanel = () => {
-  let { userAddress, signer, connect, switchNetwork } =
-    useContext(WalletContext);
+  let { userAddress, signer, connect } = useContext(WalletContext);
   let { user, login, forceRerender, setToastMessage } = useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
@@ -63,16 +61,12 @@ const WithdrawPanel = () => {
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
 
   const makeWithdrawal = async () => {
-    // TODO:
+    // TODO: for testing only
+    let chainId =
+      CHAIN_IDS[chain.name == "Arbitrum Sepolia" ? "Arbitrum" : "ETH Mainnet"];
 
-    await sendWithdrawal(
-      user,
-      amount,
-      token.id,
-      withdrawalAddress,
-      CHAIN_IDS[chain.name] ?? 9090909
-    )
-      .then((res) => {
+    await sendWithdrawal(user, amount, token.id, withdrawalAddress, chainId)
+      .then((_) => {
         setToastMessage({
           type: "info",
           message:

@@ -23,7 +23,7 @@ async function executeDepositTx(
     return null;
   }
 
-  let invisibleL1Contract = smartContracts["invisibleL1"];
+  let invisibleL1Contract = smartContracts["invisible"];
 
   let depositStarkKey = user.getDepositStarkKey(token);
 

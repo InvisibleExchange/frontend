@@ -828,10 +828,10 @@ async function sendWithdrawal(
   user,
   amount,
   token,
-  starkKey,
+  recipient,
   withdrawalChainId
 ) {
-  if (!user || !amount || !withdrawalChainId || !token || !starkKey) {
+  if (!user || !amount || !withdrawalChainId || !token || !recipient) {
     throw new Error("Invalid input");
   }
 
@@ -841,9 +841,11 @@ async function sendWithdrawal(
   let withdrawal = user.makeWithdrawalOrder(
     amount,
     token,
-    starkKey,
+    recipient,
     withdrawalChainId
   );
+
+  console.log("withdrawal.toGrpcObject()", withdrawal.toGrpcObject());
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_withdrawal`, withdrawal.toGrpcObject())
@@ -870,7 +872,7 @@ async function sendWithdrawal(
           withdrawal_response.error_message;
         console.log(msg);
 
-        if (order_response.error_message.includes("Note does not exist")) {
+        if (withdrawal_response.error_message.includes("Note does not exist")) {
           restoreUserState(user, true, false);
         }
 

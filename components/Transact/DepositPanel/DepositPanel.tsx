@@ -9,6 +9,7 @@ import ethLogo from "../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../public/tokenIcons/usdc-logo.png";
 
 import ethMainnet from "../../../public/tokenIcons/eth-mainnet.png";
+import ArbitrumLogo from "../../../public/tokenIcons/Arbitrum-logo.png";
 import starknet from "../../../public/tokenIcons/starknet.png";
 import zksync from "../../../public/tokenIcons/zksync.png";
 
@@ -39,6 +40,7 @@ const chains = [
   // { id: 1, name: "ETH Mainnet", icon: ethMainnet },
   // { id: 33535, name: "localhost", icon: ethMainnet },
   { id: 11155111, name: "Sepolia", icon: ethMainnet },
+  { id: 421614, name: "Arbitrum Sepolia", icon: ArbitrumLogo },
   // { id: 2, name: "Starknet", icon: starknet },
   // { id: 3, name: "ZkSync", icon: zksync },
 ];
@@ -72,6 +74,15 @@ const DepositPanel = ({ showToast }: any) => {
 
   let tokenBalance = getTokenBalance(token.id);
 
+  // const makeDeposit = async () => {
+  //   console.log("makeDeposit");
+  //   console.log(smartContracts);
+  //   console.log(token.id);
+  //   console.log(amount);
+  //   console.log(tokenBalance);
+  //   console.log(userAddress);
+  // };
+
   const makeDeposit = async () => {
     setIsTxPending(true);
 
@@ -90,6 +101,8 @@ const DepositPanel = ({ showToast }: any) => {
       });
       return null;
     });
+
+    console.log("depositResponse: ", depositResponse);
 
     setIsTxPending(false);
 
@@ -111,7 +124,6 @@ const DepositPanel = ({ showToast }: any) => {
       deposit_amount: depositResponse.amount.toString(),
       timestamp: depositResponse.timestamp.toString(),
     };
-
 
     user.deposits.push(deposit);
 
