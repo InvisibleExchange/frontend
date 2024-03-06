@@ -105,10 +105,10 @@ export type TokenAllowanceObject = Record<string, BigNumber | undefined>;
 const wallets = [
   injectedModule(),
   coinbaseWalletModule({ darkMode: true }),
-  ledgerModule({ walletConnectVersion: 1 }),
+  ledgerModule({}),
   walletConnectModule({
-    version: 1,
-    bridge: "https://bridge.walletconnect.org",
+    version: 2,
+    projectId: "a86bb4a5507650c51d8a0e0c5ca0e158",
   }),
   mewWallet(),
   tallyHoWalletModule(),

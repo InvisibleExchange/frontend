@@ -9,6 +9,7 @@ import Toast from "../Layout/Toast/Toast";
 import { UserContext } from "../../context/UserContext";
 import TradeActions from "../Trade/TradeActions/TradeActions";
 import LandingModal from "../Layout/LandingModal/LandingModal";
+import BridgePanel from "./BridgePanel";
 
 const Transact = () => {
   const { initialize, initialized, setToastMessage, toastMessage } =
@@ -52,9 +53,22 @@ const Transact = () => {
     }
   }, [toastMessage]);
 
-  let [categories] = useState(["Deposit", "Withdraw"]);
+  let [categories] = useState(["Deposit", "Withdraw", "Bridge"]);
 
   initialize();
+
+  const getCategoryColor = (category: string) => {
+    let selectedColor: string;
+    if (category === "Deposit") {
+      selectedColor = " bg-green_lighter shadow-green";
+    } else if (category === "Withdraw") {
+      selectedColor = " bg-red_lighter shadow-red";
+    } else {
+      selectedColor = "bg-blue shadow-blue";
+    }
+
+    return selectedColor;
+  };
 
   return (
     <div className="flex justify-center w-full">
@@ -71,16 +85,9 @@ const Transact = () => {
                     "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700 text-white",
                     " uppercase rounded-md font-overpass hover:opacity-100 outline-none",
                     selected
-                      ? classNames(
-                          category === "Deposit"
-                            ? "bg-green_lighter shadow-green "
-                            : "bg-red_lighter shadow-red "
-                        )
-                      : classNames(
-                          category === "Deposit"
-                            ? "bg-green_lighter opacity-30 hover:opacity-70"
-                            : "bg-red_lighter opacity-30  hover:opacity-70"
-                        )
+                      ? "_" + getCategoryColor(category)
+                      : getCategoryColor(category) +
+                          " opacity-30 hover:opacity-70"
                   )
                 }
               >
@@ -95,6 +102,9 @@ const Transact = () => {
             </Tab.Panel>
             <Tab.Panel>
               <WithdrawPanel />
+            </Tab.Panel>
+            <Tab.Panel>
+              <BridgePanel />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
