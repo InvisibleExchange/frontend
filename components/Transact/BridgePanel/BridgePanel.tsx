@@ -20,9 +20,9 @@ const BridgePanel = () => {
     toChain: 42161,
     referrer: "invisible.exchange",
   };
-  //   return <LiFiWidget integrator="Invisible Exchange" config={widgetConfig} />;
+  return <LiFiWidget integrator="Invisible Exchange" config={widgetConfig} />;
   //
-  return <div>LIFI WIDGET GOES HERE</div>;
+  // return <div>LIFI WIDGET GOES HERE</div>;
 };
 
 export default BridgePanel;

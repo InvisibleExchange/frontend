@@ -6,6 +6,7 @@ import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
 import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
+import Image from "next/image";
 
 const tokenLogos = {
   453755560: ethLogo,
@@ -13,9 +14,6 @@ const tokenLogos = {
   2413654107: usdcLogo,
   277158171: solLogo,
 };
-
-
-
 
 const {
   IDS_TO_SYMBOLS,
@@ -70,10 +68,21 @@ const FillHistory = () => {
                       )}
                     >
                       <div className="flex">
-                        <img
+                        {/* <img
                           src={tokenLogos[fill.base_token].src}
                           alt="Currency Logo"
                           className="logo_icon"
+                        /> */}
+                        <Image
+                          src={tokenLogos[fill.base_token].src}
+                          alt="Currency Logo"
+                          width={25}
+                          height={20}
+                          style={{
+                            objectFit: "contain",
+                            marginLeft: "1rem",
+                            marginRight: "1rem",
+                          }}
                         />
                         <p className="pt-1">
                           {fill.isPerp

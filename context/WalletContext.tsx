@@ -14,12 +14,11 @@ import invLogo from "../public/tokenIcons/invisible-logo-small.png";
 
 import Onboard, { WalletState } from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
-import walletConnectModule from "@web3-onboard/walletconnect/dist";
 import coinbaseWalletModule from "@web3-onboard/coinbase";
-import ledgerModule from "@web3-onboard/ledger";
-import mewWallet from "@web3-onboard/mew-wallet";
-import tallyHoWalletModule from "@web3-onboard/tallyho";
-// import logo from "../public/img/zz.svg"
+import safeModule from "@web3-onboard/gnosis";
+import metamaskSDK from "@web3-onboard/metamask";
+import phantomModule from "@web3-onboard/phantom";
+import walletConnectModule from "@web3-onboard/walletconnect";
 
 import {
   NETWORKS,
@@ -102,16 +101,25 @@ export const WalletContext = createContext<WalletContextType>({
 export type TokenBalanceObject = Record<string, BigNumber | undefined>;
 export type TokenAllowanceObject = Record<string, BigNumber | undefined>;
 
+const metamaskSDKWallet = metamaskSDK({
+  options: {
+    extensionOnly: false,
+    dappMetadata: {
+      name: "Invisible Exchange",
+    },
+  },
+});
 const wallets = [
-  injectedModule(),
   coinbaseWalletModule({ darkMode: true }),
-  ledgerModule({}),
+  safeModule(),
+  metamaskSDKWallet,
+  phantomModule(),
   walletConnectModule({
     version: 2,
     projectId: "a86bb4a5507650c51d8a0e0c5ca0e158",
+    dappUrl: "https://invisible.zigzag.exchange/",
   }),
-  mewWallet(),
-  tallyHoWalletModule(),
+  injectedModule(),
 ];
 
 const chains = Object.keys(NETWORKS).map((key: string) => {
@@ -180,10 +188,12 @@ function WalletProvider({ children }: Props) {
     const connectedWallets = wallets.map(({ label }) => label);
     if (!connectedWallets) return;
 
-    sessionStorage.setItem(
-      "connectedWallets",
-      JSON.stringify(connectedWallets)
-    );
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        "connectedWallets",
+        JSON.stringify(connectedWallets)
+      );
+    }
 
     const primaryAddress = wallets[0]?.accounts?.[0]?.address;
     const primaryChain = parseInt(wallets[0]?.chains?.[0].id, 16);
@@ -197,8 +207,12 @@ function WalletProvider({ children }: Props) {
 
   // Reconnect if previously connected
   useEffect(() => {
-    const previouslyConnectedWalletsString =
-      sessionStorage.getItem("connectedWallets");
+    let previouslyConnectedWalletsString;
+    if (typeof window !== "undefined") {
+      previouslyConnectedWalletsString =
+        sessionStorage.getItem("connectedWallets");
+    }
+
     if (!previouslyConnectedWalletsString) return;
     // JSON.parse()[0] => previously primary wallet
     const label = previouslyConnectedWalletsString
@@ -302,7 +316,7 @@ function WalletProvider({ children }: Props) {
     tokenIdsList_: number[]
   ) => {
     if (tokenAddressList_.length > 0) {
-      onboard.state.actions.updateBalances(tokenAddressList_);
+      // onboard.state.updateBalances(tokenAddressList_);
     } else if (tokenIdsList_.length > 0) {
       let addresses_: string[] | undefined = [];
       for (let i = 0; i < tokenIdsList_.length; i++) {

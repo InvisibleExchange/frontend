@@ -59,13 +59,13 @@ const DepositPanel = ({ showToast }: any) => {
     useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
-  const [chain, _setChain] = useState(null);
+  const [chain, setChain] = useState<any>(null);
   const [amount, setAmount] = useState(null);
 
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
 
-  const setChain = async (chain) => {
-    _setChain(chain);
+  const setNetwork = async (chain) => {
+    setChain(chain);
 
     let networkId = chain.id;
 
@@ -73,15 +73,6 @@ const DepositPanel = ({ showToast }: any) => {
   };
 
   let tokenBalance = getTokenBalance(token.id);
-
-  // const makeDeposit = async () => {
-  //   console.log("makeDeposit");
-  //   console.log(smartContracts);
-  //   console.log(token.id);
-  //   console.log(amount);
-  //   console.log(tokenBalance);
-  //   console.log(userAddress);
-  // };
 
   const makeDeposit = async () => {
     setIsTxPending(true);
@@ -101,8 +92,6 @@ const DepositPanel = ({ showToast }: any) => {
       });
       return null;
     });
-
-    console.log("depositResponse: ", depositResponse);
 
     setIsTxPending(false);
 
@@ -175,9 +164,9 @@ const DepositPanel = ({ showToast }: any) => {
           <TokenSelector
             options={chains}
             selected={chain}
-            onSelect={setChain}
+            onSelect={setNetwork}
             isWalletConnected={!!userAddress}
-            label={"Select chain: "}
+            label={"Select network: "}
           />
         </div>
       </div>

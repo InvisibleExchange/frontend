@@ -7,7 +7,6 @@ import DepositPanel from "./DepositPanel";
 import WithdrawPanel from "./WithdrawPanel";
 import Toast from "../Layout/Toast/Toast";
 import { UserContext } from "../../context/UserContext";
-import TradeActions from "../Trade/TradeActions/TradeActions";
 import LandingModal from "../Layout/LandingModal/LandingModal";
 import BridgePanel from "./BridgePanel";
 
@@ -85,7 +84,7 @@ const Transact = () => {
                     "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700 text-white",
                     " uppercase rounded-md font-overpass hover:opacity-100 outline-none",
                     selected
-                      ? "_" + getCategoryColor(category)
+                      ? getCategoryColor(category)
                       : getCategoryColor(category) +
                           " opacity-30 hover:opacity-70"
                   )

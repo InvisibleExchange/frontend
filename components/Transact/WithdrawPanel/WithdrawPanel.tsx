@@ -126,7 +126,7 @@ const WithdrawPanel = () => {
             selected={chain}
             onSelect={setChain}
             isWalletConnected={!!user}
-            label={"Select chain: "}
+            label={"Select network: "}
           />
         </div>
       </div>
@@ -149,7 +149,7 @@ const WithdrawPanel = () => {
         <div className="flex">
           <input
             type="text"
-            className="w-full py-3 pl-5 mt-2 rounded-lg outline-none bg-border_color hover:ring-1 hover:dark:ring-fg_below_color"
+            className="w-full py-3 pl-4 mt-2 rounded-lg outline-none bg-border_color hover:ring-1 hover:dark:ring-fg_below_color"
             placeholder={
               chain.name + " address to withdrawal your " + token.name
             }
@@ -162,12 +162,14 @@ const WithdrawPanel = () => {
           <ReactTooltip id="my-tooltip" opacity={1} />
 
           <a
-            className="w-1/3 py-3 mt-2 ml-2 text-center text-white bg-blue rounded-lg hover:opacity-70 hover:cursor-pointer"
+            className="w-1/4 py-3 mt-2 ml-3 text-center text-white bg-blue rounded-lg hover:opacity-70 hover:cursor-pointer"
             data-tooltip-id="my-tooltip"
             data-tooltip-content="You can connect wallet to prevent signing with wrong address."
-            onClick={() => {}}
+            onClick={() => {
+              setWithdrawalAddress(userAddress ?? "");
+            }}
           >
-            Connect Wallet
+            connected wallet
           </a>
         </div>
       </div>

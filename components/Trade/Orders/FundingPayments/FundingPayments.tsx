@@ -55,10 +55,16 @@ const FundingPayments = () => {
                       )}
                     >
                       <div className="flex">
-                        <img
+                        <Image
                           src={tokenLogos[fill.base_token].src}
                           alt="Currency Logo"
-                          className="logo_icon"
+                          width={25}
+                          height={20}
+                          style={{
+                            objectFit: "contain",
+                            marginLeft: "1rem",
+                            marginRight: "1rem",
+                          }}
                         />
                         <p className="pt-1">
                           {fill.isPerp

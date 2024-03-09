@@ -3,6 +3,7 @@ import React from "react";
 import { Fragment, useState } from "react";
 import { Combobox, Listbox, Transition } from "@headlessui/react";
 import { HiChevronUpDown, HiCheck } from "react-icons/hi2";
+import Image from "next/image";
 
 type props = {
   options: any;
@@ -29,10 +30,16 @@ const TokenSelector = ({
             <Listbox.Button className="w-full py-4 pl-4 pr-10 text-base leading-5 border-none rounded-lg outline-none  bg-border_color ">
               <div className="flex">
                 {selected ? (
-                  <img
+                  <Image
                     src={selected.icon.src}
                     alt="Currency Logo"
-                    className="logo_icon"
+                    width={25}
+                    height={20}
+                    style={{
+                      objectFit: "contain",
+                      marginLeft: "0.5rem",
+                      marginRight: "1rem",
+                    }}
                   />
                 ) : null}
 
@@ -80,13 +87,17 @@ const TokenSelector = ({
                         }`}
                       >
                         <div className="flex">
-                          <button className="text-sm pr-2 ">
-                            <img
-                              src={option.icon.src}
-                              alt="Currency Logo"
-                              className="logo_icon"
-                            />
-                          </button>
+                          <Image
+                            src={option.icon.src}
+                            alt="Currency Logo"
+                            width={25}
+                            height={20}
+                            style={{
+                              objectFit: "contain",
+                              marginLeft: "0",
+                              marginRight: "1rem",
+                            }}
+                          />
                           <p className="pt-1">{option.name}</p>
                         </div>
                       </span>

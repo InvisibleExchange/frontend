@@ -10,6 +10,7 @@ import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
 import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
+import Image from "next/image";
 
 const tokenLogos = {
   453755560: ethLogo,
@@ -132,10 +133,21 @@ const OpenOrders = () => {
                       )}
                     >
                       <div className="flex">
-                        <img
+                        {/* <img
                           src={tokenLogos[baseAsset].src}
                           alt="Currency Logo"
                           className="logo_icon"
+                        /> */}
+                        <Image
+                          src={tokenLogos[baseAsset].src}
+                          alt="Currency Logo"
+                          width={25}
+                          height={20}
+                          style={{
+                            objectFit: "contain",
+                            marginLeft: "1rem",
+                            marginRight: "1rem",
+                          }}
                         />
                         <p className="font-bold">
                           {IDS_TO_SYMBOLS[baseAsset]}

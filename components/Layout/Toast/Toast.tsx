@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { WalletContext } from "../../../context/WalletContext";
 
 const Toast = ({ message, expiry, onDismiss, type }) => {
+  let { network } = useContext(WalletContext);
+
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -51,7 +54,14 @@ const Toast = ({ message, expiry, onDismiss, type }) => {
   let aTag;
   let txHash = message.split(": ")[1];
   if (txHash?.startsWith("0x")) {
-    let txLink = "https://sepolia.etherscan.io/tx/" + txHash.toString();
+    let explorerUrl = {
+      Arbitrum: "https://arbiscan.io/tx/",
+      Ethereum: "https://etherscan.io/tx/",
+      ArbitrumSepolia: "https://sepolia.arbiscan.io/tx/",
+      Sepolia: "https://sepolia.etherscan.io/tx/",
+    };
+
+    let txLink = explorerUrl[network?.name ?? "Ethereum"] + txHash.toString();
     aTag = (
       <a href={txLink} target="_blank" rel="noopener noreferrer">
         {message ?? ""}

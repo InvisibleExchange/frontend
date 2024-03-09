@@ -9,6 +9,7 @@ import {
 import btcLogo from "../../../../public/tokenIcons/bitcoin.png";
 import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import usdcLogo from "../../../../public/tokenIcons/usdc-logo.png";
+import Image from "next/image";
 
 const tokenLogos = {
   453755560: ethLogo,
@@ -81,11 +82,23 @@ const Balances = () => {
                   >
                     <td className="py-2.5 pl-5 font-medium  flex items-center gap-3">
                       <div className="flex">
-                        <img
+                        {/* <img
                           src={tokenLogos[token].src}
                           alt="Currency Logo"
                           className="logo_icon"
+                        /> */}
+                        <Image
+                          src={tokenLogos[token].src}
+                          alt="Currency Logo"
+                          width={25}
+                          height={20}
+                          style={{
+                            objectFit: "contain",
+                            marginLeft: "1rem",
+                            marginRight: "1rem",
+                          }}
                         />
+
                         <p className="pt-1">{IDS_TO_SYMBOLS[token]}</p>
                       </div>
                     </td>

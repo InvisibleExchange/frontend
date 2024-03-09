@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import TradingViewWidget, { Themes } from "react-tradingview-widget";
+import TradingViewWidget from "react-ts-tradingview-widgets";
 import { UserContext } from "../../../context/UserContext";
+
+import { AdvancedRealTimeChart } from "react-ts-tradingview-widgets";
 
 const Chart = () => {
   const { selectedType, selectedMarket } = useContext(UserContext);
@@ -11,7 +13,7 @@ const Chart = () => {
       : selectedMarket.pairs.split("/")[0];
 
   const divStyle: React.CSSProperties = {
-    height: "95%",
+    height: "96%",
   };
 
   const parentRef = useRef<HTMLDivElement>(null);
@@ -32,21 +34,34 @@ const ChartInner = ({ token }: any) => {
     SOL: "BINANCE:SOLUSDT",
   };
 
-  useEffect(() => {}, [token]);
+  useEffect(() => {
+    console.log("token", token, symbols[token]);
+  }, [token]);
 
   return (
-    <TradingViewWidget
-      symbol={symbols[token]}
-      theme={Themes.DARK}
-      save_image={false}
-      hide_top_toolbar={false}
-      container_id="tradingview_7f572"
-      interval="60"
-      timezone="Etc/UTC"
-      locale="en"
-      enable_publishing={false}
-      hide_legend={true}
-      autosize
-    />
+    <>
+      {Object.keys(symbols).map((key) => (
+        <div
+          style={{ height: "100%", display: key === token ? "block" : "none" }}
+          key={key}
+        >
+          <AdvancedRealTimeChart
+            theme="dark"
+            autosize
+            allow_symbol_change={true}
+            container_id={`tradingview_${key}`}
+            symbol={symbols[key]}
+            interval="60"
+            timezone="Etc/UTC"
+            locale="en"
+            enable_publishing={false}
+            hide_legend={true}
+            save_image={false}
+            hide_side_toolbar={true}
+            style="1"
+          />
+        </div>
+      ))}
+    </>
   );
 };

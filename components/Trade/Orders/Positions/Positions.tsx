@@ -8,6 +8,7 @@ import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
 
 import { UserContext } from "../../../../context/UserContext";
+import Image from "next/image";
 
 const tokenLogos = {
   453755560: ethLogo,
@@ -136,10 +137,21 @@ const Positions = () => {
                             alignItems: "center",
                           }}
                         >
-                          <img
+                          {/* <img
                             src={logo.src}
                             alt="Currency Logo"
                             className="logo_icon"
+                          /> */}
+                          <Image
+                            src={logo.src}
+                            alt="Currency Logo"
+                            width={25}
+                            height={20}
+                            style={{
+                              objectFit: "contain",
+                              marginLeft: "1rem",
+                              marginRight: "1rem",
+                            }}
                           />
                           <div className="ml-3">
                             {IDS_TO_SYMBOLS[syntheticToken] + "-PERP"}

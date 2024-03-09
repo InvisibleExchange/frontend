@@ -11,6 +11,7 @@ import { useDispatch } from "react-redux";
 import { setSelectTradeType } from "../../../../lib/store/features/apiSlice";
 import { marketList } from "../../../../data/markets";
 import { UserContext } from "../../../../context/UserContext";
+import Image from "next/image";
 
 // const types = [{ name: "PERPETUAL" }, { name: "SPOT" }];
 
@@ -45,11 +46,23 @@ export default function PairSelector() {
         <>
           <div className="flex items-center justify-between w-full bg-fg_above_color">
             <Popover.Button className="flex items-center gap-1 px-4 py-3 outline-none bg-fg_above_color">
-              <img
+              {/* <img
                 src={selectedMarket.logo.src}
                 alt="BTC Logo"
                 className="logo_icon"
+              /> */}
+              <Image
+                src={selectedMarket.logo.src}
+                alt="Currency Logo"
+                width={25}
+                height={20}
+                style={{
+                  objectFit: "contain",
+                  marginLeft: "1rem",
+                  marginRight: "1rem",
+                }}
               />
+
               <p className="font-semibold tracking-wider text-primary_color">
                 {selectedType === "perpetual"
                   ? selectedMarket.perpetual

@@ -1,9 +1,9 @@
 // Import the Rust-generated WebAssembly package
 
-const {
-  pedersen_on_vec_binding,
-  pedersen_binding,
-} = require("../../pedersen_pkg/starknet");
+// const {
+//   pedersen_on_vec_binding,
+//   pedersen_binding,
+// } = require("../../pedersen_pkg/starknet");
 
 const { poseidonHash, poseidonHashMany } = require("@scure/starknet");
 

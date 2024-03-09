@@ -1,3 +1,5 @@
+
+
 import Head from "next/head";
 import Layout from "../components/Layout/Layout";
 import Trade from "../components/Trade/Trade";

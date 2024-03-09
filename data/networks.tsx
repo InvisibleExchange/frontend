@@ -23,7 +23,7 @@ export type NetworkType = {
 };
 
 export const NETWORK = {
-  "ETH Mainnet": 1,
+  "Ethereum": 1,
   Sepolia: 11155111,
   Starknet: 0,
   ZkSync: 324,
@@ -38,7 +38,7 @@ type NetworkObject = {
 
 export const NETWORKS: NetworkObject = {
   1: {
-    name: "ETH Mainnet",
+    name: "Ethereum",
     networkId: 1,
     chainId: 30101,
     explorerUrl: "https://etherscan.io/",
