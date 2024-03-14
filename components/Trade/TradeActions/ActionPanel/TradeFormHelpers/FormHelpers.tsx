@@ -1,11 +1,7 @@
 const {
-  get_max_leverage,
-  COLLATERAL_TOKEN_DECIMALS,
   DECIMALS_PER_ASSET,
   PRICE_DECIMALS_PER_ASSET,
   SYMBOLS_TO_IDS,
-  MAX_LEVERAGE,
-  COLLATERAL_TOKEN,
 } = require("../../../../../app_logic/helpers/utils");
 
 const {
@@ -15,6 +11,7 @@ const {
   calulateLiqPriceInIncreaseSize,
   calulateLiqPriceInDecreaseSize,
   calulateLiqPriceInFlipSide,
+  _getLiquidationPrice,
 } = require("../../../../../app_logic/helpers/tradePriceCalculations");
 
 function checkValidSizeIncrease(
@@ -273,6 +270,26 @@ function calculateNewLiqPrice(
   }
 }
 
+function getEstimatedNewLiqPrice(
+  entryPrice: number,
+  margin: number,
+  position_size: number,
+  orderSide: any,
+  syntheticToken: number,
+  is_partial_liquidation: boolean
+) {
+  let liqPrice = _getLiquidationPrice(
+    entryPrice,
+    margin,
+    position_size,
+    orderSide,
+    syntheticToken,
+    is_partial_liquidation
+  );
+
+  return liqPrice;
+}
+
 function formatInputNum(val: any, decimals: number) {
   if (!val) {
     return val;
@@ -340,6 +357,7 @@ export {
   calculateNewSize,
   calculateAvgEntryPrice,
   calculateNewLiqPrice,
+  getEstimatedNewLiqPrice,
   formatInputNum,
   addCommasToNumber,
   checkValidSizeIncrease,

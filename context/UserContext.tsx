@@ -1,7 +1,5 @@
 import { createContext, useState, useReducer, useContext } from "react";
 
-import init from "../pedersen_pkg/starknet";
-
 const {
   handleSwapResult,
   handlePerpSwapResult,
@@ -261,7 +259,9 @@ function UserProvider({ children }: Props) {
       let { user: __user, privKey: pk } = await loginUser(signer, privKey);
       user_ = __user;
 
-      sessionStorage.setItem("privKey", pk.toString());
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("privKey", pk.toString());
+      }
     } catch (error) {
       setToastMessage({ type: "error", message: "Login failed - " + error });
     }
@@ -274,7 +274,9 @@ function UserProvider({ children }: Props) {
   };
 
   const logout = () => {
-    sessionStorage.removeItem("privKey");
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("privKey");
+    }
 
     setUser(null);
   };
@@ -340,10 +342,12 @@ function UserProvider({ children }: Props) {
     setInitialized(true);
     initialized_ = true;
 
-    await init();
-
     // ? If prev priv key exists, use it to login the user
-    const privKey = sessionStorage.getItem("privKey");
+
+    let privKey;
+    if (typeof window !== "undefined") {
+      privKey = sessionStorage.getItem("privKey");
+    }
     if (privKey) {
       setIsLoading(true);
       login(null, privKey).then((_) => {

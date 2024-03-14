@@ -8,6 +8,13 @@ import ethLogo from "../../../../public/tokenIcons/ethereum-eth-logo.png";
 import solLogo from "../../../../public/tokenIcons/solanaLogo.png";
 
 import { UserContext } from "../../../../context/UserContext";
+import Image from "next/image";
+
+const tokenLogos = {
+  453755560: ethLogo,
+  3592681469: btcLogo,
+  277158171: solLogo,
+};
 
 const {
   IDS_TO_SYMBOLS,
@@ -101,26 +108,12 @@ const Positions = () => {
                     ? "text-green_lighter"
                     : "text-red";
 
-                let logo;
+                let logo = tokenLogos[syntheticToken];
 
                 let priceRoundingDecimals =
                   PRICE_ROUNDING_DECIMALS[syntheticToken];
                 let sizeRoundingDecimals =
                   SIZE_ROUNDING_DECIMALS[syntheticToken];
-
-                switch (syntheticToken) {
-                  case 12345:
-                    logo = btcLogo;
-                    break;
-                  case 54321:
-                    logo = ethLogo;
-                    break;
-                  case 66666:
-                    logo = solLogo;
-                    break;
-                  default:
-                    break;
-                }
 
                 return (
                   <tr
@@ -144,10 +137,21 @@ const Positions = () => {
                             alignItems: "center",
                           }}
                         >
-                          <img
+                          {/* <img
                             src={logo.src}
                             alt="Currency Logo"
                             className="logo_icon"
+                          /> */}
+                          <Image
+                            src={logo.src}
+                            alt="Currency Logo"
+                            width={25}
+                            height={20}
+                            style={{
+                              objectFit: "contain",
+                              marginLeft: "1rem",
+                              marginRight: "1rem",
+                            }}
                           />
                           <div className="ml-3">
                             {IDS_TO_SYMBOLS[syntheticToken] + "-PERP"}

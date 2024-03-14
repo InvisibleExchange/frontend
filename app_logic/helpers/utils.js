@@ -33,15 +33,15 @@ const PRICE_ROUNDING_DECIMALS = EXCHANGE_CONFIG["PRICE_ROUNDING_DECIMALS"];
 // How many decimals to round to on the frontend
 const SIZE_ROUNDING_DECIMALS = EXCHANGE_CONFIG["SIZE_ROUNDING_DECIMALS"];
 
-// const SERVER_URL = "localhost";
-// const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
-// const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
-// const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
+const SERVER_URL = "localhost";
+const EXPRESS_APP_URL = `http://${SERVER_URL}:4000`;
+const SERVER_WS_URL = `ws://${SERVER_URL}:50053`;
+const RELAY_WS_URL = `ws://${SERVER_URL}:4040`;
 
-const SERVER_URL = "54.212.28.196";
-const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
-const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
-const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
+// const SERVER_URL = "54.212.28.196";
+// const EXPRESS_APP_URL = "https://invisible.zigzag.exchange/api";
+// const SERVER_WS_URL = "wss://invisible.zigzag.exchange/ws2";
+// const RELAY_WS_URL = "wss://invisible.zigzag.exchange/ws1";
 
 /**
  * gets the order book entries for a given market

@@ -1,8 +1,7 @@
-const ethers = require("ethers");
-
 const EXCHANGE_CONFIG = require("../../exchange-config.json");
 const ONCHAIN_DECIMALS_PER_ASSET =
   EXCHANGE_CONFIG["ONCHAIN_DECIMALS_PER_ASSET"];
+const SYMBOLS_TO_IDS = EXCHANGE_CONFIG["SYMBOLS_TO_IDS"];
 
 async function executeDepositTx(
   user,
@@ -10,14 +9,21 @@ async function executeDepositTx(
   amount,
   token,
   tokenBalance,
-  userAddress
+  userAddress,
+  setToastMessage
 ) {
-  if (amount <= 0 || (!smartContracts[token] && token != 54321)) {
+  tokenBalance = Number(tokenBalance);
+  amount = Number(amount);
+
+  if (
+    amount <= 0 ||
+    (!smartContracts[token] && token != SYMBOLS_TO_IDS["ETH"])
+  ) {
     alert("Set a valid amount and select a token");
     return null;
   }
 
-  let invisibleL1Contract = smartContracts["invisibleL1"];
+  let invisibleL1Contract = smartContracts["invisible"];
 
   let depositStarkKey = user.getDepositStarkKey(token);
 
@@ -26,7 +32,7 @@ async function executeDepositTx(
     10n ** BigInt(ONCHAIN_DECIMALS_PER_ASSET[token] - 3);
 
   // ! If ETH
-  if (token == 54321) {
+  if (token == SYMBOLS_TO_IDS["ETH"]) {
     if (tokenBalance < amount) {
       throw new Error("Not enough balance");
     }
@@ -43,6 +49,10 @@ async function executeDepositTx(
           throw Error("User rejected transaction");
         }
       });
+    setToastMessage({
+      type: "pending_tx",
+      message: "Waiting for deposit confirmation: " + txRes.hash,
+    });
     let receipt = await txRes.wait();
     let txHash = receipt.transactionHash;
 
@@ -94,6 +104,10 @@ async function executeDepositTx(
             throw Error("User rejected transaction");
           }
         });
+      setToastMessage({
+        type: "pending_tx",
+        message: "Waiting for approval confirmation: " + txRes.hash,
+      });
       await txRes.wait();
     }
 
@@ -106,11 +120,18 @@ async function executeDepositTx(
           throw Error("User rejected transaction");
         }
       });
-    let receipt = await txRes.wait();
+    setToastMessage({
+      type: "pending_tx",
+      message: "Waiting for deposit confirmation: " + txRes.hash,
+    });
+    let receipt = await txRes.wait().catch((err) => {
+      throw Error("Deposit failed");
+    });
     let txHash = receipt.transactionHash;
 
     // ? Get the events emitted by the transaction
     let deposit;
+
     receipt.logs.forEach((log) => {
       try {
         const event = invisibleL1Contract.interface.parseLog(log);
@@ -137,8 +158,8 @@ async function executeDepositTx(
 }
 
 async function main() {
-  // let res = await makeDeposit(null, 0.01, 54321);
-  // let res = await makeDeposit(null, 0.01, 12345);
+  // let res = await makeDeposit(null, 0.01, SYMBOLS_TO_IDS["ETH"]);
+  // let res = await makeDeposit(null, 0.01, SYMBOLS_TO_IDS["BTC"]);
   // listenForDeposit();
 }
 

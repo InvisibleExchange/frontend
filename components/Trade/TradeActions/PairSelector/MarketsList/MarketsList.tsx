@@ -5,6 +5,7 @@ import classNames from "classnames";
 import { HiStar, HiOutlineStar } from "react-icons/hi2";
 import { FiSearch } from "react-icons/fi";
 import { UserContext } from "../../../../../context/UserContext";
+import Image from "next/image";
 
 const { SYMBOLS_TO_IDS } = require("../../../../../app_logic/helpers/utils");
 
@@ -137,11 +138,23 @@ export default function MarketsList({
                     }}
                     className="py-2.5 pl-3  max-h-12 flex items-center gap-3 overflow-y-auto"
                   >
-                    <img
+                    {/* <img
                       src={item.logo.src}
                       alt="BTC Logo"
                       className="logo_icon"
+                    /> */}
+                    <Image
+                      src={item.logo.src}
+                      alt="Currency Logo"
+                      width={25}
+                      height={20}
+                      style={{
+                        objectFit: "contain",
+                        marginLeft: "1rem",
+                        marginRight: "1rem",
+                      }}
                     />
+
                     <p className="text-sm dark:text-white text-fg_below_color">
                       {item.pairs}
                     </p>

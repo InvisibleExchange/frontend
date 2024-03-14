@@ -7,8 +7,8 @@ import DepositPanel from "./DepositPanel";
 import WithdrawPanel from "./WithdrawPanel";
 import Toast from "../Layout/Toast/Toast";
 import { UserContext } from "../../context/UserContext";
-import TradeActions from "../Trade/TradeActions/TradeActions";
 import LandingModal from "../Layout/LandingModal/LandingModal";
+import BridgePanel from "./BridgePanel";
 
 const Transact = () => {
   const { initialize, initialized, setToastMessage, toastMessage } =
@@ -22,7 +22,8 @@ const Transact = () => {
 
     const id = new Date().getTime();
 
-    let expiry = new Date().getTime() + 3000;
+    let exp = type == "pending_tx" ? 7500 : 3000;
+    let expiry = new Date().getTime() + exp;
 
     _toasts_ = [..._toasts_, { id, type, message, expiry }];
 
@@ -51,15 +52,28 @@ const Transact = () => {
     }
   }, [toastMessage]);
 
-  let [categories] = useState(["Deposit", "Withdraw"]);
+  let [categories] = useState(["Deposit", "Withdraw", "Bridge"]);
 
   initialize();
+
+  const getCategoryColor = (category: string) => {
+    let selectedColor: string;
+    if (category === "Deposit") {
+      selectedColor = " bg-green_lighter shadow-green";
+    } else if (category === "Withdraw") {
+      selectedColor = " bg-red_lighter shadow-red";
+    } else {
+      selectedColor = "bg-blue shadow-blue";
+    }
+
+    return selectedColor;
+  };
 
   return (
     <div className="flex justify-center w-full">
       <LandingModal shouldOpen={!initialized} />
 
-      <div className="w-[500px] mt-10  rounded-lg">
+      <div className="w-[40rem] mt-10  rounded-lg">
         <Tab.Group>
           <Tab.List className="flex p-1 space-x-2 rounded-xl bg-blue-900/20">
             {categories.map((category, index) => (
@@ -70,16 +84,9 @@ const Transact = () => {
                     "w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-blue-700 text-white",
                     " uppercase rounded-md font-overpass hover:opacity-100 outline-none",
                     selected
-                      ? classNames(
-                          category === "Deposit"
-                            ? "bg-green_lighter shadow-green "
-                            : "bg-red_lighter shadow-red "
-                        )
-                      : classNames(
-                          category === "Deposit"
-                            ? "bg-green_lighter opacity-30 hover:opacity-70"
-                            : "bg-red_lighter opacity-30  hover:opacity-70"
-                        )
+                      ? getCategoryColor(category)
+                      : getCategoryColor(category) +
+                          " opacity-30 hover:opacity-70"
                   )
                 }
               >
@@ -94,6 +101,9 @@ const Transact = () => {
             </Tab.Panel>
             <Tab.Panel>
               <WithdrawPanel />
+            </Tab.Panel>
+            <Tab.Panel>
+              <BridgePanel />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

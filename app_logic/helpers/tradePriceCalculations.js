@@ -1,23 +1,13 @@
-const {
-  DECIMALS_PER_ASSET,
-  PRICE_DECIMALS_PER_ASSET,
-  COLLATERAL_TOKEN_DECIMALS,
-} = require("./utils");
+const EXCHANGE_CONFIG = require("../../exchange-config.json");
 
-// calculate prices
+const LEVERAGE_BOUNDS_PER_ASSET = EXCHANGE_CONFIG["LEVERAGE_BOUNDS_PER_ASSET"];
+const MIN_PARTIAL_LIQUIDATION_SIZE =
+  EXCHANGE_CONFIG["MIN_PARTIAL_LIQUIDATION_SIZE"];
+const MAX_LEVERAGE = EXCHANGE_CONFIG["MAX_LEVERAGE"];
 
-const LEVERAGE_BOUNDS_PER_ASSET = {
-  12345: [1.5, 30.0], // BTC
-  54321: [15.0, 150.0], // ETH
-  66666: [1_000_000_000, 140_000_000_000.0], // PEPE
-};
-const MAX_LEVERAGE = 15;
-
-const MIN_PARTIAL_LIQUIDATION_SIZE = {
-  12345: 50_000_000,
-  54321: 500_000_000,
-  66666: 350_000_000, // PEPE
-};
+const DECIMALS_PER_ASSET = EXCHANGE_CONFIG["DECIMALS_PER_ASSET"];
+const PRICE_DECIMALS_PER_ASSET = EXCHANGE_CONFIG["PRICE_DECIMALS_PER_ASSET"];
+const COLLATERAL_TOKEN_DECIMALS = EXCHANGE_CONFIG["COLLATERAL_TOKEN_DECIMALS"];
 
 function _getBankruptcyPrice(
   entryPrice,
@@ -33,7 +23,7 @@ function _getBankruptcyPrice(
     syntheticPriceDecimals - COLLATERAL_TOKEN_DECIMALS + syntheticDecimals;
   const multiplier1 = 10 ** decConversion1;
 
-  if (orderSide == "Long" || orderSide == 0) {
+  if (orderSide == "Long" || orderSide == 1) {
     const bp =
       Math.floor(entryPrice) - Math.floor((margin * multiplier1) / size);
 
@@ -53,9 +43,9 @@ function _getLiquidationPrice(
   syntheticToken,
   is_partial_liquidation
 ) {
-  entryPrice = Number.parseInt(entryPrice);
-  margin = Number.parseInt(margin);
-  position_size = Number.parseInt(position_size);
+  entryPrice = Number(entryPrice);
+  margin = Number(margin);
+  position_size = Number(position_size);
 
   let mm_fraction =
     is_partial_liquidation &&
@@ -63,16 +53,16 @@ function _getLiquidationPrice(
       ? 4
       : 3;
 
-  const syntheticDecimals = DECIMALS_PER_ASSET[syntheticToken];
-  const syntheticPriceDecimals = PRICE_DECIMALS_PER_ASSET[syntheticToken];
+  // const syntheticDecimals = DECIMALS_PER_ASSET[syntheticToken];
+  // const syntheticPriceDecimals = PRICE_DECIMALS_PER_ASSET[syntheticToken];
 
-  const decConversion1 =
-    syntheticDecimals + syntheticPriceDecimals - COLLATERAL_TOKEN_DECIMALS;
-  const multiplier1 = 10 ** decConversion1;
+  // const decConversion1 =
+  //   syntheticDecimals + syntheticPriceDecimals - COLLATERAL_TOKEN_DECIMALS;
+  // const multiplier1 = 10 ** decConversion1;
 
   // & price_delta = (margin - mm_fraction * entry_price * size) / ((1 -/+ mm_fraction)*size) ; - for long, + for short
 
-  let d1 = margin * multiplier1;
+  let d1 = margin;
   let d2 = (mm_fraction * entryPrice * position_size) / 100;
 
   if (orderSide == "Long" || orderSide == 1) {
@@ -87,7 +77,7 @@ function _getLiquidationPrice(
     return Math.max(liquidation_price, 0);
   } else {
     if (position_size == 0) {
-      return 0;
+      return 1_000_000_000;
     }
 
     let price_delta = ((d1 - d2) * 100) / ((100 + mm_fraction) * position_size);

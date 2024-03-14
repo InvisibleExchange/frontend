@@ -2,7 +2,10 @@ import React, { useContext, useEffect, useState } from "react";
 
 import DebouncedTooltipPerpetualSlider from "../TooltipPerpetualSlider";
 import SettingsPopover from "../TradeFormHelpers/SettingsPopover";
-import UpdatedPositionInfo from "../TradeFormHelpers/UpdatedPositionInfo";
+import {
+  UpdatedPositionInfo,
+  EstimateLiquidationPriceInfo,
+} from "../TradeFormHelpers/UpdatedPositionInfo";
 import classNames from "classnames";
 
 import {
@@ -417,7 +420,20 @@ const TradeForm = ({
             action={action}
           />
         </div>
-      ) : null}
+      ) : (
+        <div className="mt-5 pt-5 p-0 m-0">
+          <div>{/* <em>New values after update:</em> */}</div>
+
+          <EstimateLiquidationPriceInfo
+            entryPrice_={price}
+            margin_={quoteAmount}
+            position_size_={baseAmount}
+            orderSide={action}
+            syntheticToken={SYMBOLS_TO_IDS[token]}
+            is_partial_liquidation={true}
+          />
+        </div>
+      )}
     </div>
   );
 };

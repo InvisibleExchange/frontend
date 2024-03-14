@@ -30,23 +30,44 @@ export const marketList = [
 ];
 
 export const token2Market = {
-  12345: marketList[0],
-  54321: marketList[1],
-  66666: marketList[2],
+  3592681469: marketList[0],
+  453755560: marketList[1],
+  277158171: marketList[2],
 };
 
 const exchange_config = require("../exchange-config.json");
 
-export const tokenAddressList = exchange_config["TOKEN_ADDRESS_LIST"];
+const CONTRACT_ADDRESSES = exchange_config["CONTRACT_ADDRESSES"];
 
-export const tokenAddress2Id = exchange_config["TOKEN_ADDRESS_2_ID"];
+function tokenAddressList(chainId: number) {
+  return CONTRACT_ADDRESSES[chainId]["TOKEN_ADDRESS_LIST"];
+}
 
-export const tokenId2Address = exchange_config["TOKEN_ID_2_ADDRESS"];
+function tokenAddress2Id(chainId: number) {
+  return CONTRACT_ADDRESSES[chainId]["TOKEN_ADDRESS_2_ID"];
+}
 
-export const tokenId2Name = exchange_config["TOKEN_ID_2_NAME"];
+function tokenId2Address(chainId: number) {
+  return CONTRACT_ADDRESSES[chainId]["TOKEN_ID_2_ADDRESS"];
+}
 
-export const invisibleContractAddress =
-  exchange_config["INVISIBL1_ETH_ADDRESS"];
+function tokenId2Name() {
+  return exchange_config["TOKEN_ID_2_NAME"];
+}
 
-export const onchainDecimalsPerAsset =
-  exchange_config["ONCHAIN_DECIMALS_PER_ASSET"];
+function invisibleContractAddress(chainId: number) {
+  return CONTRACT_ADDRESSES[chainId]["INVISIBLE_ADDRESS"];
+}
+
+function onchainDecimalsPerAsset() {
+  return CONTRACT_ADDRESSES["ONCHAIN_DECIMALS_PER_ASSET"];
+}
+
+export {
+  tokenAddressList,
+  tokenAddress2Id,
+  tokenId2Address,
+  tokenId2Name,
+  invisibleContractAddress,
+  onchainDecimalsPerAsset,
+};

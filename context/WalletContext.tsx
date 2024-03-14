@@ -8,18 +8,17 @@ import {
   useMemo,
 } from "react";
 
-import { BigNumber, ethers, utils } from "ethers";
+import { BigNumber, ethers } from "ethers";
 
 import invLogo from "../public/tokenIcons/invisible-logo-small.png";
 
 import Onboard, { WalletState } from "@web3-onboard/core";
 import injectedModule from "@web3-onboard/injected-wallets";
-import walletConnectModule from "@web3-onboard/walletconnect/dist";
 import coinbaseWalletModule from "@web3-onboard/coinbase";
-import ledgerModule from "@web3-onboard/ledger";
-import mewWallet from "@web3-onboard/mew-wallet";
-import tallyHoWalletModule from "@web3-onboard/tallyho";
-// import logo from "../public/img/zz.svg"
+import safeModule from "@web3-onboard/gnosis";
+import metamaskSDK from "@web3-onboard/metamask";
+import phantomModule from "@web3-onboard/phantom";
+import walletConnectModule from "@web3-onboard/walletconnect";
 
 import {
   NETWORKS,
@@ -64,6 +63,8 @@ export type WalletContextType = {
   setBalances: Dispatch<SetStateAction<TokenBalanceObject>>;
   setAllowances: Dispatch<SetStateAction<TokenAllowanceObject>>;
 
+  getGasEstimate: (gasLimit: number) => Promise<number | null>;
+
   smartContracts: any;
 };
 
@@ -94,6 +95,8 @@ export const WalletContext = createContext<WalletContextType>({
   setBalances: () => {},
   setAllowances: () => {},
 
+  getGasEstimate: async (gasLimit: number) => null,
+
   smartContracts: {},
 });
 
@@ -102,27 +105,36 @@ export const WalletContext = createContext<WalletContextType>({
 export type TokenBalanceObject = Record<string, BigNumber | undefined>;
 export type TokenAllowanceObject = Record<string, BigNumber | undefined>;
 
+const metamaskSDKWallet = metamaskSDK({
+  options: {
+    extensionOnly: false,
+    dappMetadata: {
+      name: "Invisible Exchange",
+    },
+  },
+});
 const wallets = [
-  injectedModule(),
   coinbaseWalletModule({ darkMode: true }),
-  ledgerModule({ walletConnectVersion: 1 }),
+  safeModule(),
+  metamaskSDKWallet,
+  phantomModule(),
   walletConnectModule({
-    version: 1,
-    bridge: "https://bridge.walletconnect.org",
+    version: 2,
+    projectId: "a86bb4a5507650c51d8a0e0c5ca0e158",
+    dappUrl: "https://invisible.zigzag.exchange/",
   }),
-  mewWallet(),
-  tallyHoWalletModule(),
+  injectedModule(),
 ];
 
 const chains = Object.keys(NETWORKS).map((key: string) => {
-  const network = NETWORKS[Number(key)];
+  const network_ = NETWORKS[Number(key)];
 
   return {
-    id: "0x" + network.networkId.toString(16),
-    token: network.nativeCurrency.symbol,
-    label: network.name,
-    rpcUrl: network.rpcUrl,
-    secondaryTokens: network.secondaryTokens,
+    id: "0x" + network_.networkId.toString(16),
+    token: network_.nativeCurrency.symbol,
+    label: network_.name,
+    rpcUrl: network_.rpcUrl,
+    secondaryTokens: network_.secondaryTokens,
   };
 });
 
@@ -159,9 +171,8 @@ function WalletProvider({ children }: Props) {
   }
 
   const [username, setUsername] = useState<string | null>(null);
-  const [network, setNetwork] = useState<NetworkType | null>(
-    _getDefaultNetwork()
-  );
+  let network_ = _getDefaultNetwork();
+  let [network, setNetwork] = useState<NetworkType | null>(network_);
   const [ethersProvider, setEthersProvider] =
     useState<ethers.providers.BaseProvider>(_getDefaultProvider());
   const [signer, setSigner] = useState<ethers.Signer | null>(null);
@@ -181,10 +192,12 @@ function WalletProvider({ children }: Props) {
     const connectedWallets = wallets.map(({ label }) => label);
     if (!connectedWallets) return;
 
-    sessionStorage.setItem(
-      "connectedWallets",
-      JSON.stringify(connectedWallets)
-    );
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        "connectedWallets",
+        JSON.stringify(connectedWallets)
+      );
+    }
 
     const primaryAddress = wallets[0]?.accounts?.[0]?.address;
     const primaryChain = parseInt(wallets[0]?.chains?.[0].id, 16);
@@ -198,8 +211,12 @@ function WalletProvider({ children }: Props) {
 
   // Reconnect if previously connected
   useEffect(() => {
-    const previouslyConnectedWalletsString =
-      sessionStorage.getItem("connectedWallets");
+    let previouslyConnectedWalletsString;
+    if (typeof window !== "undefined") {
+      previouslyConnectedWalletsString =
+        sessionStorage.getItem("connectedWallets");
+    }
+
     if (!previouslyConnectedWalletsString) return;
     // JSON.parse()[0] => previously primary wallet
     const label = previouslyConnectedWalletsString
@@ -224,15 +241,22 @@ function WalletProvider({ children }: Props) {
       if (!wallets) throw new Error("No connected wallet found");
       let signer_ = updateWallet(wallets[0]);
 
-      // let contracts = initContractConnections(signer_);
-      // setSmartContracts(contracts);
+      // TODO ==========================================
+      let contracts = initContractConnections(signer_, network?.chainId ?? 0);
+      setSmartContracts(contracts);
 
-      updateWalletBalances(tokenAddressList, []);
+      updateWalletBalances(tokenAddressList(network?.chainId ?? 0), []);
 
-      // await getWithdrawableAmounts(
-      //   wallets[0]?.accounts?.[0]?.address,
-      //   contracts
-      // )
+      try {
+        await getWithdrawableAmounts(
+          wallets[0]?.accounts?.[0]?.address,
+          contracts
+        );
+      } catch (error) {
+        console.error("getWithdrawableAmounts error: ", error);
+      }
+
+      // TODO ==========================================
 
       setIsLoading(false);
     } catch (error: any) {
@@ -268,7 +292,15 @@ function WalletProvider({ children }: Props) {
 
     const chainId = "0x" + _networkId.toString(16);
     const success = await onboard.setChain({ chainId });
+
     if (success) setNetwork(NETWORKS[_networkId]);
+
+    let contracts = initContractConnections(
+      signer,
+      NETWORKS[_networkId]?.chainId ?? 0
+    );
+    setSmartContracts(contracts);
+
     return success;
   };
 
@@ -288,12 +320,12 @@ function WalletProvider({ children }: Props) {
     tokenIdsList_: number[]
   ) => {
     if (tokenAddressList_.length > 0) {
-      onboard.state.actions.updateBalances(tokenAddressList_);
+      // onboard.state.updateBalances(tokenAddressList_);
     } else if (tokenIdsList_.length > 0) {
       let addresses_: string[] | undefined = [];
       for (let i = 0; i < tokenIdsList_.length; i++) {
         let tokenId = tokenIdsList_[i];
-        let addr = tokenId2Address[tokenId];
+        let addr = tokenId2Address(network?.chainId ?? 0)[tokenId];
 
         if (!addr) continue;
 
@@ -311,17 +343,17 @@ function WalletProvider({ children }: Props) {
     const currentState = onboard.state.get();
     if (!currentState || !currentState.wallets.length) return null;
 
-    if (tokenId == 54321) {
+    if (tokenId == 453755560) {
       let tokenBalance = currentState.wallets[0].accounts[0].balance?.ETH;
 
       return tokenBalance ?? null;
     }
 
-    let symbol = tokenId2Name[tokenId];
+    let symbol = tokenId2Name()[tokenId];
 
     let tokenBalance =
-      currentState.wallets[0].accounts[0].secondaryTokens?.find(
-        (token: any) => token.name == symbol
+      currentState.wallets[0].accounts[0].secondaryTokens?.find((token: any) =>
+        token.name.includes(symbol)
       )?.balance;
 
     return tokenBalance ?? null;
@@ -334,8 +366,8 @@ function WalletProvider({ children }: Props) {
     let withdrawbleAmounts = {};
     let invisibleContract = contracts.invisibleL1;
 
-    for (let address of tokenAddressList) {
-      const tokenId = tokenAddress2Id[address];
+    for (let address of tokenAddressList[network?.chainId ?? 0]) {
+      const tokenId = tokenAddress2Id(network?.chainId ?? 0)[address];
 
       let amount = await invisibleContract?.getWithdrawableAmount(
         userAddress,
@@ -347,45 +379,62 @@ function WalletProvider({ children }: Props) {
 
     let amount = await invisibleContract?.getETHWithdrawableAmount(userAddress);
 
-    withdrawbleAmounts[54321] = amount;
+    withdrawbleAmounts[453755560] = amount;
 
     setWithdrawablAmounts(withdrawbleAmounts);
   };
 
-  const initContractConnections = (signer: ethers.Signer | null) => {
-    const invisibleL1Abi =
-      require("../app_logic/helpers/abis/InvisibleL1.json").abi;
-
+  const initContractConnections = (
+    signer: ethers.Signer | null,
+    chainId: number
+  ) => {
     const TestTokenAbi =
       require("../app_logic/helpers/abis/TestToken.json").abi;
 
-    const WbtcAddress = tokenId2Address[12345];
+    const WbtcAddress = tokenId2Address(chainId ?? 0)[3592681469];
     const WbtcContract = new ethers.Contract(
       WbtcAddress,
       TestTokenAbi,
       signer ?? undefined
     );
 
-    const UsdcAddress = tokenId2Address[55555];
+    const UsdcAddress = tokenId2Address(chainId ?? 0)[2413654107];
     const UsdcContract = new ethers.Contract(
       UsdcAddress,
       TestTokenAbi,
       signer ?? undefined
     );
 
-    const invisibleL1Contract = new ethers.Contract(
-      invisibleContractAddress,
-      invisibleL1Abi,
+    const invisibleAbi =
+      chainId == _getDefaultNetwork().chainId
+        ? require("../app_logic/helpers/abis/Invisible.json").abi
+        : require("../app_logic/helpers/abis/InvisibleL2.json").abi;
+
+    const invisibleContract = new ethers.Contract(
+      invisibleContractAddress(chainId ?? 0),
+      invisibleAbi,
       signer ?? undefined
     );
 
     const contracts = {
-      invisibleL1: invisibleL1Contract,
-      12345: WbtcContract,
-      55555: UsdcContract,
+      invisible: invisibleContract,
+      3592681469: WbtcContract,
+      2413654107: UsdcContract,
     };
 
     return contracts;
+  };
+
+  const getGasEstimate = async (gasLimit: number) => {
+    let gasPrice = await signer?.getGasPrice();
+    if (!gasPrice) return null;
+
+    let ethFeeWei = BigInt(gasLimit) * gasPrice.toBigInt();
+    let ethFeeEstimate = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
+
+    console.log("gasprice: ", gasPrice.toString());
+
+    return ethFeeEstimate;
   };
 
   const contextValue = useMemo(
@@ -410,6 +459,8 @@ function WalletProvider({ children }: Props) {
 
       setBalances,
       setAllowances,
+
+      getGasEstimate,
 
       smartContracts,
     }),
@@ -438,8 +489,9 @@ function WalletProvider({ children }: Props) {
 export default WalletProvider;
 
 function _getDefaultNetwork(): NetworkType {
-  return NETWORKS[NETWORK["ETH Mainnet"]];
-  // return NETWORKS[NETWORK["localhost"]];
+  // return NETWORKS[NETWORK["ETH Mainnet"]];
+  return NETWORKS[NETWORK["Sepolia"]];
+  // return NETWORKS[NETWORK["ArbitrumSepolia"]];
 }
 
 function _getDefaultProvider(): ethers.providers.BaseProvider {

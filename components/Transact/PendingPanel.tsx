@@ -11,9 +11,6 @@ const { sendDeposit } = require("../../app_logic/transactions/constructOrders");
 const {
   DECIMALS_PER_ASSET,
   IDS_TO_SYMBOLS,
-  SYMBOLS_TO_IDS,
-  CHAIN_IDS,
-  DUST_AMOUNT_PER_ASSET,
 } = require("../../app_logic/helpers/utils");
 
 const PendingPanel = ({ type, user, showToast }: any) => {
@@ -47,30 +44,30 @@ export default PendingPanel;
 
 const DepositPendingPanel = ({ user, showToast }: any) => {
   // Todo: remove this mock data -----------------------
-  let deposits: any[] = [];
+  // let deposits: any[] = [];
 
-  let amounts = { ETH: 5, USDC: 15_000, BTC: 0.4 };
-  // let icons = { ETH: ethLogo, USDC: usdcLogo, BTC: btcLogo };
-  let chainIds = { ETH: "ETH Mainnet", USDC: "Starknet", BTC: "ZkSync" };
-  if (user?.userId) {
-    for (let token_ of ["ETH", "USDC", "BTC"]) {
-      let token = SYMBOLS_TO_IDS[token_];
+  // let amounts = { ETH: 5, USDC: 15_000, BTC: 0.4 };
+  // // let icons = { ETH: ethLogo, USDC: usdcLogo, BTC: btcLogo };
+  // let chainIds = { ETH: "ETH Mainnet", USDC: "Starknet", BTC: "ZkSync" };
+  // if (user?.userId) {
+  //   for (let token_ of ["ETH", "USDC", "BTC"]) {
+  //     let token = SYMBOLS_TO_IDS[token_];
 
-      let bal = user.getAvailableAmount(token);
-      if (bal < DUST_AMOUNT_PER_ASSET[token]) {
-        deposits.push({
-          deposit_id: CHAIN_IDS[chainIds[token_]] * 2 ** 32 + 12345,
-          deposit_amount: amounts[token_] * 10 ** DECIMALS_PER_ASSET[token],
-          deposit_token: token,
-          stark_key: 1234,
-        });
-      }
-    }
-  }
+  //     let bal = user.getAvailableAmount(token);
+  //     if (bal < DUST_AMOUNT_PER_ASSET[token]) {
+  //       deposits.push({
+  //         deposit_id: CHAIN_IDS[chainIds[token_]] * 2 ** 32 + 12345,
+  //         deposit_amount: amounts[token_] * 10 ** DECIMALS_PER_ASSET[token],
+  //         deposit_token: token,
+  //         stark_key: 1234,
+  //       });
+  //     }
+  //   }
+  // }
   // Todo: remove this mock data -----------------------
 
-  // // depositId:  starkKey: tokenId: amount: timestamp:  txHash:
-  // let deposits = user?.deposits ?? [];
+  // depositId:  starkKey: tokenId: amount: timestamp:  txHash:
+  let deposits = user?.deposits ?? [];
 
   if (!deposits?.length) {
     return (
@@ -109,9 +106,9 @@ const DepositPendingPanel = ({ user, showToast }: any) => {
                     deposit.stark_key
                   );
 
-                  // user.deposits = user.deposits.filter(
-                  //   (d: any) => d.deposit_id != deposit.deposit_id
-                  // );
+                  user.deposits = user.deposits.filter(
+                    (d: any) => d.deposit_id != deposit.deposit_id
+                  );
 
                   showToast({
                     type: "info",

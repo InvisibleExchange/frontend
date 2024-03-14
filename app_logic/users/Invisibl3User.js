@@ -32,17 +32,11 @@ const {
   handlePfrNoteData,
 } = require("./Invisibl3UserUtils.js");
 
-const DUST_AMOUNT_PER_ASSET = {
-  12345: 2500, // BTC ~ 5c
-  54321: 25000, // ETH ~ 5c
-  55555: 50000, // USDC ~ 5c
-};
-const COLLATERAL_TOKEN = 55555;
-const CHAIN_IDS = {
-  "ETH Mainnet": 9090909,
-  Starknet: 7878787,
-  ZkSync: 5656565,
-};
+const EXCHANGE_CONFIG = require("../../exchange-config.json");
+
+const DUST_AMOUNT_PER_ASSET = EXCHANGE_CONFIG["DUST_AMOUNT_PER_ASSET"];
+const COLLATERAL_TOKEN = EXCHANGE_CONFIG["COLLATERAL_TOKEN"];
+const CHAIN_IDS = EXCHANGE_CONFIG["CHAIN_IDS"];
 
 const { Note, trimHash } = require("./Notes.js");
 // const {
@@ -161,8 +155,8 @@ export default class User {
       userData.depositIds,
       this.privateSeed
     );
-    this.deposits = deposits;
-    this.depositIds = newDepositIds;
+    this.deposits = deposits ?? [];
+    this.depositIds = newDepositIds ?? [];
 
     // ? Get Note Data ============================================
     let keyPairs =
@@ -665,18 +659,13 @@ export default class User {
 
     // TODO =============================================================
     // if (starkKey != depositStarkKey) {
-    //   throw new Error("Unknown stark key");
+    //   throw new Error("Invalid stark key");
     // }
 
-    let chainId = Number.parseInt(BigInt(depositId) / 2n ** 32n);
-    if (!Object.values(CHAIN_IDS).includes(chainId)) {
-      console.log("Unknown chain id");
-      console.log(chainId);
-      console.log(Object.values(CHAIN_IDS));
-      // throw new Error("Unknown chain id");
-
-      alert("Unknown chain id");
-    }
+    // let chainId = Number.parseInt(BigInt(depositId) / 2n ** 32n);
+    // if (!Object.values(CHAIN_IDS).includes(chainId)) {
+    //   throw new Error("Invalid Chain id");
+    // }
 
     // TODO =============================================================
 
@@ -705,9 +694,16 @@ export default class User {
   makeWithdrawalOrder(
     withdrawAmount,
     withdrawToken,
-    withdrawStarkKey,
-    whitdrawalChainId
+    withdrawalAddress,
+    whitdrawalChainId,
+    maxGasFee
   ) {
+    if (!withdrawalAddress) return null;
+    if (withdrawalAddress.toString().startsWith("0x")) {
+      withdrawalAddress = BigInt(withdrawalAddress, 16);
+    }
+    if (!maxGasFee) maxGasFee = 0n;
+
     // ? Get the notesIn and priv keys for these notes
     let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
       withdrawToken,
@@ -733,15 +729,17 @@ export default class User {
       notesIn,
       privKeys,
       refundNote,
-      withdrawStarkKey,
-      whitdrawalChainId
+      withdrawalAddress,
+      whitdrawalChainId,
+      maxGasFee
     );
 
     let withdrawal = new Withdrawal(
       whitdrawalChainId,
       withdrawToken,
       withdrawAmount,
-      withdrawStarkKey,
+      withdrawalAddress,
+      maxGasFee,
       notesIn,
       refundNote,
       signature

@@ -826,13 +826,13 @@ async function sendDeposit(user, depositId, amount, token, pubKey) {
 
 async function sendWithdrawal(
   user,
-  withdrawalChainId,
   amount,
   token,
-  starkKey,
-  chainId
+  recipient,
+  withdrawalChainId,
+  maxGasFee
 ) {
-  if (!user || !amount || !withdrawalChainId || !token || !starkKey) {
+  if (!user || !amount || !withdrawalChainId || !token || !recipient) {
     throw new Error("Invalid input");
   }
 
@@ -842,9 +842,12 @@ async function sendWithdrawal(
   let withdrawal = user.makeWithdrawalOrder(
     amount,
     token,
-    starkKey,
-    withdrawalChainId
+    recipient,
+    withdrawalChainId,
+    maxGasFee
   );
+
+  console.log("withdrawal.toGrpcObject()", withdrawal.toGrpcObject());
 
   await axios
     .post(`${EXPRESS_APP_URL}/execute_withdrawal`, withdrawal.toGrpcObject())
@@ -854,10 +857,16 @@ async function sendWithdrawal(
       if (withdrawal_response.successful) {
         for (let i = 0; i < withdrawal.notes_in.length; i++) {
           let note = withdrawal.notes_in[i];
+
           user.noteData[note.token] = user.noteData[note.token].filter(
             (n) => n.index != note.index
           );
-          // removeNoteFromDb(note);
+        }
+
+        if (withdrawal.refund_note) {
+          user.noteData[withdrawal.refund_note.token].push(
+            withdrawal.refund_note
+          );
         }
       } else {
         let msg =
@@ -865,9 +874,11 @@ async function sendWithdrawal(
           withdrawal_response.error_message;
         console.log(msg);
 
-        if (order_response.error_message.includes("Note does not exist")) {
+        if (withdrawal_response.error_message.includes("Note does not exist")) {
           restoreUserState(user, true, false);
         }
+
+        throw new Error(msg);
       }
     });
 }

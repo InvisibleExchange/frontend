@@ -280,6 +280,11 @@ thead {
   background-color: #00f7ff;
 }
 
+.tx_toast {
+  background-color: #424146;
+  color: white;
+}
+
 
 .toast.show {
   opacity: 1;
@@ -307,5 +312,9 @@ thead {
   height: 1.5rem;
 }
 
+
+.tradingview-widget-copyright {
+  display: none;
+}
 
 /* -------------- */
