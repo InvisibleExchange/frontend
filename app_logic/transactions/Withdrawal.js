@@ -9,6 +9,7 @@ module.exports = class Withdrawal {
     withdrawal_token,
     withdrawal_amount,
     recipient,
+    max_gas_fee,
     notes_in,
     refund_note,
     signature
@@ -18,6 +19,7 @@ module.exports = class Withdrawal {
     this.withdrawal_amount = withdrawal_amount;
     this.recipient = recipient;
     this.notes_in = notes_in;
+    this.max_gas_fee = max_gas_fee;
     this.refund_note = refund_note;
     this.signature = signature;
   }
@@ -28,6 +30,7 @@ module.exports = class Withdrawal {
       withdrawal_token: this.withdrawal_token.toString(),
       withdrawal_amount: this.withdrawal_amount.toString(),
       recipient: this.recipient.toString(),
+      max_gas_fee: this.max_gas_fee.toString(),
       notes_in: this.notes_in.map((n) => n.toGrpcObject()),
       refund_note: this.refund_note.toGrpcObject(),
       signature: {
@@ -37,13 +40,14 @@ module.exports = class Withdrawal {
     };
   }
 
-  static signWithdrawal(notes, pks, refund_note, starkKey, chainId) {
+  static signWithdrawal(notes, pks, refund_note, starkKey, chainId, gasFee) {
     let hashes = notes.map((n) => n.hashNote());
     let refundNoteHash = refund_note.hashNote();
 
     hashes.push(refundNoteHash);
     hashes.push(starkKey);
     hashes.push(chainId);
+    hashes.push(gasFee);
 
     let withdrawal_hash = computeHashOnElements(hashes);
 

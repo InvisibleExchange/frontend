@@ -11,7 +11,7 @@ export const LiFiWidgetNext = dynamic(
       <div
         style={{
           paddingTop: "10rem",
-          paddingLeft: "15rem",
+          paddingLeft: "19rem",
         }}
       >
         <LoadingSpinner />

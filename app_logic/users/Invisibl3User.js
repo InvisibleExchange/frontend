@@ -695,12 +695,14 @@ export default class User {
     withdrawAmount,
     withdrawToken,
     withdrawalAddress,
-    whitdrawalChainId
+    whitdrawalChainId,
+    maxGasFee
   ) {
     if (!withdrawalAddress) return null;
     if (withdrawalAddress.toString().startsWith("0x")) {
       withdrawalAddress = BigInt(withdrawalAddress, 16);
     }
+    if (!maxGasFee) maxGasFee = 0n;
 
     // ? Get the notesIn and priv keys for these notes
     let { notesIn, refundAmount } = this.getNotesInAndRefundAmount(
@@ -728,7 +730,8 @@ export default class User {
       privKeys,
       refundNote,
       withdrawalAddress,
-      whitdrawalChainId
+      whitdrawalChainId,
+      maxGasFee
     );
 
     let withdrawal = new Withdrawal(
@@ -736,6 +739,7 @@ export default class User {
       withdrawToken,
       withdrawAmount,
       withdrawalAddress,
+      maxGasFee,
       notesIn,
       refundNote,
       signature

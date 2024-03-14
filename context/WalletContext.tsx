@@ -63,6 +63,8 @@ export type WalletContextType = {
   setBalances: Dispatch<SetStateAction<TokenBalanceObject>>;
   setAllowances: Dispatch<SetStateAction<TokenAllowanceObject>>;
 
+  getGasEstimate: (gasLimit: number) => Promise<number | null>;
+
   smartContracts: any;
 };
 
@@ -92,6 +94,8 @@ export const WalletContext = createContext<WalletContextType>({
 
   setBalances: () => {},
   setAllowances: () => {},
+
+  getGasEstimate: async (gasLimit: number) => null,
 
   smartContracts: {},
 });
@@ -421,6 +425,18 @@ function WalletProvider({ children }: Props) {
     return contracts;
   };
 
+  const getGasEstimate = async (gasLimit: number) => {
+    let gasPrice = await signer?.getGasPrice();
+    if (!gasPrice) return null;
+
+    let ethFeeWei = BigInt(gasLimit) * gasPrice.toBigInt();
+    let ethFeeEstimate = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
+
+    console.log("gasprice: ", gasPrice.toString());
+
+    return ethFeeEstimate;
+  };
+
   const contextValue = useMemo(
     () => ({
       username,
@@ -443,6 +459,8 @@ function WalletProvider({ children }: Props) {
 
       setBalances,
       setAllowances,
+
+      getGasEstimate,
 
       smartContracts,
     }),

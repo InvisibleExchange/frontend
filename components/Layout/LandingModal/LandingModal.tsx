@@ -1,28 +1,11 @@
 import React from "react";
 
-import {
-  Dialog,
-  Transition,
-  Listbox,
-  RadioGroup,
-  Tab,
-} from "@headlessui/react";
+import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState, useContext } from "react";
 
 import classNames from "classnames";
 import { ThemeContext } from "../../../context/ThemeContext";
-import { UserContext } from "../../../context/UserContext";
-import Link from "next/link";
 import { useRouter } from "next/router";
-
-const {
-  IDS_TO_SYMBOLS,
-  DECIMALS_PER_ASSET,
-} = require("../../../app_logic/helpers/utils");
-
-const {
-  sendPerpOrder,
-} = require("../../../app_logic/transactions/constructOrders");
 
 type props = {
   shouldOpen: boolean | undefined;
@@ -30,8 +13,6 @@ type props = {
 
 const LandingModal = ({ shouldOpen }: props) => {
   const { theme } = useContext(ThemeContext);
-
-  const router = useRouter();
 
   let [isOpen, setIsOpen] = useState(shouldOpen ?? false);
 
@@ -133,34 +114,3 @@ const LandingModal = ({ shouldOpen }: props) => {
 };
 
 export default LandingModal;
-
-const onSumbitCloseOrder = async (
-  user: any,
-  position: any,
-  isMarket: boolean,
-  closeAmount: number,
-  price: number | null,
-  setToastMessage: any
-) => {
-  try {
-    await sendPerpOrder(
-      user,
-      position.order_side == "Long" ? "Short" : "Long",
-      600_000, // ~1 weeks
-      "Close",
-      position.position_address, // position address
-      position.synthetic_token, //token
-      closeAmount, //amount
-      price,
-      null, // initial margin
-      0.07, // fee_limit %
-      3, // slippage %
-      isMarket
-    );
-  } catch (error: any) {
-    setToastMessage({
-      type: "error",
-      message: error.toString(),
-    });
-  }
-};

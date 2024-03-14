@@ -829,7 +829,8 @@ async function sendWithdrawal(
   amount,
   token,
   recipient,
-  withdrawalChainId
+  withdrawalChainId,
+  maxGasFee
 ) {
   if (!user || !amount || !withdrawalChainId || !token || !recipient) {
     throw new Error("Invalid input");
@@ -842,7 +843,8 @@ async function sendWithdrawal(
     amount,
     token,
     recipient,
-    withdrawalChainId
+    withdrawalChainId,
+    maxGasFee
   );
 
   console.log("withdrawal.toGrpcObject()", withdrawal.toGrpcObject());

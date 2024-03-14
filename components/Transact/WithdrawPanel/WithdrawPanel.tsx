@@ -17,7 +17,8 @@ import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { UserContext } from "../../../context/UserContext";
 
-import { utils } from "ethers";
+import { ethers, utils } from "ethers";
+import ConfirmWithdrawalModal from "./ConfirmWithdrawalModal";
 
 const {
   _renderConnectButton,
@@ -26,6 +27,7 @@ const {
 
 const {
   DECIMALS_PER_ASSET,
+  COLLATERAL_TOKEN_DECIMALS,
   CHAIN_IDS,
 } = require("../../../app_logic/helpers/utils");
 
@@ -48,8 +50,10 @@ const chains = [
 ];
 
 const WithdrawPanel = () => {
-  let { userAddress, signer, connect } = useContext(WalletContext);
-  let { user, login, forceRerender, setToastMessage } = useContext(UserContext);
+  let { userAddress, signer, connect, switchNetwork } =
+    useContext(WalletContext);
+  let { user, login, forceRerender, setToastMessage, priceChange24h } =
+    useContext(UserContext);
 
   const [token, setToken] = useState(tokens[0]);
   const [chain, setChain] = useState(chains[0]);
@@ -60,12 +64,22 @@ const WithdrawPanel = () => {
 
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
 
-  const makeWithdrawal = async () => {
+  const makeWithdrawal = async (isManual: boolean) => {
     // TODO: for testing only
     let chainId =
       CHAIN_IDS[chain.name == "Arbitrum Sepolia" ? "Arbitrum" : "ETH Mainnet"];
 
-    await sendWithdrawal(user, amount, token.id, withdrawalAddress, chainId)
+    let maxGasPrice = chain.name == "Arbitrum Sepolia" ? 1 : 100; // TODO: get Better estimates (something time weighted)
+    let maxGasFee = getMaxGasFee(token, maxGasPrice, priceChange24h);
+
+    await sendWithdrawal(
+      user,
+      amount,
+      token.id,
+      withdrawalAddress,
+      chainId,
+      isManual ? BigInt(0) : maxGasFee
+    )
       .then((_) => {
         setToastMessage({
           type: "info",
@@ -82,6 +96,14 @@ const WithdrawPanel = () => {
           message: err.message,
         });
       });
+  };
+
+  const setNetwork = async (chain) => {
+    setChain(chain);
+
+    let networkId = chain.id;
+
+    await switchNetwork(networkId);
   };
 
   function renderConnectButton() {
@@ -124,7 +146,7 @@ const WithdrawPanel = () => {
           <TokenSelector
             options={chains}
             selected={chain}
-            onSelect={setChain}
+            onSelect={setNetwork}
             isWalletConnected={!!user}
             label={"Select network: "}
           />
@@ -161,7 +183,7 @@ const WithdrawPanel = () => {
 
           <ReactTooltip id="my-tooltip" opacity={1} />
 
-          <a
+          <button
             className="w-1/4 py-3 mt-2 ml-3 text-center text-white bg-blue rounded-lg hover:opacity-70 hover:cursor-pointer"
             data-tooltip-id="my-tooltip"
             data-tooltip-content="You can connect wallet to prevent signing with wrong address."
@@ -170,7 +192,7 @@ const WithdrawPanel = () => {
             }}
           >
             connected wallet
-          </a>
+          </button>
         </div>
       </div>
 
@@ -178,13 +200,23 @@ const WithdrawPanel = () => {
 
       {userAddress ? (
         user && user.userId ? (
-          <button
-            // disabled={true}
-            className="w-full py-3 mt-8 text-center rounded-lg bg-red hover:opacity-70"
-            onClick={makeWithdrawal}
-          >
-            Make Withdrawal
-          </button>
+          <div className="flex">
+            <ConfirmWithdrawalModal
+              isManual={false}
+              token={token.name}
+              chain={chain.id}
+              makeWithdrawal={makeWithdrawal}
+              setToastMessage={setToastMessage}
+            />
+
+            <ConfirmWithdrawalModal
+              isManual={true}
+              token={token.name}
+              chain={chain.id}
+              makeWithdrawal={makeWithdrawal}
+              setToastMessage={setToastMessage}
+            />
+          </div>
         ) : (
           renderLoginButton()
         )
@@ -197,5 +229,49 @@ const WithdrawPanel = () => {
     </div>
   );
 };
+
+function getMaxGasFee(
+  token: any,
+  maxGasPriceGwei: number,
+  priceChange24h: any
+) {
+  // TODO: Figure out gasPrices
+  let maxGasPrice = ethers.utils.parseUnits(maxGasPriceGwei.toString(), "gwei");
+
+  if (token.name == "ETH") {
+    let ethFeeWei = BigInt(21000) * maxGasPrice.toBigInt();
+    let ethFee = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
+
+    let ethDecimals = DECIMALS_PER_ASSET[token.id];
+    return ethers.utils
+      .parseUnits(ethFee.toFixed(ethDecimals), ethDecimals)
+      .toBigInt();
+  } else if (token.name == "BTC") {
+    let ethFeeWei = BigInt(100000) * maxGasPrice.toBigInt();
+    let ethFee = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
+
+    let ethPrice = priceChange24h["ETH"].price;
+    let btcPrice = priceChange24h["BTC"].price;
+
+    let btcFee = (ethFee * ethPrice) / btcPrice;
+
+    let btcDecimals = DECIMALS_PER_ASSET[token.id];
+    return ethers.utils
+      .parseUnits(btcFee.toFixed(btcDecimals), btcDecimals)
+      .toBigInt();
+  } else {
+    let ethFeeWei = BigInt(100000) * maxGasPrice.toBigInt();
+    let ethFee = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
+
+    let ethPrice = priceChange24h["ETH"].price;
+
+    let usdcFee = ethFee * ethPrice;
+
+    let usdcDecimals = COLLATERAL_TOKEN_DECIMALS;
+    return ethers.utils
+      .parseUnits(usdcFee.toFixed(usdcDecimals), usdcDecimals)
+      .toBigInt();
+  }
+}
 
 export default WithdrawPanel;

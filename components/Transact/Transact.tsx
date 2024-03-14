@@ -73,7 +73,7 @@ const Transact = () => {
     <div className="flex justify-center w-full">
       <LandingModal shouldOpen={!initialized} />
 
-      <div className="w-[500px] mt-10  rounded-lg">
+      <div className="w-[40rem] mt-10  rounded-lg">
         <Tab.Group>
           <Tab.List className="flex p-1 space-x-2 rounded-xl bg-blue-900/20">
             {categories.map((category, index) => (
