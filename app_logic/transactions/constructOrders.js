@@ -830,9 +830,17 @@ async function sendWithdrawal(
   token,
   recipient,
   withdrawalChainId,
+  withdrawalId,
   maxGasFee
 ) {
-  if (!user || !amount || !withdrawalChainId || !token || !recipient) {
+  if (
+    !user ||
+    !amount ||
+    !withdrawalChainId ||
+    !token ||
+    !recipient ||
+    !withdrawalId
+  ) {
     throw new Error("Invalid input");
   }
 
@@ -847,10 +855,11 @@ async function sendWithdrawal(
     maxGasFee
   );
 
-  console.log("withdrawal.toGrpcObject()", withdrawal.toGrpcObject());
+  let withdrawalObj = withdrawal.toGrpcObject();
+  withdrawalObj.withdrawal_id = withdrawalId.toString();
 
   await axios
-    .post(`${EXPRESS_APP_URL}/execute_withdrawal`, withdrawal.toGrpcObject())
+    .post(`${EXPRESS_APP_URL}/execute_withdrawal`, withdrawalObj)
     .then((res) => {
       let withdrawal_response = res.data.response;
 

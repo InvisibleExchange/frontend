@@ -5,18 +5,18 @@ const { getKeyPair, sign } = require("starknet").ec;
 
 module.exports = class Withdrawal {
   constructor(
-    withdrawal_chain_id,
-    withdrawal_token,
-    withdrawal_amount,
+    chain_id,
+    token,
+    amount,
     recipient,
     max_gas_fee,
     notes_in,
     refund_note,
     signature
   ) {
-    this.withdrawal_chain_id = withdrawal_chain_id;
-    this.withdrawal_token = withdrawal_token;
-    this.withdrawal_amount = withdrawal_amount;
+    this.chain_id = chain_id;
+    this.token = token;
+    this.amount = amount;
     this.recipient = recipient;
     this.notes_in = notes_in;
     this.max_gas_fee = max_gas_fee;
@@ -26,9 +26,9 @@ module.exports = class Withdrawal {
 
   toGrpcObject() {
     return {
-      withdrawal_chain_id: this.withdrawal_chain_id,
-      withdrawal_token: this.withdrawal_token.toString(),
-      withdrawal_amount: this.withdrawal_amount.toString(),
+      chain_id: this.chain_id,
+      token: this.token.toString(),
+      amount: this.amount.toString(),
       recipient: this.recipient.toString(),
       max_gas_fee: this.max_gas_fee.toString(),
       notes_in: this.notes_in.map((n) => n.toGrpcObject()),

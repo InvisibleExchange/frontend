@@ -39,7 +39,7 @@ const exchange_config = require("../exchange-config.json");
 
 const CONTRACT_ADDRESSES = exchange_config["CONTRACT_ADDRESSES"];
 
-function tokenAddressList(chainId: number) {
+function tokenAddressList(chainId: number): string[] {
   return CONTRACT_ADDRESSES[chainId]["TOKEN_ADDRESS_LIST"];
 }
 

@@ -34,6 +34,9 @@ import {
   tokenId2Name,
 } from "../data/markets";
 
+const exchange_config = require("../exchange-config.json");
+const SYMBOLS_TO_IDS = exchange_config["SYMBOLS_TO_IDS"];
+
 interface Props {
   children: React.ReactNode;
 }
@@ -364,22 +367,22 @@ function WalletProvider({ children }: Props) {
     contracts: any
   ) => {
     let withdrawbleAmounts = {};
-    let invisibleContract = contracts.invisibleL1;
+    let invisibleContract = contracts.invisible;
 
-    for (let address of tokenAddressList[network?.chainId ?? 0]) {
-      const tokenId = tokenAddress2Id(network?.chainId ?? 0)[address];
+    for (let address of tokenAddressList(network?.chainId!)) {
+      const tokenId = tokenAddress2Id(network?.chainId!)[address];
 
       let amount = await invisibleContract?.getWithdrawableAmount(
         userAddress,
         address
       );
 
-      withdrawbleAmounts[tokenId] = amount;
+      withdrawbleAmounts[tokenId] = amount.toBigInt();
     }
 
-    let amount = await invisibleContract?.getETHWithdrawableAmount(userAddress);
+    // TODO: let amount = await invisibleContract?.getETHWithdrawableAmount(userAddress);
 
-    withdrawbleAmounts[453755560] = amount;
+    withdrawbleAmounts[SYMBOLS_TO_IDS["ETH"]] = BigInt("1000000000000000000"); //amount.toBigInt();
 
     setWithdrawablAmounts(withdrawbleAmounts);
   };
@@ -391,14 +394,14 @@ function WalletProvider({ children }: Props) {
     const TestTokenAbi =
       require("../app_logic/helpers/abis/TestToken.json").abi;
 
-    const WbtcAddress = tokenId2Address(chainId ?? 0)[3592681469];
+    const WbtcAddress = tokenId2Address(chainId ?? 0)[SYMBOLS_TO_IDS["BTC"]];
     const WbtcContract = new ethers.Contract(
       WbtcAddress,
       TestTokenAbi,
       signer ?? undefined
     );
 
-    const UsdcAddress = tokenId2Address(chainId ?? 0)[2413654107];
+    const UsdcAddress = tokenId2Address(chainId ?? 0)[SYMBOLS_TO_IDS["USDC"]];
     const UsdcContract = new ethers.Contract(
       UsdcAddress,
       TestTokenAbi,
@@ -407,7 +410,7 @@ function WalletProvider({ children }: Props) {
 
     const invisibleAbi =
       chainId == _getDefaultNetwork().chainId
-        ? require("../app_logic/helpers/abis/Invisible.json").abi
+        ? require("../app_logic/helpers/abis/InvisibleL1.json").abi
         : require("../app_logic/helpers/abis/InvisibleL2.json").abi;
 
     const invisibleContract = new ethers.Contract(
@@ -418,8 +421,8 @@ function WalletProvider({ children }: Props) {
 
     const contracts = {
       invisible: invisibleContract,
-      3592681469: WbtcContract,
-      2413654107: UsdcContract,
+      [SYMBOLS_TO_IDS["BTC"]]: WbtcContract,
+      [SYMBOLS_TO_IDS["USDC"]]: UsdcContract,
     };
 
     return contracts;
@@ -431,8 +434,6 @@ function WalletProvider({ children }: Props) {
 
     let ethFeeWei = BigInt(gasLimit) * gasPrice.toBigInt();
     let ethFeeEstimate = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
-
-    console.log("gasprice: ", gasPrice.toString());
 
     return ethFeeEstimate;
   };

@@ -32,6 +32,10 @@ const {
 } = require("../../../app_logic/helpers/utils");
 
 const {
+  storeWithdrawalIds,
+} = require("../../../app_logic/helpers/firebaseConnection");
+
+const {
   sendWithdrawal,
 } = require("../../../app_logic/transactions/constructOrders");
 
@@ -65,12 +69,15 @@ const WithdrawPanel = () => {
   const [withdrawalAddress, setWithdrawalAddress] = useState("");
 
   const makeWithdrawal = async (isManual: boolean) => {
-    // TODO: for testing only
-    let chainId =
-      CHAIN_IDS[chain.name == "Arbitrum Sepolia" ? "Arbitrum" : "ETH Mainnet"];
+    let chainId = CHAIN_IDS[chain.name];
 
-    let maxGasPrice = chain.name == "Arbitrum Sepolia" ? 1 : 100; // TODO: get Better estimates (something time weighted)
-    let maxGasFee = getMaxGasFee(token, maxGasPrice, priceChange24h);
+    let maxGasPrice = ["Arbitrum Sepolia", "Arbitrum"].includes(chain.name)
+      ? 1
+      : 100; // TODO: get Better estimates (something time weighted)
+
+    let maxGasFee = getGasFeeInToken(token, maxGasPrice, priceChange24h);
+
+    let withdrawalId = BigInt(Math.floor(Math.random() * 2 ** 64));
 
     await sendWithdrawal(
       user,
@@ -78,6 +85,7 @@ const WithdrawPanel = () => {
       token.id,
       withdrawalAddress,
       chainId,
+      withdrawalId,
       isManual ? BigInt(0) : maxGasFee
     )
       .then((_) => {
@@ -89,21 +97,45 @@ const WithdrawPanel = () => {
             " " +
             token.name,
         });
+
+        storeWithdrawalIds(
+          user.userId,
+          user.withdrawalIds,
+          withdrawalId,
+          user.privateSeed
+        );
+
+        let tokenDecimals = DECIMALS_PER_ASSET[token.id];
+        let withdrawalAmount = amount! * 10 ** tokenDecimals;
+        let withdrawal = {
+          amount: withdrawalAmount,
+          is_automatic: !isManual,
+          recipient: withdrawalAddress,
+          token_id: token.id,
+          active: false,
+        };
+
+        user.withdrawals.push(withdrawal);
+
+        forceRerender();
       })
+
       .catch((err) => {
         setToastMessage({
           type: "error",
           message: err.message,
         });
+
+        return null;
       });
   };
 
   const setNetwork = async (chain) => {
-    setChain(chain);
-
     let networkId = chain.id;
 
     await switchNetwork(networkId);
+
+    setChain(chain);
   };
 
   function renderConnectButton() {
@@ -225,12 +257,12 @@ const WithdrawPanel = () => {
       )}
 
       <div className="w-full h-[2px] my-5 bg-border_color"></div>
-      <PendingPanel type="Withdrawal" />
+      <PendingPanel user={user} type="Withdrawal" showToast={setToastMessage} />
     </div>
   );
 };
 
-function getMaxGasFee(
+function getGasFeeInToken(
   token: any,
   maxGasPriceGwei: number,
   priceChange24h: any
@@ -247,7 +279,7 @@ function getMaxGasFee(
       .parseUnits(ethFee.toFixed(ethDecimals), ethDecimals)
       .toBigInt();
   } else if (token.name == "BTC") {
-    let ethFeeWei = BigInt(100000) * maxGasPrice.toBigInt();
+    let ethFeeWei = BigInt(100_000) * maxGasPrice.toBigInt();
     let ethFee = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
 
     let ethPrice = priceChange24h["ETH"].price;
@@ -260,7 +292,7 @@ function getMaxGasFee(
       .parseUnits(btcFee.toFixed(btcDecimals), btcDecimals)
       .toBigInt();
   } else {
-    let ethFeeWei = BigInt(100000) * maxGasPrice.toBigInt();
+    let ethFeeWei = BigInt(100_000) * maxGasPrice.toBigInt();
     let ethFee = Number(ethers.utils.formatUnits(ethFeeWei, "ether"));
 
     let ethPrice = priceChange24h["ETH"].price;

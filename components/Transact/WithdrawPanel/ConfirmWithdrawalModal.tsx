@@ -1,4 +1,4 @@
-import React, { use, useEffect } from "react";
+import React, { useEffect } from "react";
 
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useState, useContext } from "react";
@@ -40,16 +40,17 @@ const ConfirmWithdrawalModal = ({
     async function calcGasFee() {
       let gasLimit = token === "ETH" ? 21000 : 75000;
       let gasFeeEth = await getGasEstimate(gasLimit);
+
       if (!gasFeeEth) return;
 
-      let ethPrice = priceChange24h[token].price;
+      let ethPrice = priceChange24h["ETH"]?.price;
 
       setGasFee(gasFeeEth * ethPrice);
     }
 
     // Call the async function
     calcGasFee();
-  }, [chain]);
+  }, [chain, token]);
 
   let automaticTooltip =
     "This will deduct the gas fee from your balance and transfer funds directly to your address.";
