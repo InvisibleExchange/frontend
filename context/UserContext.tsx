@@ -23,7 +23,6 @@ const axios = require("axios");
 
 import { TradeType } from "../components/Trade/BookTrades/BookTrades";
 import { marketList, token2Market } from "../data/markets";
-import { WalletContext } from "./WalletContext";
 
 interface Props {
   children: React.ReactNode;

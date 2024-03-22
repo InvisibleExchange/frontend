@@ -19,11 +19,9 @@ const bigInt = require("big-integer");
 const { Note, trimHash } = require("../users/Notes.js");
 const { pedersen } = require("./pedersen.js");
 
-const { ec, getKeyPair } = require("starknet").ec; //require("starknet/utils/ellipticCurve.js");
+const { ec } = require("starknet").ec; //require("starknet/utils/ellipticCurve.js");
 
 const BN = require("bn.js");
-const { restoreUserState } = require("./keyRetrieval.js");
-
 // TODO: fetch deposit ids on login and remove them if they've been used
 
 /* global BigInt */
@@ -282,12 +280,14 @@ async function fetchUserData(userId, privateSeed) {
       noteCounts: {},
       positionCounts: {},
       depositIds: [],
+      withdrawalIds: [],
     };
   }
 
   let noteCounts = userData.data().noteCounts;
   let positionCounts = userData.data().positionCounts;
   let depositIds = userData.data().depositIds;
+  let withdrawalIds = userData.data().withdrawalIds;
 
   let pfrKeys = {};
 
@@ -366,6 +366,7 @@ async function fetchUserData(userId, privateSeed) {
     positionPrivKeys,
     pfrKeys,
     depositIds,
+    withdrawalIds,
   };
 }
 
@@ -403,6 +404,27 @@ async function storeDepositIds(userId, depositIds, newDepositId, privateSeed) {
   });
 }
 
+async function storeWithdrawalIds(
+  userId,
+  withdrawalIds,
+  newWithdrawalId,
+  privateSeed
+) {
+  if (!withdrawalIds) withdrawalIds = [];
+  // ? Stores the withdrawalId of the user
+
+  let userDataDoc = doc(db, "users", userId.toString());
+
+  let mask = trimHash(privateSeed, 64);
+  let encryptedWithdrawalId = bigInt(newWithdrawalId).xor(mask).toString();
+
+  withdrawalIds.push(encryptedWithdrawalId);
+
+  await updateDoc(userDataDoc, {
+    withdrawalIds: withdrawalIds,
+  });
+}
+
 async function fetchOnchainDeposits(depositIds, privateSeed) {
   if (!depositIds || depositIds.length == 0) {
     return [];
@@ -427,6 +449,125 @@ async function fetchOnchainDeposits(depositIds, privateSeed) {
   }
 
   return { deposits, newDepositIds };
+}
+
+const EXCHANGE_CONFIG = require("../../exchange-config.json");
+const CHAIN_IDS = EXCHANGE_CONFIG["CHAIN_IDS"];
+
+async function fetchPendingWithdrawals(withdrawalIds, privateSeed) {
+  if (!withdrawalIds || withdrawalIds.length == 0) {
+    return [];
+  }
+
+  let newWithdrawalIds = [];
+  let withdrawals = [];
+  for (const withdrawalId of withdrawalIds) {
+    let mask = trimHash(privateSeed, 64);
+    let decryptedwithdrawalId = bigInt(withdrawalId).xor(mask).toString();
+
+    // ? Get pending L1 withdrawals
+    let withdrawalDoc = doc(
+      db,
+      "withdrawals/L1/pending",
+      decryptedwithdrawalId
+    );
+    let withdrawalData = await getDoc(withdrawalDoc);
+
+    if (withdrawalData.exists()) {
+      let withdrawal = withdrawalData.data();
+      withdrawal.chainId = CHAIN_IDS["Sepolia"];
+      withdrawal.withdrawalId = withdrawalId;
+      withdrawal.active = false;
+
+      newWithdrawalIds.push(withdrawalId);
+
+      withdrawals.push(withdrawal);
+
+      continue;
+    }
+
+    // * GET L2 WITHDRAWALS --------------------------------
+
+    // ? Get pending L2 withdrawals
+    let l2WithdrawalDoc = doc(
+      db,
+      "withdrawals/L2/pending",
+      decryptedwithdrawalId
+    );
+    let l2WithdrawalData = await getDoc(l2WithdrawalDoc);
+
+    if (l2WithdrawalData.exists()) {
+      let withdrawal = l2WithdrawalData.data();
+      withdrawal.chainId = CHAIN_IDS["Arbitrum Sepolia"];
+      withdrawal.withdrawalId = withdrawalId;
+      withdrawal.active = false;
+
+      newWithdrawalIds.push(withdrawalId);
+
+      withdrawals.push(withdrawal);
+      continue;
+    }
+  }
+
+  return { withdrawals, newWithdrawalIds };
+}
+
+async function fetchActiveWithdrawals(connectedAddress) {
+  if (!connectedAddress) {
+    return [];
+  }
+
+  let withdrawals = [];
+
+  // ? Get active L1 withdrawals
+  let l1ActiveWIthdrawalDoc = doc(
+    db,
+    "withdrawals/L1/active",
+    connectedAddress
+  );
+  let activeWithdrawalData = await getDoc(l1ActiveWIthdrawalDoc);
+
+  if (activeWithdrawalData.exists()) {
+    let recipientAmounts = activeWithdrawalData.data();
+
+    for (const [tokenId, amount] of recipientAmounts) {
+      let withdrawal = {
+        chainId: CHAIN_IDS["Sepolia"],
+        active: true,
+        amount: amount,
+        token_id: tokenId,
+        recipient: connectedAddress,
+      };
+
+      withdrawals.push(withdrawal);
+    }
+  }
+
+  // ? Get active L2 withdrawals
+  let l2ActiveWithdrawalDoc = doc(
+    db,
+    "withdrawals/L2/active",
+    decryptedwithdrawalId
+  );
+  let l2ActiveWithdrawalData = await getDoc(l2ActiveWithdrawalDoc);
+
+  if (l2ActiveWithdrawalData.exists()) {
+    let recipientAmounts = l2ActiveWithdrawalData.data();
+
+    for (const [tokenId, amount] of recipientAmounts) {
+      let withdrawal = {
+        chainId: CHAIN_IDS["Arbitrum Sepolia"],
+        active: true,
+        amount: amount,
+        token_id: tokenId,
+        recipient: connectedAddress,
+      };
+
+      withdrawals.push(withdrawal);
+    }
+  }
+
+  return withdrawals;
 }
 
 // ---- FILLS ---- //
@@ -543,7 +684,10 @@ module.exports = {
   fetchUserData,
   fetchStoredPosition,
   storeDepositIds,
+  storeWithdrawalIds,
   fetchOnchainDeposits,
+  fetchPendingWithdrawals,
+  fetchActiveWithdrawals,
   storePrivKey,
   removePrivKey,
   storeOrderId,

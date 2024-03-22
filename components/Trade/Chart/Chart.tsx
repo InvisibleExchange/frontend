@@ -34,9 +34,7 @@ const ChartInner = ({ token }: any) => {
     SOL: "BINANCE:SOLUSDT",
   };
 
-  useEffect(() => {
-    console.log("token", token, symbols[token]);
-  }, [token]);
+  useEffect(() => {}, [token]);
 
   return (
     <>

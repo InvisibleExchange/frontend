@@ -65,11 +65,11 @@ const DepositPanel = ({ showToast }: any) => {
   const [isTxPending, setIsTxPending] = useState<boolean>(false);
 
   const setNetwork = async (chain) => {
-    setChain(chain);
-
     let networkId = chain.id;
 
     await switchNetwork(networkId);
+
+    setChain(chain);
   };
 
   let tokenBalance = getTokenBalance(token.id);
